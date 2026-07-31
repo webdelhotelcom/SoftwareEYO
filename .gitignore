@@ -1,0 +1,12 @@
+# Claves y configuración local — nunca se versionan
+.env
+.env.local
+app/config.js
+
+# Herramienta local de Claude Code
+.claude/
+
+# Archivos temporales del sistema
+Thumbs.db
+.DS_Store
+*.tmp
