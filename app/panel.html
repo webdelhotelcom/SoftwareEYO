@@ -410,6 +410,10 @@ tr:hover td{background:var(--bg2)}
       <button class="btn btn-sm btn-full" onclick="exportPropertiesBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar alojamientos</button>
       <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar alojamientos<input type="file" id="import-properties-file" accept=".json" onchange="importPropertiesBackup(this)" style="display:none"></label>
       <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0" title="Para traer los alojamientos de un backup exportado desde la demo vieja (localStorage)"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-file" accept=".json" onchange="importLegacyPropertiesFromDemo(this)" style="display:none"></label>
+      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Propietarios (Supabase)</div>
+      <button class="btn btn-sm btn-full" onclick="exportOwnersBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar propietarios</button>
+      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar propietarios<input type="file" id="import-owners-file" accept=".json" onchange="importOwnersBackup(this)" style="display:none"></label>
+      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0" title="Para traer los propietarios de un backup exportado desde la demo vieja (localStorage)"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-owners-file" accept=".json" onchange="importLegacyOwnersFromDemo(this)" style="display:none"></label>
     </div>
   </div>
 </aside>
@@ -1374,10 +1378,10 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 function showToast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.style.background=type==='error'?'var(--red)':'var(--accent)';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
 function clearF(ids){ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
 function saveAll(){
-  // Alojamientos ya no pasa por acá: cada cambio se guarda directo en Supabase
-  // (ver saveProperty/deleteProperty/saveSeasons). El resto de los módulos
-  // sigue en localStorage hasta que se migren en la Fase 2.
-  save('owners',owners);save('nextOwnerId',nextOwnerId);
+  // Alojamientos y Propietarios ya no pasan por acá: cada cambio se guarda
+  // directo en Supabase (ver saveProperty/deleteProperty/saveSeasons y
+  // saveOwner/deleteOwner). El resto de los módulos sigue en localStorage
+  // hasta que se migren.
   save('reservations',reservations);save('nextResId',nextResId);
   save('expenses',expenses);save('nextExpId',nextExpId);
   save('tasks',tasks);save('nextTaskId',nextTaskId);
@@ -1411,12 +1415,23 @@ function badgeS(s){const c=STATUS[s]||{label:s,cls:'badge-gray'};return`<span cl
 function badgeA(s){return s==='activo'?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-gray">Inactivo</span>';}
 
 // DEFAULT DATA
-let owners=load('owners',[
-  {"id": 1, "nombre": "Elsa Fernández", "telefono": "+598 99 412 337", "email": "elsa.fernandez@mail.com", "cuenta": "Cuenta BROU: 001234567-00001", "notas": "Dueña de la mitad de las unidades del complejo. Contacto directo."},
-  {"id": 2, "nombre": "Grupo Costa Mansa S.A.", "telefono": "+598 42 772 210", "email": "administracion@costamansa.uy", "cuenta": "Alias: costa.mansa.pagos", "notas": "Sociedad propietaria de suites y cabañas. Facturación mensual."},
-  {"id": 3, "nombre": "Raúl Methol", "telefono": "+598 98 220 145", "email": "raul.methol@mail.com", "cuenta": "Cuenta Santander: 998877-6", "notas": "Inversor. Prefiere reportes por WhatsApp."}
-]);
-let nextOwnerId=load('nextOwnerId',4);
+// Propietarios (owners) ya NO se guarda en localStorage: vive en Supabase,
+// mismo patrón que Alojamientos (ver loadProperties más abajo).
+let owners=[];
+function ownerFromDb(row){
+  return {id:row.id, nombre:row.nombre, telefono:row.telefono||'', email:row.email||'', cuenta:row.cuenta||'', notas:row.notas||''};
+}
+function ownerToDb(data){
+  return {nombre:data.nombre, telefono:data.telefono, email:data.email, cuenta:data.cuenta, notas:data.notas};
+}
+async function loadOwners(){
+  if(!supabaseClient||!currentUser)return;
+  const {data,error}=await supabaseClient.from('owners').select('*').order('nombre');
+  if(error){showToast('No se pudieron cargar los propietarios: '+error.message,'error');return;}
+  owners=(data||[]).map(ownerFromDb);
+  populateSelects();
+  if(document.getElementById('page-owners')?.classList.contains('active'))renderOwners();
+}
 
 // Alojamientos (properties) ya NO se guarda en localStorage: vive en Supabase,
 // separado por tenant_id y protegido por RLS. Este array es solo la copia en
@@ -2050,6 +2065,7 @@ async function loadSessionUser(authUser){
   populateSelects();
   applyPlan();
   await loadProperties();
+  await loadOwners();
   calYear=2026;calMonth=0; // demo: arranca en enero 2026 (temporada)
   showPage('dashboard');
   document.getElementById('dash-date').textContent=todayLabel();
@@ -2718,7 +2734,7 @@ async function saveProperty(){
   const nombre=document.getElementById('prop-nombre').value.trim();
   if(!nombre){showToast('Ingresá el nombre','error');return;}
   const id=document.getElementById('prop-id').value;
-  const data={nombre,direccion:document.getElementById('prop-direccion').value,propietarioId:parseInt(document.getElementById('prop-propietario').value)||null,capacidad:parseInt(document.getElementById('prop-capacidad').value)||4,precio:parseFloat(document.getElementById('prop-precio').value)||0,comisionPct:parseFloat(document.getElementById('prop-comision-pct').value)||10,estado:document.getElementById('prop-estado').value,cuenta:document.getElementById('prop-cuenta').value,checkinH:document.getElementById('prop-checkin-h').value,checkoutH:document.getElementById('prop-checkout-h').value,wifi:document.getElementById('prop-wifi').value,wifiPass:document.getElementById('prop-wifi-pass').value,acceso:document.getElementById('prop-acceso').value,normas:document.getElementById('prop-normas').value,info:document.getElementById('prop-info').value,contacto:document.getElementById('prop-contacto').value,notas:document.getElementById('prop-notas').value};
+  const data={nombre,direccion:document.getElementById('prop-direccion').value,propietarioId:document.getElementById('prop-propietario').value||null,capacidad:parseInt(document.getElementById('prop-capacidad').value)||4,precio:parseFloat(document.getElementById('prop-precio').value)||0,comisionPct:parseFloat(document.getElementById('prop-comision-pct').value)||10,estado:document.getElementById('prop-estado').value,cuenta:document.getElementById('prop-cuenta').value,checkinH:document.getElementById('prop-checkin-h').value,checkoutH:document.getElementById('prop-checkout-h').value,wifi:document.getElementById('prop-wifi').value,wifiPass:document.getElementById('prop-wifi-pass').value,acceso:document.getElementById('prop-acceso').value,normas:document.getElementById('prop-normas').value,info:document.getElementById('prop-info').value,contacto:document.getElementById('prop-contacto').value,notas:document.getElementById('prop-notas').value};
   if(id){
     const {data:updated,error}=await supabaseClient.from('properties').update(propertyToDb(data)).eq('id',id).select().single();
     if(error){showToast('No se pudo guardar: '+error.message,'error');return;}
@@ -2766,8 +2782,8 @@ function renderOwners(){
         <div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;font-weight:600">Resultado</div><div style="font-size:11px;font-weight:500;color:${res>=0?'var(--green)':'var(--red)'}">${fmt(res)}</div></div>
       </div>
       <div style="margin-top:8px;display:flex;gap:5px">
-        <button class="btn btn-sm" style="flex:1" onclick="showOwnerDetail(${o.id})"><i class="ti ti-eye"></i> Ver ficha</button>
-        ${currentUser?.role==='admin'?`<button class="btn btn-sm" onclick="editOwner(${o.id})"><i class="ti ti-edit"></i></button><button class="btn btn-sm" style="background:var(--red);color:#fff;border-color:var(--red)" onclick="deleteOwner(${o.id})"><i class="ti ti-trash"></i></button>`:''}
+        <button class="btn btn-sm" style="flex:1" onclick="showOwnerDetail('${o.id}')"><i class="ti ti-eye"></i> Ver ficha</button>
+        ${currentUser?.role==='admin'?`<button class="btn btn-sm" onclick="editOwner('${o.id}')"><i class="ti ti-edit"></i></button><button class="btn btn-sm" style="background:var(--red);color:#fff;border-color:var(--red)" onclick="deleteOwner('${o.id}')"><i class="ti ti-trash"></i></button>`:''}
       </div>
     </div>`;
   }).join('');
@@ -2812,14 +2828,22 @@ function editOwner(id){
   Object.entries(F).forEach(([k,v])=>{const el=document.getElementById(k);if(el)el.value=v;});
   openModal('modal-owner');
 }
-function saveOwner(){
+async function saveOwner(){
   const nombre=document.getElementById('owner-nombre').value.trim();
   if(!nombre){showToast('Ingresá el nombre','error');return;}
   const id=document.getElementById('owner-id').value;
   const data={nombre,telefono:document.getElementById('owner-telefono').value,email:document.getElementById('owner-email').value,cuenta:document.getElementById('owner-cuenta').value,notas:document.getElementById('owner-notas').value};
-  if(id){const idx=owners.findIndex(o=>o.id===parseInt(id));if(idx>=0)owners[idx]={...owners[idx],...data};}
-  else owners.push({id:nextOwnerId++,...data});
-  saveAll();populateSelects();renderOwners();closeModal('modal-owner');showToast('Propietario guardado');
+  if(id){
+    const {data:updated,error}=await supabaseClient.from('owners').update(ownerToDb(data)).eq('id',id).select().single();
+    if(error){showToast('No se pudo guardar: '+error.message,'error');return;}
+    const idx=owners.findIndex(o=>o.id===id);
+    if(idx>=0)owners[idx]=ownerFromDb(updated);
+  }else{
+    const {data:inserted,error}=await supabaseClient.from('owners').insert({...ownerToDb(data),tenant_id:currentUser.tenantId}).select().single();
+    if(error){showToast('No se pudo guardar: '+error.message,'error');return;}
+    owners.push(ownerFromDb(inserted));
+  }
+  populateSelects();renderOwners();closeModal('modal-owner');showToast('Propietario guardado');
 }
 
 // FINANCES
@@ -2994,7 +3018,7 @@ function generateReport(){
   const resultado=tNeto-tGastos-tCom;
   const daysInMonth=new Date(parseInt(yr),parseInt(mo),0).getDate();
   const ocup=tNoches?Math.min(100,Math.round(tNoches/daysInMonth*100)):0;
-  const ownerName=ownerId?owners.find(o=>o.id===parseInt(ownerId))?.nombre||'Todos':'Todos los propietarios';
+  const ownerName=ownerId?owners.find(o=>o.id===ownerId)?.nombre||'Todos':'Todos los propietarios';
   const propName=propId?getPropName(propId):'Todos los alojamientos';
   const prevM=new Date(parseInt(yr),parseInt(mo)-2,1).toISOString().slice(0,7);
   let prevR=reservations.filter(r=>r.checkin.startsWith(prevM)&&r.estado!=='cancelada');
@@ -3180,7 +3204,7 @@ function downloadReport(){
   const resultado=tNeto-tGastos-tCom;
   const daysInMonth=new Date(parseInt(yr),parseInt(mo),0).getDate();
   const ocup=tNoches?Math.min(100,Math.round(tNoches/daysInMonth*100)):0;
-  const ownerName=ownerId?owners.find(o=>o.id===parseInt(ownerId))?.nombre||'Todos':'Todos los propietarios';
+  const ownerName=ownerId?owners.find(o=>o.id===ownerId)?.nombre||'Todos':'Todos los propietarios';
   const propName=propId?getPropName(propId):'Todos los alojamientos';
   const catGastos=aE.reduce((s,e)=>{s[e.categoria]=(s[e.categoria]||0)+e.monto;return s;},{});
   const fileName=`Reporte_${(propId?propName:'Todos').replace(/[^a-zA-Z0-9]+/g,'_')}_${month}.pdf`;
@@ -3406,14 +3430,13 @@ function downloadListPDF(title,subtitle,columns,rows,filename){
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 // ══ BACKUP / RESTORE ══════════════════════════════════════════════
 function exportarDatos(){
-  // Alojamientos NO va en este backup: ya vive en Supabase, no en localStorage.
-  // Para hacer copia de seguridad de los alojamientos usá "Exportar alojamientos"
-  // (botón de acá abajo), que trae los datos reales de la base.
+  // Alojamientos y Propietarios NO van en este backup: ya viven en Supabase,
+  // no en localStorage. Para copia de seguridad de esos dos usá los botones
+  // "Exportar alojamientos" / "Exportar propietarios" (acá abajo), que traen
+  // los datos reales de la base.
   const data = {
-    version: 5,
+    version: 6,
     exportedAt: new Date().toISOString(),
-    // Gestión terceros
-    owners, nextOwnerId,
     reservations, nextResId,
     expenses, nextExpId,
     tasks, nextTaskId,
@@ -3444,8 +3467,7 @@ function importarDatos(input){
       if(!confirm(`¿Importar backup del ${data.exportedAt ? new Date(data.exportedAt).toLocaleString('es-AR') : 'fecha desconocida'}?\n\nEsto reemplazará TODOS los datos actuales. Esta acción no se puede deshacer.`)){
         input.value=''; return;
       }
-      // Gestión terceros (alojamientos no se restaura acá: usá "Importar alojamientos")
-      if(data.owners !== undefined){ owners = data.owners; nextOwnerId = data.nextOwnerId||1; }
+      // Alojamientos y Propietarios no se restauran acá: usá "Importar alojamientos" / "Importar propietarios"
       if(data.reservations !== undefined){ reservations = data.reservations; nextResId = data.nextResId||1; }
       if(data.expenses !== undefined){ expenses = data.expenses; nextExpId = data.nextExpId||1; }
       if(data.tasks !== undefined){ tasks = data.tasks; nextTaskId = data.nextTaskId||1; }
@@ -3557,6 +3579,79 @@ async function importLegacyPropertiesFromDemo(input){
   reader.readAsText(file);
 }
 
+// ══ BACKUP / RESTORE / MIGRACIÓN de Propietarios (Supabase) ═════════
+// Mismo patrón que Alojamientos.
+async function exportOwnersBackup(){
+  if(!supabaseClient||!currentUser){showToast('Iniciá sesión primero','error');return;}
+  const {data,error}=await supabaseClient.from('owners').select('*');
+  if(error){showToast('No se pudo exportar: '+error.message,'error');return;}
+  const backup={version:1,exportedAt:new Date().toISOString(),tenantId:currentUser.tenantId,owners:data||[]};
+  const json=JSON.stringify(backup,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`eyo-propietarios-backup-${today()}.json`;a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup de propietarios exportado');
+}
+
+async function importOwnersBackup(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const backup=JSON.parse(e.target.result);
+      const rows=backup.owners;
+      if(!Array.isArray(rows)){showToast('Archivo no válido: falta la lista de propietarios','error');input.value='';return;}
+      if(!confirm(`¿Restaurar ${rows.length} propietario(s) del backup del ${backup.exportedAt?new Date(backup.exportedAt).toLocaleString('es-AR'):'fecha desconocida'}?\n\nSe agregan como propietarios NUEVOS (no reemplaza los existentes).`)){
+        input.value='';return;
+      }
+      let ok=0,fail=0;
+      for(const row of rows){
+        const payload=ownerToDb(ownerFromDb(row));
+        payload.tenant_id=currentUser.tenantId;
+        const {error}=await supabaseClient.from('owners').insert(payload);
+        if(error)fail++;else ok++;
+      }
+      await loadOwners();
+      input.value='';
+      showToast(fail?`Restaurados ${ok}, fallaron ${fail}`:`Restaurados ${ok} propietarios`, fail?'error':'ok');
+    }catch(err){
+      showToast('Error al leer el archivo: '+err.message,'error');
+      input.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function importLegacyOwnersFromDemo(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      const rows=data.owners;
+      if(!Array.isArray(rows)){showToast('Ese archivo no tiene propietarios (¿es un backup de la demo anterior?)','error');input.value='';return;}
+      if(!confirm(`¿Migrar ${rows.length} propietario(s) de la demo anterior a esta cuenta?`)){
+        input.value='';return;
+      }
+      let ok=0,fail=0;
+      for(const legacy of rows){
+        const payload={nombre:legacy.nombre,telefono:legacy.telefono||'',email:legacy.email||'',cuenta:legacy.cuenta||'',notas:legacy.notas||'',tenant_id:currentUser.tenantId};
+        const {error}=await supabaseClient.from('owners').insert(payload);
+        if(error)fail++;else ok++;
+      }
+      await loadOwners();
+      input.value='';
+      showToast(fail?`Migrados ${ok}, fallaron ${fail}`:`Migrados ${ok} propietarios`, fail?'error':'ok');
+    }catch(err){
+      showToast('Error al leer el archivo: '+err.message,'error');
+      input.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
 async function deleteProperty(id){
   if(!confirm('¿Eliminar este alojamiento? Esta acción no se puede deshacer.')) return;
   const {error}=await supabaseClient.from('properties').delete().eq('id',id);
@@ -3566,10 +3661,11 @@ async function deleteProperty(id){
   showToast('Alojamiento eliminado');
 }
 
-function deleteOwner(id){
+async function deleteOwner(id){
   if(!confirm('¿Eliminar este propietario? Esta acción no se puede deshacer.')) return;
+  const {error}=await supabaseClient.from('owners').delete().eq('id',id);
+  if(error){showToast('No se pudo eliminar: '+error.message,'error');return;}
   owners = owners.filter(o=>o.id!==id);
-  saveAll();
   renderOwners();
   showToast('Propietario eliminado');
 }
