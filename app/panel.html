@@ -422,6 +422,10 @@ tr:hover td{background:var(--bg2)}
       <button class="btn btn-sm btn-full" onclick="exportExpensesBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar gastos</button>
       <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar gastos<input type="file" id="import-expenses-file" accept=".json" onchange="importExpensesBackup(this)" style="display:none"></label>
       <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0" title="Para traer los gastos de un backup exportado desde la demo vieja (localStorage), emparejando por nombre de alojamiento"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-expenses-file" accept=".json" onchange="importLegacyExpensesFromDemo(this)" style="display:none"></label>
+      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Huéspedes (Supabase)</div>
+      <button class="btn btn-sm btn-full" onclick="exportGuestsBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar huéspedes</button>
+      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar huéspedes<input type="file" id="import-guests-file" accept=".json" onchange="importGuestsBackup(this)" style="display:none"></label>
+      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0" title="Para traer los huéspedes de un backup exportado desde la demo vieja (localStorage)"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-guests-file" accept=".json" onchange="importLegacyGuestsFromDemo(this)" style="display:none"></label>
     </div>
   </div>
 </aside>
@@ -1672,6 +1676,7 @@ async function loadSessionUser(authUser){
   await loadOwners();
   await loadReservations();
   await loadExpenses();
+  await loadGuests();
   calYear=2026;calMonth=0; // demo: arranca en enero 2026 (temporada)
   showPage('dashboard');
   document.getElementById('dash-date').textContent=todayLabel();
@@ -2107,7 +2112,7 @@ async function saveReservation(){
     comprobante:document.getElementById('res-comprobante').value,
     horario:document.getElementById('res-horario').value.trim(),
   };
-  data.guestId=resolveGuestForReservation(data);
+  data.guestId=await resolveGuestForReservation(data);
   if(id){
     const old=reservations.find(r=>r.id===id);
     const history=[...(old?.history||[]),{date:today(),user:currentUser.name,msg:`Editada — estado: ${STATUS[data.estado]?.label||data.estado}`}];
@@ -3459,6 +3464,78 @@ async function importLegacyExpensesFromDemo(input){
   reader.readAsText(file);
 }
 
+// ══ BACKUP / RESTORE / MIGRACIÓN de Huéspedes (Supabase) ════════════
+async function exportGuestsBackup(){
+  if(!supabaseClient||!currentUser){showToast('Iniciá sesión primero','error');return;}
+  const {data,error}=await supabaseClient.from('guests').select('*');
+  if(error){showToast('No se pudo exportar: '+error.message,'error');return;}
+  const backup={version:1,exportedAt:new Date().toISOString(),tenantId:currentUser.tenantId,guests:data||[]};
+  const json=JSON.stringify(backup,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`eyo-huespedes-backup-${today()}.json`;a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup de huéspedes exportado');
+}
+
+async function importGuestsBackup(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const backup=JSON.parse(e.target.result);
+      const rows=backup.guests;
+      if(!Array.isArray(rows)){showToast('Archivo no válido: falta la lista de huéspedes','error');input.value='';return;}
+      if(!confirm(`¿Restaurar ${rows.length} huésped(es) del backup del ${backup.exportedAt?new Date(backup.exportedAt).toLocaleString('es-AR'):'fecha desconocida'}?\n\nSe agregan como huéspedes NUEVOS (no reemplaza los existentes).`)){
+        input.value='';return;
+      }
+      let ok=0,fail=0;
+      for(const row of rows){
+        const payload=guestToDb(guestFromDb(row));
+        payload.tenant_id=currentUser.tenantId;
+        const {error}=await supabaseClient.from('guests').insert(payload);
+        if(error)fail++;else ok++;
+      }
+      await loadGuests();
+      input.value='';
+      showToast(fail?`Restaurados ${ok}, fallaron ${fail}`:`Restaurados ${ok} huéspedes`, fail?'error':'ok');
+    }catch(err){
+      showToast('Error al leer el archivo: '+err.message,'error');
+      input.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function importLegacyGuestsFromDemo(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      const rows=data.guests;
+      if(!Array.isArray(rows)){showToast('Ese archivo no tiene huéspedes (¿es un backup de la demo anterior?)','error');input.value='';return;}
+      if(!confirm(`¿Migrar ${rows.length} huésped(es) de la demo anterior a esta cuenta?`)){
+        input.value='';return;
+      }
+      let ok=0,fail=0;
+      for(const legacy of rows){
+        const payload={nombre:legacy.nombre,apellido:legacy.apellido||'',telefono:legacy.telefono||'',email:legacy.email||'',tipo_doc:legacy.tipoDoc||'CI',doc:legacy.doc||'',pais:legacy.pais||'',fecha_nacimiento:legacy.nac||null,direccion:legacy.direccion||'',obs:legacy.obs||'',tenant_id:currentUser.tenantId};
+        const {error}=await supabaseClient.from('guests').insert(payload);
+        if(error)fail++;else ok++;
+      }
+      await loadGuests();
+      input.value='';
+      showToast(fail?`Migrados ${ok}, fallaron ${fail}`:`Migrados ${ok} huéspedes`, fail?'error':'ok');
+    }catch(err){
+      showToast('Error al leer el archivo: '+err.message,'error');
+      input.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
 async function deleteProperty(id){
   if(!confirm('¿Eliminar este alojamiento? Esta acción no se puede deshacer.')) return;
   const {error}=await supabaseClient.from('properties').delete().eq('id',id);
@@ -4541,19 +4618,44 @@ function renderHotelReports(){
 /* ==================== MÓDULO HUÉSPEDES ==================== */
 function normTel(t){return (t||'').replace(/\D/g,'');}
 function guestFullName(g){return ((g.nombre||'')+' '+(g.apellido||'')).trim();}
-function saveGuests(){save('guests',guests);save('nextGuestId',nextGuestId);}
 
-let guests=load('guests',null);
-let nextGuestId=load('nextGuestId',1);
-if(guests===null){
-  guests=[];const seen={};
-  (reservations||[]).forEach(r=>{
-    const key=normTel(r.telefono)||(r.email||'').toLowerCase()||(r.huesped||'');
-    if(!key||seen[key])return;seen[key]=1;
-    const parts=(r.huesped||'').trim().split(' ');
-    guests.push({id:nextGuestId++,nombre:parts.shift()||r.huesped||'—',apellido:parts.join(' '),telefono:r.telefono||'',email:r.email||'',doc:'',tipoDoc:'CI',pais:'',nac:'',direccion:'',obs:''});
-  });
-  saveGuests();
+// Huéspedes (guests) ya NO se guarda en localStorage: vive en Supabase,
+// mismo patrón que el resto de los módulos migrados.
+let guests=[];
+function guestFromDb(row){
+  return {
+    id: row.id,
+    nombre: row.nombre,
+    apellido: row.apellido||'',
+    telefono: row.telefono||'',
+    email: row.email||'',
+    tipoDoc: row.tipo_doc||'CI',
+    doc: row.doc||'',
+    pais: row.pais||'',
+    nac: row.fecha_nacimiento||'',
+    direccion: row.direccion||'',
+    obs: row.obs||''
+  };
+}
+function guestToDb(data){
+  return {
+    nombre: data.nombre,
+    apellido: data.apellido,
+    telefono: data.telefono,
+    email: data.email,
+    tipo_doc: data.tipoDoc,
+    doc: data.doc,
+    pais: data.pais,
+    fecha_nacimiento: data.nac||null,
+    direccion: data.direccion,
+    obs: data.obs
+  };
+}
+async function loadGuests(){
+  if(!supabaseClient||!currentUser)return;
+  const {data,error}=await supabaseClient.from('guests').select('*').order('nombre');
+  if(error){showToast('No se pudieron cargar los huéspedes: '+error.message,'error');return;}
+  guests=(data||[]).map(guestFromDb);
 }
 
 function guestStays(g){
@@ -4576,11 +4678,11 @@ function renderGuests(){
   list.sort((a,b)=>guestFullName(a).localeCompare(guestFullName(b)));
   if(!list.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:1rem">Sin huéspedes'+(q?' para esa búsqueda':'')+'.</td></tr>';return;}
   tb.innerHTML=list.map(g=>{const s=guestStats(g);
-    return `<tr style="cursor:pointer" onclick="editGuest(${g.id})">
+    return `<tr style="cursor:pointer" onclick="editGuest('${g.id}')">
       <td><b>${guestFullName(g)||'—'}</b>${g.pais?`<div style="font-size:11px;color:var(--text2)">${g.pais}</div>`:''}</td>
       <td>${g.telefono||'—'}</td><td>${g.doc?((g.tipoDoc||'')+' '+g.doc):'—'}</td>
       <td>${s.count}</td><td>${s.ultima?fmtDate(s.ultima):'—'}</td><td>${fmt(s.gastado)}</td>
-      <td onclick="event.stopPropagation()" style="text-align:right;white-space:nowrap"><button class="btn btn-xs btn-icon" onclick="editGuest(${g.id})"><i class="ti ti-edit"></i></button><button class="btn btn-xs btn-icon" style="color:var(--red)" onclick="deleteGuest(${g.id})"><i class="ti ti-trash"></i></button></td>
+      <td onclick="event.stopPropagation()" style="text-align:right;white-space:nowrap"><button class="btn btn-xs btn-icon" onclick="editGuest('${g.id}')"><i class="ti ti-edit"></i></button><button class="btn btn-xs btn-icon" style="color:var(--red)" onclick="deleteGuest('${g.id}')"><i class="ti ti-trash"></i></button></td>
     </tr>`;}).join('');
 }
 function getFilteredGuestsForExport(){
@@ -4620,33 +4722,51 @@ function renderGuestHistory(g){const s=guestStats(g);const wrap=document.getElem
   el.innerHTML=head+s.list.slice().sort((a,b)=>(b.checkin||'').localeCompare(a.checkin||'')).map(r=>{const p=(properties.find(x=>x.id===r.propiedadId)||{}).nombre||'—';
     return `<div class="folio-row"><span>${fmtDate(r.checkin)} → ${fmtDate(r.checkout)} · ${p}</span><span>${fmt((r.precio||0)-(r.descuento||0))}</span></div>`;}).join('');
 }
-function saveGuest(){const nombre=document.getElementById('guest-nombre').value.trim();if(!nombre){showToast('Ingresá el nombre','error');return;}
+async function saveGuest(){const nombre=document.getElementById('guest-nombre').value.trim();if(!nombre){showToast('Ingresá el nombre','error');return;}
   const tel=document.getElementById('guest-telefono').value.trim();const doc=document.getElementById('guest-doc').value.trim();
   const id=document.getElementById('guest-id').value;
   const dup=guests.find(g=>String(g.id)!==String(id) && ((tel&&normTel(g.telefono)===normTel(tel)) || (doc&&(g.doc||'').toLowerCase()===doc.toLowerCase())));
   if(dup){showToast('Ya hay un huésped con ese teléfono o documento: '+guestFullName(dup),'error');return;}
   const data={nombre,apellido:document.getElementById('guest-apellido').value.trim(),telefono:tel,email:document.getElementById('guest-email').value.trim(),tipoDoc:document.getElementById('guest-tipodoc').value,doc,pais:document.getElementById('guest-pais').value.trim(),nac:document.getElementById('guest-nac').value,direccion:document.getElementById('guest-direccion').value.trim(),obs:document.getElementById('guest-obs').value.trim()};
-  if(id){const i=guests.findIndex(g=>g.id===parseInt(id));if(i>=0)guests[i]={...guests[i],...data};}
-  else guests.push({id:nextGuestId++,...data});
-  saveGuests();populateGuestSelect();renderGuests();closeModal('modal-guest');showToast('Huésped guardado');
+  if(id){
+    const {data:updated,error}=await supabaseClient.from('guests').update(guestToDb(data)).eq('id',id).select().single();
+    if(error){showToast('No se pudo guardar: '+error.message,'error');return;}
+    const i=guests.findIndex(g=>g.id===id);
+    if(i>=0)guests[i]=guestFromDb(updated);
+  }else{
+    const {data:inserted,error}=await supabaseClient.from('guests').insert({...guestToDb(data),tenant_id:currentUser.tenantId}).select().single();
+    if(error){showToast('No se pudo guardar: '+error.message,'error');return;}
+    guests.push(guestFromDb(inserted));
+  }
+  populateGuestSelect();renderGuests();closeModal('modal-guest');showToast('Huésped guardado');
 }
-function deleteGuest(id){if(!confirm('¿Eliminar este huésped? No borra sus reservas.'))return;guests=guests.filter(g=>g.id!==id);saveGuests();populateGuestSelect();renderGuests();showToast('Huésped eliminado');}
+async function deleteGuest(id){
+  if(!confirm('¿Eliminar este huésped? No borra sus reservas.'))return;
+  const {error}=await supabaseClient.from('guests').delete().eq('id',id);
+  if(error){showToast('No se pudo eliminar: '+error.message,'error');return;}
+  guests=guests.filter(g=>g.id!==id);populateGuestSelect();renderGuests();showToast('Huésped eliminado');
+}
 function populateGuestSelect(){const s=document.getElementById('res-guest');if(!s)return;const cur=s.value;
   s.innerHTML='<option value="">— Nuevo / sin registrar —</option>'+guests.slice().sort((a,b)=>guestFullName(a).localeCompare(guestFullName(b))).map(g=>`<option value="${g.id}">${guestFullName(g)}${g.telefono?(' · '+g.telefono):''}</option>`).join('');
   s.value=cur;}
 function selectGuestForRes(){const v=document.getElementById('res-guest').value;const hid=document.getElementById('res-guest-id');
   if(!v){if(hid)hid.value='';return;}
-  const g=guests.find(x=>x.id===parseInt(v));if(!g)return;
+  const g=guests.find(x=>x.id===v);if(!g)return;
   if(hid)hid.value=g.id;
   document.getElementById('res-huesped').value=guestFullName(g);
   document.getElementById('res-telefono').value=g.telefono||'';
   document.getElementById('res-email').value=g.email||'';}
-function resolveGuestForReservation(data){
+async function resolveGuestForReservation(data){
   const sel=document.getElementById('res-guest-id')?.value;
-  if(sel)return parseInt(sel);
+  if(sel)return sel;
   const tel=normTel(data.telefono);const em=(data.email||'').toLowerCase();
   let g=guests.find(x=>(tel&&normTel(x.telefono)===tel)||(em&&(x.email||'').toLowerCase()===em));
-  if(!g&&data.huesped){const parts=data.huesped.trim().split(' ');g={id:nextGuestId++,nombre:parts.shift()||data.huesped,apellido:parts.join(' '),telefono:data.telefono||'',email:data.email||'',doc:'',tipoDoc:'CI',pais:'',nac:'',direccion:'',obs:''};guests.push(g);saveGuests();populateGuestSelect();}
+  if(!g&&data.huesped){
+    const parts=data.huesped.trim().split(' ');
+    const newGuest={nombre:parts.shift()||data.huesped,apellido:parts.join(' '),telefono:data.telefono||'',email:data.email||'',doc:'',tipoDoc:'CI',pais:'',nac:'',direccion:'',obs:''};
+    const {data:inserted,error}=await supabaseClient.from('guests').insert({...guestToDb(newGuest),tenant_id:currentUser.tenantId}).select().single();
+    if(!error){g=guestFromDb(inserted);guests.push(g);populateGuestSelect();}
+  }
   return g?g.id:null;
 }
 
