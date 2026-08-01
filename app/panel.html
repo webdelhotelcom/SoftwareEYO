@@ -418,6 +418,10 @@ tr:hover td{background:var(--bg2)}
       <button class="btn btn-sm btn-full" onclick="exportReservationsBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar reservas</button>
       <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar reservas<input type="file" id="import-reservations-file" accept=".json" onchange="importReservationsBackup(this)" style="display:none"></label>
       <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0" title="Para traer las reservas de un backup exportado desde la demo vieja (localStorage), emparejando por nombre de alojamiento"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-reservations-file" accept=".json" onchange="importLegacyReservationsFromDemo(this)" style="display:none"></label>
+      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Gastos (Supabase)</div>
+      <button class="btn btn-sm btn-full" onclick="exportExpensesBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar gastos</button>
+      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar gastos<input type="file" id="import-expenses-file" accept=".json" onchange="importExpensesBackup(this)" style="display:none"></label>
+      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0" title="Para traer los gastos de un backup exportado desde la demo vieja (localStorage), emparejando por nombre de alojamiento"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-expenses-file" accept=".json" onchange="importLegacyExpensesFromDemo(this)" style="display:none"></label>
     </div>
   </div>
 </aside>
@@ -1382,11 +1386,9 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 function showToast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.style.background=type==='error'?'var(--red)':'var(--accent)';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
 function clearF(ids){ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
 function saveAll(){
-  // Alojamientos, Propietarios y Reservas ya no pasan por acá: cada cambio
-  // se guarda directo en Supabase (ver saveProperty/deleteProperty/
-  // saveSeasons, saveOwner/deleteOwner y saveReservation/deleteReservation).
-  // El resto de los módulos sigue en localStorage hasta que se migren.
-  save('expenses',expenses);save('nextExpId',nextExpId);
+  // Alojamientos, Propietarios, Reservas y Gastos ya no pasan por acá: cada
+  // cambio se guarda directo en Supabase. El resto de los módulos sigue en
+  // localStorage hasta que se migren.
   save('tasks',tasks);save('nextTaskId',nextTaskId);
 }
 function calcRes(r){
@@ -1571,141 +1573,36 @@ async function loadReservations(){
   reservations=(data||[]).map(reservationFromDb);
 }
 
-let expenses=load('expenses',[
-  {"id": 1, "propiedadId": 1, "fecha": "2026-01-06", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 1},
-  {"id": 2, "propiedadId": 5, "fecha": "2026-01-06", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 3},
-  {"id": 3, "propiedadId": 2, "fecha": "2026-01-09", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 7},
-  {"id": 4, "propiedadId": 3, "fecha": "2026-01-07", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4000, "reservaId": 8},
-  {"id": 5, "propiedadId": 4, "fecha": "2026-01-08", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 11},
-  {"id": 6, "propiedadId": 6, "fecha": "2026-01-06", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3400, "reservaId": 13},
-  {"id": 7, "propiedadId": 8, "fecha": "2026-01-10", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4800, "reservaId": 15},
-  {"id": 8, "propiedadId": 11, "fecha": "2026-01-06", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4000, "reservaId": 17},
-  {"id": 9, "propiedadId": 9, "fecha": "2026-01-09", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 19},
-  {"id": 10, "propiedadId": 12, "fecha": "2026-01-09", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 6000, "reservaId": 23},
-  {"id": 11, "propiedadId": 1, "fecha": "2026-01-12", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3000, "reservaId": 29},
-  {"id": 12, "propiedadId": 5, "fecha": "2026-01-10", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2700, "reservaId": 31},
-  {"id": 13, "propiedadId": 11, "fecha": "2026-01-10", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4300, "reservaId": 38},
-  {"id": 14, "propiedadId": 4, "fecha": "2026-01-14", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4000, "reservaId": 47},
-  {"id": 15, "propiedadId": 6, "fecha": "2026-01-15", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3700, "reservaId": 48},
-  {"id": 16, "propiedadId": 7, "fecha": "2026-01-14", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 5000, "reservaId": 53},
-  {"id": 17, "propiedadId": 9, "fecha": "2026-01-11", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2700, "reservaId": 55},
-  {"id": 18, "propiedadId": 2, "fecha": "2026-01-12", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 58},
-  {"id": 19, "propiedadId": 5, "fecha": "2026-01-14", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2700, "reservaId": 60},
-  {"id": 20, "propiedadId": 8, "fecha": "2026-01-12", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 5300, "reservaId": 62},
-  {"id": 21, "propiedadId": 11, "fecha": "2026-01-14", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4000, "reservaId": 63},
-  {"id": 22, "propiedadId": 12, "fecha": "2026-01-13", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 6200, "reservaId": 64},
-  {"id": 23, "propiedadId": 9, "fecha": "2026-01-14", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 67},
-  {"id": 24, "propiedadId": 10, "fecha": "2026-01-15", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3000, "reservaId": 68},
-  {"id": 25, "propiedadId": 1, "fecha": "2026-01-20", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2700, "reservaId": 73},
-  {"id": 26, "propiedadId": 3, "fecha": "2026-01-18", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 75},
-  {"id": 27, "propiedadId": 8, "fecha": "2026-01-18", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 5300, "reservaId": 78},
-  {"id": 28, "propiedadId": 12, "fecha": "2026-01-16", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 6000, "reservaId": 80},
-  {"id": 29, "propiedadId": 7, "fecha": "2026-01-19", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4800, "reservaId": 82},
-  {"id": 30, "propiedadId": 11, "fecha": "2026-01-18", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 86},
-  {"id": 31, "propiedadId": 9, "fecha": "2026-01-18", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2700, "reservaId": 92},
-  {"id": 32, "propiedadId": 5, "fecha": "2026-01-21", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 95},
-  {"id": 33, "propiedadId": 6, "fecha": "2026-01-19", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3700, "reservaId": 97},
-  {"id": 34, "propiedadId": 12, "fecha": "2026-01-19", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 6200, "reservaId": 100},
-  {"id": 35, "propiedadId": 10, "fecha": "2026-01-21", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 106},
-  {"id": 36, "propiedadId": 3, "fecha": "2026-01-22", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 109},
-  {"id": 37, "propiedadId": 4, "fecha": "2026-01-20", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4000, "reservaId": 110},
-  {"id": 38, "propiedadId": 9, "fecha": "2026-01-21", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 112},
-  {"id": 39, "propiedadId": 11, "fecha": "2026-01-23", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 114},
-  {"id": 40, "propiedadId": 6, "fecha": "2026-01-24", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3400, "reservaId": 118},
-  {"id": 41, "propiedadId": 12, "fecha": "2026-01-24", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 6000, "reservaId": 121},
-  {"id": 42, "propiedadId": 7, "fecha": "2026-01-24", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4800, "reservaId": 126},
-  {"id": 43, "propiedadId": 8, "fecha": "2026-01-27", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 5000, "reservaId": 127},
-  {"id": 44, "propiedadId": 1, "fecha": "2026-01-27", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2700, "reservaId": 129},
-  {"id": 45, "propiedadId": 4, "fecha": "2026-01-24", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 132},
-  {"id": 46, "propiedadId": 9, "fecha": "2026-01-26", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2700, "reservaId": 135},
-  {"id": 47, "propiedadId": 2, "fecha": "2026-01-25", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 140},
-  {"id": 48, "propiedadId": 5, "fecha": "2026-01-24", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2700, "reservaId": 141},
-  {"id": 49, "propiedadId": 10, "fecha": "2026-01-29", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3000, "reservaId": 144},
-  {"id": 50, "propiedadId": 3, "fecha": "2026-01-29", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 153},
-  {"id": 51, "propiedadId": 4, "fecha": "2026-01-29", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4000, "reservaId": 154},
-  {"id": 52, "propiedadId": 5, "fecha": "2026-01-31", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 155},
-  {"id": 53, "propiedadId": 6, "fecha": "2026-01-29", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3200, "reservaId": 156},
-  {"id": 54, "propiedadId": 7, "fecha": "2026-01-27", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4800, "reservaId": 157},
-  {"id": 55, "propiedadId": 11, "fecha": "2026-01-31", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4000, "reservaId": 159},
-  {"id": 56, "propiedadId": 12, "fecha": "2026-01-27", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 6200, "reservaId": 160},
-  {"id": 57, "propiedadId": 2, "fecha": "2026-01-31", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 162},
-  {"id": 58, "propiedadId": 9, "fecha": "2026-01-30", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 172},
-  {"id": 59, "propiedadId": 8, "fecha": "2026-02-01", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 5300, "reservaId": 176},
-  {"id": 60, "propiedadId": 1, "fecha": "2026-01-31", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 177},
-  {"id": 61, "propiedadId": 7, "fecha": "2026-02-03", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4800, "reservaId": 181},
-  {"id": 62, "propiedadId": 4, "fecha": "2026-02-03", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 185},
-  {"id": 63, "propiedadId": 6, "fecha": "2026-02-01", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3200, "reservaId": 187},
-  {"id": 64, "propiedadId": 12, "fecha": "2026-02-03", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 6500, "reservaId": 188},
-  {"id": 65, "propiedadId": 3, "fecha": "2026-02-04", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4000, "reservaId": 189},
-  {"id": 66, "propiedadId": 11, "fecha": "2026-02-05", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4300, "reservaId": 198},
-  {"id": 67, "propiedadId": 2, "fecha": "2026-02-04", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2700, "reservaId": 200},
-  {"id": 68, "propiedadId": 5, "fecha": "2026-02-05", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3000, "reservaId": 201},
-  {"id": 69, "propiedadId": 8, "fecha": "2026-02-05", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 5300, "reservaId": 208},
-  {"id": 70, "propiedadId": 6, "fecha": "2026-02-09", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3200, "reservaId": 213},
-  {"id": 71, "propiedadId": 7, "fecha": "2026-02-06", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4800, "reservaId": 214},
-  {"id": 72, "propiedadId": 2, "fecha": "2026-02-09", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 216},
-  {"id": 73, "propiedadId": 3, "fecha": "2026-02-08", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4300, "reservaId": 217},
-  {"id": 74, "propiedadId": 4, "fecha": "2026-02-11", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 218},
-  {"id": 75, "propiedadId": 9, "fecha": "2026-02-08", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 220},
-  {"id": 76, "propiedadId": 10, "fecha": "2026-02-07", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 221},
-  {"id": 77, "propiedadId": 5, "fecha": "2026-02-12", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2700, "reservaId": 223},
-  {"id": 78, "propiedadId": 12, "fecha": "2026-02-09", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 6200, "reservaId": 228},
-  {"id": 79, "propiedadId": 7, "fecha": "2026-02-11", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4800, "reservaId": 230},
-  {"id": 80, "propiedadId": 11, "fecha": "2026-02-10", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4000, "reservaId": 231},
-  {"id": 81, "propiedadId": 8, "fecha": "2026-02-11", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 5300, "reservaId": 232},
-  {"id": 82, "propiedadId": 10, "fecha": "2026-02-11", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2700, "reservaId": 233},
-  {"id": 83, "propiedadId": 3, "fecha": "2026-02-13", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 234},
-  {"id": 84, "propiedadId": 2, "fecha": "2026-02-12", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2700, "reservaId": 240},
-  {"id": 85, "propiedadId": 1, "fecha": "2026-02-16", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 242},
-  {"id": 86, "propiedadId": 12, "fecha": "2026-02-17", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 6200, "reservaId": 250},
-  {"id": 87, "propiedadId": 6, "fecha": "2026-02-13", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3200, "reservaId": 253},
-  {"id": 88, "propiedadId": 8, "fecha": "2026-02-14", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4800, "reservaId": 254},
-  {"id": 89, "propiedadId": 11, "fecha": "2026-02-16", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 255},
-  {"id": 90, "propiedadId": 2, "fecha": "2026-02-18", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3000, "reservaId": 257},
-  {"id": 91, "propiedadId": 4, "fecha": "2026-02-16", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 258},
-  {"id": 92, "propiedadId": 9, "fecha": "2026-02-15", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 262},
-  {"id": 93, "propiedadId": 3, "fecha": "2026-02-16", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4000, "reservaId": 263},
-  {"id": 94, "propiedadId": 5, "fecha": "2026-02-15", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 265},
-  {"id": 95, "propiedadId": 6, "fecha": "2026-02-20", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3400, "reservaId": 272},
-  {"id": 96, "propiedadId": 4, "fecha": "2026-02-21", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4300, "reservaId": 277},
-  {"id": 97, "propiedadId": 8, "fecha": "2026-02-18", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4800, "reservaId": 283},
-  {"id": 98, "propiedadId": 1, "fecha": "2026-02-20", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2700, "reservaId": 285},
-  {"id": 99, "propiedadId": 3, "fecha": "2026-02-22", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 286},
-  {"id": 100, "propiedadId": 11, "fecha": "2026-02-20", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 290},
-  {"id": 101, "propiedadId": 8, "fecha": "2026-02-20", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4800, "reservaId": 293},
-  {"id": 102, "propiedadId": 2, "fecha": "2026-02-23", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 297},
-  {"id": 103, "propiedadId": 10, "fecha": "2026-02-26", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3000, "reservaId": 304},
-  {"id": 104, "propiedadId": 12, "fecha": "2026-02-25", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 6000, "reservaId": 307},
-  {"id": 105, "propiedadId": 1, "fecha": "2026-02-26", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2700, "reservaId": 308},
-  {"id": 106, "propiedadId": 6, "fecha": "2026-02-23", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3200, "reservaId": 310},
-  {"id": 107, "propiedadId": 8, "fecha": "2026-02-26", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 5300, "reservaId": 311},
-  {"id": 108, "propiedadId": 4, "fecha": "2026-02-24", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 319},
-  {"id": 109, "propiedadId": 5, "fecha": "2026-02-28", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 320},
-  {"id": 110, "propiedadId": 11, "fecha": "2026-02-24", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4300, "reservaId": 324},
-  {"id": 111, "propiedadId": 7, "fecha": "2026-02-28", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4800, "reservaId": 333},
-  {"id": 112, "propiedadId": 2, "fecha": "2026-03-01", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3000, "reservaId": 336},
-  {"id": 113, "propiedadId": 3, "fecha": "2026-03-02", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3800, "reservaId": 337},
-  {"id": 114, "propiedadId": 4, "fecha": "2026-02-28", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4300, "reservaId": 339},
-  {"id": 115, "propiedadId": 6, "fecha": "2026-02-28", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 3400, "reservaId": 340},
-  {"id": 116, "propiedadId": 11, "fecha": "2026-02-28", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4000, "reservaId": 345},
-  {"id": 117, "propiedadId": 8, "fecha": "2026-03-05", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 4800, "reservaId": 354},
-  {"id": 118, "propiedadId": 9, "fecha": "2026-03-04", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 355},
-  {"id": 119, "propiedadId": 10, "fecha": "2026-03-01", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 2500, "reservaId": 356},
-  {"id": 120, "propiedadId": 12, "fecha": "2026-03-02", "categoria": "Limpieza", "concepto": "Limpieza post check-out", "monto": 6500, "reservaId": 359},
-  {"id": 121, "propiedadId": 1, "fecha": "2026-01-05", "categoria": "Servicios", "concepto": "Internet y cable enero", "monto": 4200, "reservaId": null},
-  {"id": 122, "propiedadId": 5, "fecha": "2026-01-12", "categoria": "Mantenimiento", "concepto": "Reparación aire acondicionado", "monto": 7800, "reservaId": null},
-  {"id": 123, "propiedadId": 12, "fecha": "2026-01-15", "categoria": "Mantenimiento", "concepto": "Bomba de piscina", "monto": 12500, "reservaId": null},
-  {"id": 124, "propiedadId": 7, "fecha": "2026-01-20", "categoria": "Lavandería", "concepto": "Sábanas y toallas", "monto": 5600, "reservaId": null},
-  {"id": 125, "propiedadId": 3, "fecha": "2026-01-22", "categoria": "Servicios", "concepto": "Gas y electricidad enero", "monto": 6800, "reservaId": null},
-  {"id": 126, "propiedadId": 8, "fecha": "2026-02-02", "categoria": "Mantenimiento", "concepto": "Pintura exterior", "monto": 15000, "reservaId": null},
-  {"id": 127, "propiedadId": 6, "fecha": "2026-02-08", "categoria": "Lavandería", "concepto": "Ropa de cama", "monto": 4900, "reservaId": null},
-  {"id": 128, "propiedadId": 1, "fecha": "2026-02-05", "categoria": "Servicios", "concepto": "Internet y cable febrero", "monto": 4200, "reservaId": null},
-  {"id": 129, "propiedadId": 11, "fecha": "2026-02-12", "categoria": "Mantenimiento", "concepto": "Cambio de cerradura", "monto": 3400, "reservaId": null},
-  {"id": 130, "propiedadId": 12, "fecha": "2026-02-18", "categoria": "Servicios", "concepto": "Mantenimiento piscina febrero", "monto": 8200, "reservaId": null},
-  {"id": 131, "propiedadId": 4, "fecha": "2026-02-20", "categoria": "Limpieza", "concepto": "Limpieza profunda fin de temporada", "monto": 6500, "reservaId": null},
-  {"id": 132, "propiedadId": 2, "fecha": "2026-02-25", "categoria": "Mantenimiento", "concepto": "Reparación heladera", "monto": 5200, "reservaId": null}
-]);
-let nextExpId=load('nextExpId',133);
+// Gastos (expenses) ya NO se guarda en localStorage: vive en Supabase,
+// mismo patrón que Alojamientos, Propietarios y Reservas.
+let expenses=[];
+function expenseFromDb(row){
+  return {
+    id: row.id,
+    propiedadId: row.propiedad_id,
+    fecha: row.fecha,
+    categoria: row.categoria,
+    concepto: row.concepto||'',
+    monto: Number(row.monto)||0,
+    reservaId: row.reserva_id
+  };
+}
+function expenseToDb(data){
+  return {
+    propiedad_id: data.propiedadId||null,
+    fecha: data.fecha,
+    categoria: data.categoria,
+    concepto: data.concepto,
+    monto: data.monto,
+    reserva_id: data.reservaId||null
+  };
+}
+async function loadExpenses(){
+  if(!supabaseClient||!currentUser)return;
+  const {data,error}=await supabaseClient.from('expenses').select('*').order('fecha',{ascending:false});
+  if(error){showToast('No se pudieron cargar los gastos: '+error.message,'error');return;}
+  expenses=(data||[]).map(expenseFromDb);
+}
 
 let tasks=load('tasks',[
   {"id": 1, "label": "Coordinar limpieza profunda fin de temporada", "cat": "limpieza", "propId": 12, "due": "2026-02-28", "done": false},
@@ -1774,6 +1671,7 @@ async function loadSessionUser(authUser){
   await loadProperties();
   await loadOwners();
   await loadReservations();
+  await loadExpenses();
   calYear=2026;calMonth=0; // demo: arranca en enero 2026 (temporada)
   showPage('dashboard');
   document.getElementById('dash-date').textContent=todayLabel();
@@ -2389,7 +2287,7 @@ function showPropertyDetail(id){
 function renderPropExpenses(propId){
   const pE=expenses.filter(e=>e.propiedadId===propId);
   const el=document.getElementById('prop-detail-exp-tbody');if(!el)return;
-  el.innerHTML=pE.length?pE.map(e=>`<tr><td>${fmtDate(e.fecha)}</td><td>${e.concepto}</td><td><span class="badge badge-gray">${e.categoria}</span></td><td style="font-weight:500;color:var(--red)">${fmt(e.monto)}</td><td style="font-size:11px;color:var(--text2)">${e.reservaId?reservations.find(r=>r.id===e.reservaId)?.huesped||'—':'—'}</td><td>${currentUser?.role==='admin'?`<button class="btn btn-xs btn-danger" onclick="deleteExpense(${e.id})"><i class="ti ti-trash"></i></button>`:''}</td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--text2)">Sin gastos registrados</td></tr>';
+  el.innerHTML=pE.length?pE.map(e=>`<tr><td>${fmtDate(e.fecha)}</td><td>${e.concepto}</td><td><span class="badge badge-gray">${e.categoria}</span></td><td style="font-weight:500;color:var(--red)">${fmt(e.monto)}</td><td style="font-size:11px;color:var(--text2)">${e.reservaId?reservations.find(r=>r.id===e.reservaId)?.huesped||'—':'—'}</td><td>${currentUser?.role==='admin'?`<button class="btn btn-xs btn-danger" onclick="deleteExpense('${e.id}')"><i class="ti ti-trash"></i></button>`:''}</td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--text2)">Sin gastos registrados</td></tr>';
 }
 function renderPropCharts(propId){
   const pR=reservations.filter(r=>r.propiedadId===propId&&r.estado!=='cancelada');
@@ -2643,8 +2541,8 @@ function renderExpensesPage(){
     <td>${e.concepto}</td><td style="font-weight:500;color:var(--red)">${fmt(e.monto)}</td>
     <td style="font-size:11px;color:var(--text2)">${e.reservaId?reservations.find(r=>r.id===e.reservaId)?.huesped||'—':'—'}</td>
     <td style="display:flex;gap:4px">
-    ${(currentUser?.role==='admin'||currentUser?.role==='propietario')?`<button class="btn btn-xs" onclick="editExpense(${e.id})"><i class="ti ti-edit"></i></button>`:''} 
-    ${currentUser?.role==='admin'?`<button class="btn btn-xs btn-danger" onclick="deleteExpense(${e.id})"><i class="ti ti-trash"></i></button>`:''}</td>
+    ${(currentUser?.role==='admin'||currentUser?.role==='propietario')?`<button class="btn btn-xs" onclick="editExpense('${e.id}')"><i class="ti ti-edit"></i></button>`:''}
+    ${currentUser?.role==='admin'?`<button class="btn btn-xs btn-danger" onclick="deleteExpense('${e.id}')"><i class="ti ti-trash"></i></button>`:''}</td>
   </tr>`).join('');
 }
 function getFilteredExpensesForExport(){
@@ -2695,22 +2593,32 @@ function openExpense(){
   if(currentPropId)document.getElementById('exp-aloj').value=currentPropId;
   openModal('modal-expense');
 }
-function saveExpense(){
+async function saveExpense(){
   const aloj=document.getElementById('exp-aloj').value;
   const monto=parseFloat(document.getElementById('exp-monto').value)||0;
   const fecha=document.getElementById('exp-fecha').value;
   if(!monto){showToast('Ingresá el monto','error');return;}
   if(!fecha){showToast('Ingresá la fecha','error');return;}
   const id=document.getElementById('exp-id').value;
-  const data={propiedadId:aloj||null,fecha,categoria:document.getElementById('exp-categoria').value,concepto:document.getElementById('exp-concepto').value||document.getElementById('exp-categoria').value,monto,reservaId:parseInt(document.getElementById('exp-reserva').value)||null};
-  if(id){const idx=expenses.findIndex(e=>e.id===parseInt(id));if(idx>=0)expenses[idx]={...expenses[idx],...data};}
-  else expenses.push({id:nextExpId++,...data});
-  saveAll();closeModal('modal-expense');renderExpensesPage();if(String(currentPropId)===String(aloj))renderPropExpenses(currentPropId);showToast('Gasto guardado');
+  const data={propiedadId:aloj||null,fecha,categoria:document.getElementById('exp-categoria').value,concepto:document.getElementById('exp-concepto').value||document.getElementById('exp-categoria').value,monto,reservaId:document.getElementById('exp-reserva').value||null};
+  if(id){
+    const {data:updated,error}=await supabaseClient.from('expenses').update(expenseToDb(data)).eq('id',id).select().single();
+    if(error){showToast('No se pudo guardar: '+error.message,'error');return;}
+    const idx=expenses.findIndex(e=>e.id===id);
+    if(idx>=0)expenses[idx]=expenseFromDb(updated);
+  }else{
+    const {data:inserted,error}=await supabaseClient.from('expenses').insert({...expenseToDb(data),tenant_id:currentUser.tenantId}).select().single();
+    if(error){showToast('No se pudo guardar: '+error.message,'error');return;}
+    expenses.push(expenseFromDb(inserted));
+  }
+  closeModal('modal-expense');renderExpensesPage();if(String(currentPropId)===String(aloj))renderPropExpenses(currentPropId);showToast('Gasto guardado');
 }
-function deleteExpense(id){
+async function deleteExpense(id){
   if(!confirm('¿Eliminar gasto?'))return;
+  const {error}=await supabaseClient.from('expenses').delete().eq('id',id);
+  if(error){showToast('No se pudo eliminar: '+error.message,'error');return;}
   expenses=expenses.filter(e=>e.id!==id);
-  saveAll();renderExpensesPage();showToast('Gasto eliminado');
+  renderExpensesPage();showToast('Gasto eliminado');
 }
 
 // REPORTS
@@ -3147,14 +3055,13 @@ function downloadListPDF(title,subtitle,columns,rows,filename){
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 // ══ BACKUP / RESTORE ══════════════════════════════════════════════
 function exportarDatos(){
-  // Alojamientos, Propietarios y Reservas NO van en este backup: ya viven en
-  // Supabase, no en localStorage. Para copia de seguridad de esos usá los
-  // botones "Exportar alojamientos" / "Exportar propietarios" / "Exportar
-  // reservas" (acá abajo), que traen los datos reales de la base.
+  // Alojamientos, Propietarios, Reservas y Gastos NO van en este backup: ya
+  // viven en Supabase, no en localStorage. Para copia de seguridad de esos
+  // usá los botones específicos de cada uno (acá abajo), que traen los
+  // datos reales de la base.
   const data = {
-    version: 7,
+    version: 8,
     exportedAt: new Date().toISOString(),
-    expenses, nextExpId,
     tasks, nextTaskId,
   };
   const json = JSON.stringify(data, null, 2);
@@ -3183,9 +3090,8 @@ function importarDatos(input){
       if(!confirm(`¿Importar backup del ${data.exportedAt ? new Date(data.exportedAt).toLocaleString('es-AR') : 'fecha desconocida'}?\n\nEsto reemplazará TODOS los datos actuales. Esta acción no se puede deshacer.`)){
         input.value=''; return;
       }
-      // Alojamientos, Propietarios y Reservas no se restauran acá: usá los
-      // botones específicos de cada uno.
-      if(data.expenses !== undefined){ expenses = data.expenses; nextExpId = data.nextExpId||1; }
+      // Alojamientos, Propietarios, Reservas y Gastos no se restauran acá:
+      // usá los botones específicos de cada uno.
       if(data.tasks !== undefined){ tasks = data.tasks; nextTaskId = data.nextTaskId||1; }
       // Persist everything
       saveAll();
@@ -3459,6 +3365,92 @@ async function importLegacyReservationsFromDemo(input){
       await loadReservations();
       input.value='';
       showToast(`Migradas ${ok}${fail?`, fallaron ${fail}`:''}${skipped?`, ${skipped} sin alojamiento correspondiente`:''}`, (fail||skipped)?'error':'ok');
+    }catch(err){
+      showToast('Error al leer el archivo: '+err.message,'error');
+      input.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ══ BACKUP / RESTORE / MIGRACIÓN de Gastos (Supabase) ═══════════════
+async function exportExpensesBackup(){
+  if(!supabaseClient||!currentUser){showToast('Iniciá sesión primero','error');return;}
+  const {data,error}=await supabaseClient.from('expenses').select('*');
+  if(error){showToast('No se pudo exportar: '+error.message,'error');return;}
+  const backup={version:1,exportedAt:new Date().toISOString(),tenantId:currentUser.tenantId,expenses:data||[]};
+  const json=JSON.stringify(backup,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`eyo-gastos-backup-${today()}.json`;a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup de gastos exportado');
+}
+
+async function importExpensesBackup(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const backup=JSON.parse(e.target.result);
+      const rows=backup.expenses;
+      if(!Array.isArray(rows)){showToast('Archivo no válido: falta la lista de gastos','error');input.value='';return;}
+      if(!confirm(`¿Restaurar ${rows.length} gasto(s) del backup del ${backup.exportedAt?new Date(backup.exportedAt).toLocaleString('es-AR'):'fecha desconocida'}?\n\nSe agregan como gastos NUEVOS (no reemplaza los existentes).`)){
+        input.value='';return;
+      }
+      let ok=0,fail=0;
+      for(const row of rows){
+        const payload=expenseToDb(expenseFromDb(row));
+        payload.tenant_id=currentUser.tenantId;
+        const {error}=await supabaseClient.from('expenses').insert(payload);
+        if(error)fail++;else ok++;
+      }
+      await loadExpenses();
+      input.value='';
+      showToast(fail?`Restaurados ${ok}, fallaron ${fail}`:`Restaurados ${ok} gastos`, fail?'error':'ok');
+    }catch(err){
+      showToast('Error al leer el archivo: '+err.message,'error');
+      input.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Igual que con Reservas, el alojamiento se empareja por NOMBRE (el
+// propiedadId numérico de la demo vieja no existe en Supabase). El vínculo
+// con la reserva asociada NO se migra: no hay forma confiable de emparejar
+// el reservaId numérico viejo con la reserva real ya migrada. Queda sin
+// reserva asociada — se puede volver a vincular a mano si hace falta.
+async function importLegacyExpensesFromDemo(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      const legacyExp=data.expenses;
+      const legacyProps=data.properties;
+      if(!Array.isArray(legacyExp)){showToast('Ese archivo no tiene gastos (¿es un backup de la demo anterior?)','error');input.value='';return;}
+      if(!Array.isArray(legacyProps)||!legacyProps.length){showToast('El backup no tiene alojamientos para emparejar los gastos por nombre.','error');input.value='';return;}
+      const legacyIdToName={};
+      legacyProps.forEach(p=>{legacyIdToName[p.id]=p.nombre;});
+      const nameToNewId={};
+      properties.forEach(p=>{nameToNewId[p.nombre]=p.id;});
+      if(!confirm(`¿Migrar ${legacyExp.length} gasto(s) de la demo anterior a esta cuenta?\n\nSe emparejan por nombre de alojamiento (sin vínculo a la reserva asociada) — los que no encuentren alojamiento correspondiente se saltean.`)){
+        input.value='';return;
+      }
+      let ok=0,fail=0,skipped=0;
+      for(const legacy of legacyExp){
+        const propName=legacyIdToName[legacy.propiedadId];
+        const newPropId=propName?nameToNewId[propName]:null;
+        if(!newPropId){skipped++;continue;}
+        const payload={propiedad_id:newPropId,fecha:legacy.fecha,categoria:legacy.categoria,concepto:legacy.concepto||'',monto:legacy.monto||0,reserva_id:null,tenant_id:currentUser.tenantId};
+        const {error}=await supabaseClient.from('expenses').insert(payload);
+        if(error)fail++;else ok++;
+      }
+      await loadExpenses();
+      input.value='';
+      showToast(`Migrados ${ok}${fail?`, fallaron ${fail}`:''}${skipped?`, ${skipped} sin alojamiento correspondiente`:''}`, (fail||skipped)?'error':'ok');
     }catch(err){
       showToast('Error al leer el archivo: '+err.message,'error');
       input.value='';
