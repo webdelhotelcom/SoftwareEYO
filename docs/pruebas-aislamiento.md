@@ -29,4 +29,20 @@ Con las credenciales reales del proyecto, uso el cliente de Supabase JS (la mism
 
 ## Resultado
 
-_(Se completa cuando el proyecto de Supabase esté creado y el esquema aplicado — ver docs/supabase-setup.md)._
+**Ejecutada el 2026-08-01, contra el proyecto real de producción (`ckbarfwqdnehqnpafzay`), después de aplicar las 4 migraciones.** Se crearon dos tenants de prueba (Cliente A / Cliente B), cada uno con un usuario real de Supabase Auth y un alojamiento propio, y se corrió lo siguiente usando el cliente de Supabase JS autenticado como cada usuario (la misma librería que usa `app/panel.html`):
+
+| # | Prueba | Resultado obtenido |
+|---|---|---|
+| 1 | A lista sus alojamientos (`select * from properties`) | Solo "Alojamiento de A" — el de B no aparece. ✅ |
+| 2 | B lista sus alojamientos | Solo "Alojamiento de B" — el de A no aparece. ✅ |
+| 3 | B lista `tenants` | Solo ve "Cliente de prueba B", no el de A. ✅ |
+| 4 | B lee el alojamiento de A por ID directo | 0 filas devueltas. ✅ |
+| 5 | B intenta editar (`update ... set nombre`) el alojamiento de A | 0 filas afectadas — no cambió nada. ✅ |
+| 6 | B intenta borrar (`delete`) el alojamiento de A | 0 filas afectadas — sigue existiendo. ✅ |
+| 7 | B intenta crear un alojamiento nuevo con `tenant_id` de A | Rechazado: `new row violates row-level security policy for table "properties"`. ✅ |
+| 8 | Se vuelve a leer el alojamiento de A después de todos los intentos de B | Nombre intacto, sin cambios. ✅ |
+| 9 | Login real por la pantalla del panel (no llamada directa a la API) con el usuario de Cliente A | Entra correctamente, sidebar muestra su email y rol, badge de plan muestra "Plan Profesional · Cliente de prueba A", página Alojamientos muestra "1 de 15 alojamientos utilizados" y la tarjeta de "Alojamiento de A". Sin errores en consola. ✅ |
+
+**Conclusión: ningún cliente pudo leer, editar, borrar ni crear datos a nombre del otro, en ningún caso.** El aislamiento por `tenant_id` + RLS funciona correctamente en la base real.
+
+Los dos tenants de prueba quedan en la base hasta que se corra `supabase/testing/cleanup_two_test_tenants.sql` (y se borren a mano los 2 usuarios de prueba en Authentication → Users) — no interfieren con el uso normal del sistema mientras tanto.
