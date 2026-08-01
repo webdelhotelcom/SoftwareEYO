@@ -392,6 +392,7 @@ tr:hover td{background:var(--bg2)}
     <div class="nav-item" data-page="billing" onclick="showPage('billing')"><i class="ti ti-file-invoice"></i>Pre-facturación</div>
     <div class="nav-section">Administración</div>
     <div class="nav-item" data-page="usuarios" onclick="showPage('usuarios')"><i class="ti ti-shield-lock"></i>Usuarios y permisos</div>
+    <div class="nav-item" data-page="auditoria" onclick="showPage('auditoria')"><i class="ti ti-history"></i>Auditoría</div>
   </nav>
   <div class="sidebar-footer">
     <div class="user-info">
@@ -881,6 +882,38 @@ tr:hover td{background:var(--bg2)}
       <p style="font-size:11px;color:var(--text2);margin-bottom:.75rem">Administrador siempre tiene todos los permisos. Los cambios se aplican de verdad — no es solo visual, la base de datos también los exige.</p>
       <div class="table-wrap" id="permissions-grid-wrap" style="overflow-x:auto"></div>
     </div>
+  </div>
+</div>
+
+<!-- AUDITORÍA -->
+<div class="page" id="page-auditoria">
+  <div class="page-header">
+    <div><div class="page-title">Auditoría</div><div class="page-subtitle" id="auditoria-subtitle">Quién hizo qué, cuándo</div></div>
+    <div class="page-actions">
+      <button class="btn btn-sm" onclick="renderAuditPage()"><i class="ti ti-refresh"></i><span>Actualizar</span></button>
+    </div>
+  </div>
+  <div class="filters-bar">
+    <select id="audit-filter-modulo" onchange="renderAuditPage()">
+      <option value="">Todos los módulos</option>
+      <option value="properties">Alojamientos</option>
+      <option value="owners">Propietarios</option>
+      <option value="reservations">Reservas</option>
+      <option value="expenses">Gastos</option>
+      <option value="guests">Huéspedes</option>
+      <option value="profiles">Usuarios</option>
+    </select>
+    <select id="audit-filter-accion" onchange="renderAuditPage()">
+      <option value="">Todas las acciones</option>
+      <option value="INSERT">Creación</option>
+      <option value="UPDATE">Edición</option>
+      <option value="DELETE">Eliminación</option>
+    </select>
+    <input type="date" id="audit-filter-desde" onchange="renderAuditPage()">
+  </div>
+  <div class="table-wrap">
+    <table><thead><tr><th>Cuándo</th><th>Usuario</th><th>Qué pasó</th></tr></thead>
+    <tbody id="audit-tbody"></tbody></table>
   </div>
 </div>
 
@@ -1491,7 +1524,7 @@ const ROLES=[
   {key:'contador',label:'Contador'},
   {key:'propietario',label:'Propietario'}
 ];
-const PAGE_PERMISSION={usuarios:'administrar_usuarios',finances:'ver_resultados',owners:'ver_propietarios',billing:'acceder_prefacturacion',reports:'ver_reportes',hotelreports:'ver_reportes'};
+const PAGE_PERMISSION={usuarios:'administrar_usuarios',auditoria:'administrar_usuarios',finances:'ver_resultados',owners:'ver_propietarios',billing:'acceder_prefacturacion',reports:'ver_reportes',hotelreports:'ver_reportes'};
 let currentPermissions={};       // permission_key -> boolean, para el rol del usuario logueado
 let tenantUsers=[];              // profiles del tenant (solo se cargan si sos admin)
 let tenantPermissionsGrid=[];    // filas de role_permissions del tenant (todas), solo admin
@@ -1880,7 +1913,7 @@ function showPage(name){
   const pg=document.getElementById('page-'+name);
   if(pg)pg.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>{if(n.dataset.page===name)n.classList.add('active');});
-  const R={dashboard:updateDashboard,monthly:renderMonthly,calendar:renderCalendar,whatsapp:renderWhatsappPage,reservations:renderReservationsTable,properties:renderProperties,owners:renderOwners,guests:renderGuests,finances:renderFinances,expenses:renderExpensesPage,alerts:renderAlerts,messages:renderMessages,billing:renderBilling,reception:renderReception,roomtypes:renderRoomTypes,rooms:renderRooms,housekeeping:renderHousekeeping,maintenance:renderMaintenance,cashbox:renderCashbox,hotelreports:renderHotelReports,usuarios:renderUsersPage};
+  const R={dashboard:updateDashboard,monthly:renderMonthly,calendar:renderCalendar,whatsapp:renderWhatsappPage,reservations:renderReservationsTable,properties:renderProperties,owners:renderOwners,guests:renderGuests,finances:renderFinances,expenses:renderExpensesPage,alerts:renderAlerts,messages:renderMessages,billing:renderBilling,reception:renderReception,roomtypes:renderRoomTypes,rooms:renderRooms,housekeeping:renderHousekeeping,maintenance:renderMaintenance,cashbox:renderCashbox,hotelreports:renderHotelReports,usuarios:renderUsersPage,auditoria:renderAuditPage};
   if(R[name])R[name]();
 }
 function showTab(el,tabId){
@@ -4130,11 +4163,11 @@ let PLAN=null;
    comodidad visual: la RLS de la base es la que de verdad impide el acceso. */
 const PLAN_CONFIG = {
   inicial:{ label:'Plan Inicial', price:150, regularPrice:175, bugFixDays:30, includesWebsite:false, includesGoogleBusiness:false,
-    pages:['dashboard','monthly','calendar','whatsapp','reservations','properties','guests','expenses','messages','usuarios'] },
+    pages:['dashboard','monthly','calendar','whatsapp','reservations','properties','guests','expenses','messages','usuarios','auditoria'] },
   profesional:{ label:'Plan Profesional', price:300, bugFixDays:60, includesWebsite:true, includesGoogleBusiness:true,
-    pages:['dashboard','monthly','alerts','calendar','whatsapp','reservations','properties','guests','owners','finances','expenses','reports','messages','usuarios'] },
+    pages:['dashboard','monthly','alerts','calendar','whatsapp','reservations','properties','guests','owners','finances','expenses','reports','messages','usuarios','auditoria'] },
   hotel:{ label:'Plan Hotel Uruguay', priceFrom:500, bugFixDays:90, includesWebsite:true, includesGoogleBusiness:true,
-    pages:['dashboard','reception','monthly','alerts','calendar','whatsapp','reservations','properties','guests','roomtypes','rooms','housekeeping','maintenance','owners','finances','expenses','cashbox','reports','hotelreports','messages','billing','usuarios'] }
+    pages:['dashboard','reception','monthly','alerts','calendar','whatsapp','reservations','properties','guests','roomtypes','rooms','housekeeping','maintenance','owners','finances','expenses','cashbox','reports','hotelreports','messages','billing','usuarios','auditoria'] }
 };
 function planCfg(){ return PLAN_CONFIG[PLAN] || PLAN_CONFIG.hotel; }
 function maxAlojamientos(){ return tenantLimits.maxProperties; }
@@ -5059,6 +5092,63 @@ async function submitChangeOwnPassword(){
   if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
   closeModal('modal-change-password');
   showToast('Contraseña actualizada');
+}
+
+// ══════════════════════════════════════════════════════════════
+// AUDITORÍA — se llena sola por triggers en la base (ver 0011_audit_log.sql).
+// Acá solo se lee y se arma un resumen legible.
+// ══════════════════════════════════════════════════════════════
+const AUDIT_MODULE_LABEL={properties:'alojamiento',owners:'propietario',reservations:'reserva',expenses:'gasto',guests:'huésped',profiles:'usuario'};
+const AUDIT_ACTION_LABEL={INSERT:'creó',UPDATE:'editó',DELETE:'eliminó'};
+const AUDIT_IGNORE_FIELDS=['updated_at','updated_by','created_at','created_by','id','tenant_id'];
+function auditRecordName(row){
+  if(!row)return'';
+  return row.nombre||row.huesped||row.email||row.concepto||'';
+}
+function summarizeAuditEntry(e){
+  const modLabel=AUDIT_MODULE_LABEL[e.table_name]||e.table_name;
+  const actLabel=AUDIT_ACTION_LABEL[e.action]||e.action;
+  const who=e.user_email||'Alguien';
+  const name=auditRecordName(e.new_data)||auditRecordName(e.old_data);
+  let base=`${who} ${actLabel} ${modLabel}${name?' "'+name+'"':''}`;
+  if(e.action==='UPDATE' && e.old_data && e.new_data){
+    const changes=[];
+    Object.keys(e.new_data).forEach(k=>{
+      if(AUDIT_IGNORE_FIELDS.includes(k))return;
+      const before=e.old_data[k], after=e.new_data[k];
+      if(JSON.stringify(before)===JSON.stringify(after))return;
+      changes.push(`${k}: ${before==null?'—':before} → ${after==null?'—':after}`);
+    });
+    if(changes.length)base+=' — '+changes.join(', ');
+  }
+  return base;
+}
+async function renderAuditPage(){
+  const tb=document.getElementById('audit-tbody');if(!tb)return;
+  const modulo=document.getElementById('audit-filter-modulo')?.value||'';
+  const accion=document.getElementById('audit-filter-accion')?.value||'';
+  const desde=document.getElementById('audit-filter-desde')?.value||'';
+  let q=supabaseClient.from('audit_log').select('*').order('created_at',{ascending:false}).limit(300);
+  if(modulo)q=q.eq('table_name',modulo);
+  if(accion)q=q.eq('action',accion);
+  if(desde)q=q.gte('created_at',desde);
+  const {data,error}=await q;
+  if(error){
+    tb.innerHTML=`<tr><td colspan="3" style="text-align:center;padding:1.5rem;color:var(--text2)">No se pudo cargar la auditoría: ${error.message}</td></tr>`;
+    return;
+  }
+  const sub=document.getElementById('auditoria-subtitle');
+  if(sub)sub.textContent=(data||[]).length+' evento'+(data.length!==1?'s':'')+' (últimos 300)';
+  if(!data.length){tb.innerHTML='<tr><td colspan="3" style="text-align:center;padding:1.5rem;color:var(--text2)">Sin actividad registrada todavía.</td></tr>';return;}
+  tb.innerHTML=data.map(e=>{
+    const dt=new Date(e.created_at);
+    const cuando=dt.toLocaleDateString('es-AR')+' '+dt.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    return `<tr>
+      <td style="font-size:11px;color:var(--text2);white-space:nowrap">${cuando}</td>
+      <td style="font-size:12px">${e.user_email||'—'}</td>
+      <td style="font-size:12px">${summarizeAuditEntry(e)}</td>
+    </tr>`;
+  }).join('');
 }
 
 </script>
