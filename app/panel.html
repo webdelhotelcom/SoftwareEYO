@@ -1865,9 +1865,6 @@ async function loadSessionUser(authUser){
   document.getElementById('sidebar-avatar').textContent=currentUser.initials;
   document.getElementById('sidebar-name').textContent=currentUser.email;
   document.getElementById('sidebar-role').textContent=currentUser.name;
-  if(currentUser.role!=='admin'){
-    ['btn-new-prop','btn-new-owner'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
-  }
   await loadPermissions();
   await loadPermissionsCatalog();
   populateSelects();
@@ -2437,7 +2434,7 @@ function renderProperties(){
         <div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;font-weight:600">Neto cobrado</div><div style="font-size:11px;font-weight:500;color:var(--green)">${fmt(tN)}</div></div>
         <div style="grid-column:span 2"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;font-weight:600">Resultado neto</div><div style="font-size:11px;font-weight:500;color:${tN-tG>=0?'var(--green)':'var(--red)'}">${fmt(tN-tG)}</div></div>
       </div>
-      ${currentUser?.role==='admin'?`<div style="margin-top:8px;display:flex;gap:5px"><button class="btn btn-xs" style="flex:1" onclick="event.stopPropagation();editProperty('${p.id}')"><i class="ti ti-edit"></i> Editar</button><button class="btn btn-xs" style="background:var(--red);color:#fff;border-color:var(--red)" onclick="event.stopPropagation();deleteProperty('${p.id}')"><i class="ti ti-trash"></i></button></div>`:''}
+      ${can('editar_alojamientos')||can('eliminar_alojamientos')?`<div style="margin-top:8px;display:flex;gap:5px">${can('editar_alojamientos')?`<button class="btn btn-xs" style="flex:1" onclick="event.stopPropagation();editProperty('${p.id}')"><i class="ti ti-edit"></i> Editar</button>`:''}${can('eliminar_alojamientos')?`<button class="btn btn-xs" style="background:var(--red);color:#fff;border-color:var(--red)" onclick="event.stopPropagation();deleteProperty('${p.id}')"><i class="ti ti-trash"></i></button>`:''}</div>`:''}
     </div>`;
   }).join('');
   updatePlanUsage();
@@ -2479,7 +2476,7 @@ function showPropertyDetail(id){
   const noches=pR.reduce((s,r)=>s+r.noches,0);
   document.getElementById('prop-detail-title').textContent=prop.nombre;
   document.getElementById('prop-detail-sub').textContent=prop.direccion;
-  document.getElementById('prop-detail-actions').innerHTML=currentUser?.role==='admin'?`<button class="btn btn-sm" onclick="editProperty('${id}')"><i class="ti ti-edit"></i> Editar</button>`:'';
+  document.getElementById('prop-detail-actions').innerHTML=can('editar_alojamientos')?`<button class="btn btn-sm" onclick="editProperty('${id}')"><i class="ti ti-edit"></i> Editar</button>`:'';
   document.getElementById('prop-detail-metrics').innerHTML=`
     <div class="metric-card"><div class="metric-label">Reservas</div><div class="metric-value">${pR.length}</div></div>
     <div class="metric-card"><div class="metric-label">Noches</div><div class="metric-value">${noches}</div></div>
@@ -2627,7 +2624,7 @@ function renderOwners(){
       </div>
       <div style="margin-top:8px;display:flex;gap:5px">
         <button class="btn btn-sm" style="flex:1" onclick="showOwnerDetail('${o.id}')"><i class="ti ti-eye"></i> Ver ficha</button>
-        ${currentUser?.role==='admin'?`<button class="btn btn-sm" onclick="editOwner('${o.id}')"><i class="ti ti-edit"></i></button><button class="btn btn-sm" style="background:var(--red);color:#fff;border-color:var(--red)" onclick="deleteOwner('${o.id}')"><i class="ti ti-trash"></i></button>`:''}
+        ${can('editar_propietarios')?`<button class="btn btn-sm" onclick="editOwner('${o.id}')"><i class="ti ti-edit"></i></button>`:''}${can('eliminar_propietarios')?`<button class="btn btn-sm" style="background:var(--red);color:#fff;border-color:var(--red)" onclick="deleteOwner('${o.id}')"><i class="ti ti-trash"></i></button>`:''}
       </div>
     </div>`;
   }).join('');
@@ -2770,8 +2767,8 @@ function renderExpensesPage(){
     <td>${e.concepto}</td><td style="font-weight:500;color:var(--red)">${fmt(e.monto)}</td>
     <td style="font-size:11px;color:var(--text2)">${e.reservaId?reservations.find(r=>r.id===e.reservaId)?.huesped||'—':'—'}</td>
     <td style="display:flex;gap:4px">
-    ${(currentUser?.role==='admin'||currentUser?.role==='propietario')?`<button class="btn btn-xs" onclick="editExpense('${e.id}')"><i class="ti ti-edit"></i></button>`:''}
-    ${currentUser?.role==='admin'?`<button class="btn btn-xs btn-danger" onclick="deleteExpense('${e.id}')"><i class="ti ti-trash"></i></button>`:''}</td>
+    ${can('editar_gastos')?`<button class="btn btn-xs" onclick="editExpense('${e.id}')"><i class="ti ti-edit"></i></button>`:''}
+    ${can('eliminar_gastos')?`<button class="btn btn-xs btn-danger" onclick="deleteExpense('${e.id}')"><i class="ti ti-trash"></i></button>`:''}</td>
   </tr>`).join('');
 }
 function getFilteredExpensesForExport(){
@@ -4553,6 +4550,7 @@ function maxAlojamientos(){ return tenantLimits.maxProperties; }
 function planAllows(page){ return planCfg().pages.includes(page) || String(page).indexOf('-detail')>-1; }
 function applyPlan(){
   const info=planCfg();
+  const ownerBtn=document.getElementById('btn-new-owner');if(ownerBtn)ownerBtn.style.display=can('crear_propietarios')?'':'none';
   document.querySelectorAll('.nav-item').forEach(n=>{const pg=n.dataset.page;if(!pg)return;n.style.display=info.pages.includes(pg)?'':'none';});
   Object.entries(PAGE_PERMISSION).forEach(([pg,perm])=>{
     if(can(perm))return;
@@ -4585,6 +4583,8 @@ function updatePlanUsage(){
   }
   const btn=document.getElementById('btn-new-prop');
   if(btn){
+    if(!can('crear_alojamientos')){btn.style.display='none';return;}
+    btn.style.display='';
     const full = (max==null) || used>=max;
     btn.disabled=full; btn.style.opacity=full?'.5':''; btn.style.cursor=full?'not-allowed':'';
     btn.title = max==null ? 'Límite no configurado para este cliente' : (full?('Alcanzaste el límite de '+max+' alojamientos de tu plan'):'');
