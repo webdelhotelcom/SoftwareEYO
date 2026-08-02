@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Política de privacidad — Software EYO</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B1B2E; --navy-deep:#071322; --orange:#F5A623; --orange-dark:#9C5D00;
+    --blue-dark:#2F6099; --background:#F6F8FC; --surface:#FFFFFF;
+    --text:#101828; --text-secondary:#5A6472; --border:#DCE4EE;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--background);color:var(--text);font-family:'Work Sans',system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.65;}
+  h1,h2{font-family:'Fraunces',Georgia,serif;color:var(--navy);line-height:1.2;}
+  a{color:var(--blue-dark);}
+  header{background:var(--navy);padding:20px 24px;}
+  header .inner{max-width:760px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;}
+  header a.brand{color:#fff;text-decoration:none;font-family:'Fraunces',serif;font-weight:600;}
+  header a.back{color:#A6BCD6;text-decoration:none;font-size:.9rem;}
+  main{max-width:760px;margin:0 auto;padding:48px 24px 80px;}
+  h1{font-size:2rem;margin:0 0 6px;}
+  .updated{color:var(--text-secondary);font-size:.9rem;margin:0 0 36px;}
+  h2{font-size:1.25rem;margin:2em 0 .5em;}
+  p,li{color:var(--text-secondary);}
+  ul{padding-left:1.2em;}
+  .note{background:#EAF2FB;border:1px solid var(--border);border-radius:10px;padding:16px 18px;font-size:.92rem;margin-top:40px;}
+</style>
+</head>
+<body>
+<header><div class="inner">
+  <a class="brand" href="index.html">Software EYO</a>
+  <a class="back" href="index.html">← Volver al inicio</a>
+</div></header>
+<main>
+  <h1>Política de privacidad</h1>
+  <p class="updated">Última actualización: agosto de 2026.</p>
+
+  <p>Software EYO es un sistema de gestión para alojamientos, contratado directamente por su propietario o administrador (en este documento, "el cliente"). Esta página explica qué datos maneja el sistema y cómo se protegen.</p>
+
+  <h2>Qué datos se guardan</h2>
+  <p>Según los módulos que use cada cliente, el sistema puede guardar: datos de reservas y huéspedes (nombre, teléfono, email, documento), datos de propietarios de alojamientos, movimientos de caja y comprobantes, y los usuarios que administra cada cuenta (nombre, email, rol). No se piden ni se guardan datos de tarjetas de crédito ni medios de pago: los cobros se coordinan por fuera del sistema (por ejemplo, por WhatsApp o transferencia).</p>
+
+  <h2>Dónde se guardan y quién puede verlos</h2>
+  <p>Los datos se guardan en una base de datos real (Supabase/PostgreSQL), no en el navegador. Cada cliente tiene su información separada de la de cualquier otro cliente del sistema (aislamiento por cuenta): un cliente nunca puede ver, editar ni exportar los datos de otro cliente, esté logueado con el usuario que esté. Dentro de una misma cuenta, cada usuario ve y puede modificar solo lo que su rol tiene permitido — por ejemplo, un usuario de limpieza no puede ver ni editar datos de facturación.</p>
+
+  <h2>Con quién se comparten los datos</h2>
+  <p>Software EYO no vende ni cede los datos de ningún cliente a terceros. Los únicos proveedores externos que intervienen son los necesarios para que el sistema funcione: el proveedor de base de datos y autenticación (Supabase) y el proveedor de hosting del panel (Netlify). Ninguno de los dos accede a los datos con fines propios: solo alojan la información.</p>
+
+  <h2>Cookies y analítica</h2>
+  <p>Esta página comercial no usa cookies de seguimiento de terceros ni herramientas de analítica activas al día de hoy. El código tiene previsto un enganche para activar Google Analytics o Meta Pixel el día que se decida usarlos, pero mientras esa integración no esté cargada explícitamente, no se envía ningún dato de navegación a esos servicios. El panel de gestión usa únicamente lo necesario para mantener la sesión iniciada (cookies/almacenamiento local técnico), no con fines publicitarios.</p>
+
+  <h2>Cuánto tiempo se conservan los datos</h2>
+  <p>Los datos se conservan mientras la cuenta esté activa. Cada cliente puede exportar sus propios datos en cualquier momento (formato .json) desde el panel, y puede pedir la baja de su cuenta y el borrado de sus datos escribiendo por WhatsApp.</p>
+
+  <h2>Registro de actividad</h2>
+  <p>El sistema guarda un historial de qué usuario creó, editó o eliminó cada registro (módulo Auditoría), visible solo para el administrador de cada cuenta. Este historial es interno de cada cliente — no se comparte entre cuentas ni se usa para fines distintos de la trazabilidad de la propia operación.</p>
+
+  <h2>Contacto</h2>
+  <p>Para consultas sobre esta política o para ejercer cualquiera de los derechos mencionados arriba (acceso, exportación o borrado de datos), escribinos por WhatsApp desde la página de inicio.</p>
+
+  <div class="note">Este documento describe cómo funciona el sistema realmente, sin agregar promesas que el software no cumple todavía. Si en el futuro se suma un servicio nuevo que cambie algo de lo de arriba (por ejemplo, una integración de pagos), esta página se va a actualizar antes de activarlo.</div>
+</main>
+</body>
+</html>

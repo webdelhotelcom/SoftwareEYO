@@ -15,7 +15,6 @@
 <meta property="og:title" content="Software EYO | Gestión de alojamientos y reservas en Uruguay">
 <meta property="og:description" content="Reservas, cobros y alojamientos organizados desde tu celular. Pago único por la licencia, configuración y capacitación incluidas.">
 <meta property="og:url" content="https://manuelfestaori-star.github.io/webeyo/index.html">
-<!-- Reemplazar por una imagen real de 1200x630 px -->
 <meta property="og:image" content="assets/images/og-cover.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Software EYO | Gestión de alojamientos en Uruguay">
@@ -1043,7 +1042,13 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   </section>
 
   <!-- ====================== 9. TESTIMONIOS (celeste claro) ====================== -->
-  <section class="section-blue" id="testimonios">
+  <!-- OCULTA (corrección de auditoría, 2026-08-02): la única tarjeta que hay es la de
+       Elsa, sin el comentario real todavía. Se oculta con "hidden" en vez de inventar
+       un testimonio o publicar el texto de relleno "FALTA COMENTARIO". Para reactivarla:
+       conseguir las palabras reales de Elsa (o de otro cliente), reemplazar el
+       <blockquote class="quote-pending"> de abajo, y sacar el atributo "hidden" de
+       este <section>. -->
+  <section class="section-blue" id="testimonios" hidden>
     <div class="wrap">
       <div class="sec-head center">
         <p class="eyebrow">Clientes</p>
@@ -1246,8 +1251,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   <div class="footer-bottom">
     <span>Software EYO — Uruguay. &copy; <span data-year>2026</span></span>
     <span>
-      <!-- COMPLETAR: enlazar los documentos cuando estén redactados -->
-      <a href="#">Política de privacidad</a> · <a href="#">Términos</a>
+      <a href="privacidad.html">Política de privacidad</a> · <a href="terminos.html">Términos</a>
     </span>
   </div>
 </footer>
