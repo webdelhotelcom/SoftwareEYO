@@ -278,6 +278,10 @@ tr:hover td{background:var(--bg2)}
   .modal{ width:94vw !important; max-width:94vw !important; max-height:88vh; }
   .modal-overlay{ padding:3vh 3vw; align-items:flex-start; }
 
+  /* Evita el zoom automático de iOS Safari al tocar un campo (se activa
+     con cualquier input con font-size menor a 16px) */
+  .form-group input,.form-group select,.form-group textarea{ font-size:16px; }
+
   /* Calendar hub cards stack nicely */
   .cal-hub-grid{ grid-template-columns:1fr !important; }
   .cal-month-grid{ font-size:10px; }
