@@ -442,6 +442,9 @@ tr:hover td{background:var(--bg2)}
       <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Estadías (Supabase)</div>
       <button class="btn btn-sm btn-full" onclick="exportStaysBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar estadías</button>
       <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar estadías<input type="file" id="import-stays-file" accept=".json" onchange="importStaysBackup(this)" style="display:none"></label>
+      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Housekeeping (Supabase)</div>
+      <button class="btn btn-sm btn-full" onclick="exportHkTasksBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar limpieza</button>
+      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar limpieza<input type="file" id="import-hktasks-file" accept=".json" onchange="importHkTasksBackup(this)" style="display:none"></label>
     </div>
   </div>
 </aside>
@@ -919,6 +922,7 @@ tr:hover td{background:var(--bg2)}
       <option value="room_types">Tipos de habitación</option>
       <option value="rooms">Habitaciones</option>
       <option value="stays">Estadías</option>
+      <option value="hk_tasks">Housekeeping</option>
     </select>
     <select id="audit-filter-accion" onchange="renderAuditPage()">
       <option value="">Todas las acciones</option>
@@ -1863,6 +1867,7 @@ async function loadSessionUser(authUser){
   await loadRoomTypes();
   await loadRooms();
   await loadStays();
+  await loadHkTasks();
   supabaseClient.from('profiles').update({last_active_at:new Date().toISOString()}).eq('id',authUser.id).then(()=>{});
   calYear=2026;calMonth=0; // demo: arranca en enero 2026 (temporada)
   showPage('dashboard');
@@ -3271,7 +3276,6 @@ function exportarDatos(){
     version: 9,
     exportedAt: new Date().toISOString(),
     billingCfg, facturas,
-    hkTasks, nextHkId,
     maintTickets, nextMaintId,
     cashSessions, nextCashId,
   };
@@ -3305,12 +3309,10 @@ function importarDatos(input){
       // botón específico de cada uno.
       if(data.billingCfg !== undefined) billingCfg = data.billingCfg;
       if(data.facturas !== undefined) facturas = data.facturas;
-      if(data.hkTasks !== undefined){ hkTasks = data.hkTasks; nextHkId = data.nextHkId||1; }
       if(data.maintTickets !== undefined){ maintTickets = data.maintTickets; nextMaintId = data.nextMaintId||1; }
       if(data.cashSessions !== undefined){ cashSessions = data.cashSessions; nextCashId = data.nextCashId||1; }
       // Persist everything
       saveBilling?.();
-      save('hkTasks',hkTasks);save('nextHkId',nextHkId);
       save('maintTickets',maintTickets);save('nextMaintId',nextMaintId);
       save('cashSessions',cashSessions);save('nextCashId',nextCashId);
       // Refresh UI
@@ -3942,6 +3944,49 @@ async function importStaysBackup(input){
       await loadStays();
       input.value='';
       showToast(fail?`Restauradas ${ok}, fallaron ${fail}`:`Restauradas ${ok} estadías`, fail?'error':'ok');
+    }catch(err){
+      showToast('Error al leer el archivo: '+err.message,'error');
+      input.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function exportHkTasksBackup(){
+  if(!supabaseClient||!currentUser){showToast('Iniciá sesión primero','error');return;}
+  const {data,error}=await supabaseClient.from('hk_tasks').select('*');
+  if(error){showToast('No se pudo exportar: '+error.message,'error');return;}
+  const backup={version:1,exportedAt:new Date().toISOString(),tenantId:currentUser.tenantId,hkTasks:data||[]};
+  const json=JSON.stringify(backup,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`eyo-housekeeping-backup-${today()}.json`;a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup de housekeeping exportado');
+}
+
+async function importHkTasksBackup(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const backup=JSON.parse(e.target.result);
+      const rows=backup.hkTasks;
+      if(!Array.isArray(rows)){showToast('Archivo no válido: falta la lista de tareas de limpieza','error');input.value='';return;}
+      if(!confirm(`¿Restaurar ${rows.length} tarea(s) de limpieza del backup del ${backup.exportedAt?new Date(backup.exportedAt).toLocaleString('es-AR'):'fecha desconocida'}?\n\nSe agregan como tareas NUEVAS (no reemplaza las existentes).`)){
+        input.value='';return;
+      }
+      let ok=0,fail=0;
+      for(const row of rows){
+        const payload=hkTaskToDb(hkTaskFromDb(row));
+        payload.tenant_id=currentUser.tenantId;
+        const {error}=await supabaseClient.from('hk_tasks').insert(payload);
+        if(error)fail++;else ok++;
+      }
+      await loadHkTasks();
+      input.value='';
+      showToast(fail?`Restauradas ${ok}, fallaron ${fail}`:`Restauradas ${ok} tareas de limpieza`, fail?'error':'ok');
     }catch(err){
       showToast('Error al leer el archivo: '+err.message,'error');
       input.value='';
@@ -4713,10 +4758,9 @@ function nochesEntre(a,b){if(!a||!b)return 1;const d1=new Date(a),d2=new Date(b)
 let roomTypes=[];
 let rooms=[];
 let stays=[];
-let hkTasks=load('hkTasks',[]);
+let hkTasks=[];
 let maintTickets=load('maintTickets',[]);
 let cashSessions=load('cashSessions',[]);
-let nextHkId=load('nextHkId',1);
 let nextMaintId=load('nextMaintId',1);
 let nextCashId=load('nextCashId',1);
 
@@ -4763,8 +4807,25 @@ async function loadStays(){
   stays=(data||[]).map(stayFromDb);
 }
 function saveHotel(){
-  save('hkTasks',hkTasks);save('maintTickets',maintTickets);save('cashSessions',cashSessions);
-  save('nextHkId',nextHkId);save('nextMaintId',nextMaintId);save('nextCashId',nextCashId);
+  save('maintTickets',maintTickets);save('cashSessions',cashSessions);
+  save('nextMaintId',nextMaintId);save('nextCashId',nextCashId);
+}
+function hkTaskFromDb(row){
+  return {id:row.id,roomId:row.room_id||'',responsable:row.responsable||'',estado:row.estado,notas:row.notas||'',ts:row.ts};
+}
+function hkTaskToDb(data){
+  return {room_id:data.roomId||null,responsable:data.responsable||null,estado:data.estado,notas:data.notas||null,ts:data.ts||isoToday()};
+}
+async function loadHkTasks(){
+  if(!supabaseClient||!currentUser)return;
+  const {data,error}=await supabaseClient.from('hk_tasks').select('*').order('ts',{ascending:false});
+  if(error){showToast('No se pudieron cargar las tareas de limpieza: '+error.message,'error');return;}
+  hkTasks=(data||[]).map(hkTaskFromDb);
+}
+async function clearActiveHkTasksForRoom(roomId){
+  const {error}=await supabaseClient.from('hk_tasks').delete().eq('room_id',roomId).neq('estado','terminada');
+  if(error){showToast('No se pudieron limpiar las tareas de limpieza: '+error.message,'error');return;}
+  hkTasks=hkTasks.filter(t=>!(t.roomId===roomId&&t.estado!=='terminada'));
 }
 function roomTypeName(id){const t=roomTypes.find(x=>x.id===id);return t?t.nombre:'—';}
 function roomTypePrice(id){const t=roomTypes.find(x=>x.id===id);return t?t.precio:0;}
@@ -4874,7 +4935,7 @@ function renderRooms(){
 }
 async function roomClick(id){const r=roomById(id);if(!r)return;
   if(r.estado==='ocupada'){const s=stayOfRoom(id);if(s)openFolio(s.id);else editRoom(id);return;}
-  if(r.estado==='limpieza'||r.estado==='inspeccionada'){if(confirm('¿Marcar la habitación '+r.numero+' como disponible?')){await setRoomEstado(id,'disponible');hkTasks=hkTasks.filter(t=>!(t.roomId===id&&t.estado!=='terminada'));saveHotel();renderRooms();showToast('Habitación disponible');}return;}
+  if(r.estado==='limpieza'||r.estado==='inspeccionada'){if(confirm('¿Marcar la habitación '+r.numero+' como disponible?')){await setRoomEstado(id,'disponible');await clearActiveHkTasksForRoom(id);renderRooms();showToast('Habitación disponible');}return;}
   if(r.estado==='mantenimiento'||r.estado==='fuera_servicio'){editRoom(id);return;}
   openCheckin(id);
 }
@@ -4965,14 +5026,22 @@ async function doCheckout(){const id=document.getElementById('folio-stay-id').va
   const {error}=await supabaseClient.from('stays').update({estado:'checked_out'}).eq('id',id);
   if(error){showToast('No se pudo hacer el check-out: '+error.message,'error');return;}
   s.estado='checked_out';const r=roomById(s.roomId);
-  if(r){await setRoomEstado(r.id,'limpieza');hkTasks.push({id:nextHkId++,roomId:r.id,responsable:'',estado:'pendiente',notas:'Post check-out',ts:isoToday()});saveHotel();}
+  if(r){await setRoomEstado(r.id,'limpieza');await addHkTask(r.id,'Post check-out');}
   closeModal('modal-folio');showToast('Check-out realizado — habitación enviada a limpieza');
   renderReception();renderRooms();
 }
 
 /* ---------- HOUSEKEEPING ---------- */
-function generateHkPending(){let add=0;rooms.filter(r=>r.estado==='limpieza').forEach(r=>{if(!hkTasks.some(t=>t.roomId===r.id&&t.estado!=='terminada')){hkTasks.push({id:nextHkId++,roomId:r.id,responsable:'',estado:'pendiente',notas:'',ts:isoToday()});add++;}});
-  saveHotel();renderHousekeeping();showToast(add?('Se generaron '+add+' tarea(s)'):'No hay nuevas pendientes');}
+async function addHkTask(roomId,notas){
+  const {data:inserted,error}=await supabaseClient.from('hk_tasks').insert({...hkTaskToDb({roomId,responsable:'',estado:'pendiente',notas:notas||'',ts:isoToday()}),tenant_id:currentUser.tenantId}).select().single();
+  if(error){showToast('No se pudo crear la tarea de limpieza: '+error.message,'error');return;}
+  hkTasks.push(hkTaskFromDb(inserted));
+}
+async function generateHkPending(){let add=0;
+  for(const r of rooms.filter(r=>r.estado==='limpieza')){
+    if(!hkTasks.some(t=>t.roomId===r.id&&t.estado!=='terminada')){await addHkTask(r.id,'');add++;}
+  }
+  renderHousekeeping();showToast(add?('Se generaron '+add+' tarea(s)'):'No hay nuevas pendientes');}
 function renderHousekeeping(){const el=document.getElementById('hk-list');if(!el)return;
   const activos=hkTasks.filter(t=>t.estado!=='terminada'&&t.estado!=='inspeccionada');
   if(!activos.length){el.innerHTML='<div class="card" style="color:var(--text3)">No hay tareas de limpieza pendientes. Usá «Detectar pendientes» para tomar las habitaciones marcadas en limpieza.</div>';return;}
@@ -4980,13 +5049,16 @@ function renderHousekeeping(){const el=document.getElementById('hk-list');if(!el
   const clsMap={pendiente:'limpieza',proceso:'reservada',terminada:'inspeccionada',inspeccionada:'inspeccionada'};
   el.innerHTML=activos.map(t=>{const r=roomById(t.roomId);const rn=r?r.numero:'—';
     let btn='';
-    if(t.estado==='pendiente')btn=`<button class="btn btn-sm" onclick="hkAdvance(${t.id},'proceso')"><i class="ti ti-player-play"></i> Empezar</button>`;
-    else if(t.estado==='proceso')btn=`<button class="btn btn-sm btn-primary" onclick="hkAdvance(${t.id},'terminada')"><i class="ti ti-check"></i> Terminar</button>`;
+    if(t.estado==='pendiente')btn=`<button class="btn btn-sm" onclick="hkAdvance('${t.id}','proceso')"><i class="ti ti-player-play"></i> Empezar</button>`;
+    else if(t.estado==='proceso')btn=`<button class="btn btn-sm btn-primary" onclick="hkAdvance('${t.id}','terminada')"><i class="ti ti-check"></i> Terminar</button>`;
     return `<div class="hk-row"><div><b>Hab. ${rn}</b> <span class="st-chip st-${clsMap[t.estado]}">${lbl[t.estado]}</span>${t.notas?`<div style="font-size:11px;color:var(--text2)">${t.notas}</div>`:''}</div><div style="display:flex;gap:6px">${btn}</div></div>`;}).join('');
 }
-async function hkAdvance(id,to){const t=hkTasks.find(x=>x.id===id);if(!t)return;t.estado=to;
+async function hkAdvance(id,to){const t=hkTasks.find(x=>x.id===id);if(!t)return;
+  const {error}=await supabaseClient.from('hk_tasks').update({estado:to}).eq('id',id);
+  if(error){showToast('No se pudo actualizar: '+error.message,'error');return;}
+  t.estado=to;
   if(to==='terminada'){const r=roomById(t.roomId);if(r&&r.estado==='limpieza')await setRoomEstado(r.id,'disponible');}
-  saveHotel();renderHousekeeping();renderRooms();showToast('Tarea actualizada');}
+  renderHousekeeping();renderRooms();showToast('Tarea actualizada');}
 
 /* ---------- MANTENIMIENTO ---------- */
 function populateMaintRoom(){const s=document.getElementById('mt-room');if(!s)return;s.innerHTML=rooms.map(r=>`<option value="${r.id}">Hab. ${r.numero}</option>`).join('');}
@@ -5391,7 +5463,7 @@ async function submitChangeOwnPassword(){
 // AUDITORÍA — se llena sola por triggers en la base (ver 0011_audit_log.sql).
 // Acá solo se lee y se arma un resumen legible.
 // ══════════════════════════════════════════════════════════════
-const AUDIT_MODULE_LABEL={properties:'alojamiento',owners:'propietario',reservations:'reserva',expenses:'gasto',guests:'huésped',profiles:'usuario',tasks:'tarea',room_types:'tipo de habitación',rooms:'habitación',stays:'estadía'};
+const AUDIT_MODULE_LABEL={properties:'alojamiento',owners:'propietario',reservations:'reserva',expenses:'gasto',guests:'huésped',profiles:'usuario',tasks:'tarea',room_types:'tipo de habitación',rooms:'habitación',stays:'estadía',hk_tasks:'tarea de limpieza'};
 const AUDIT_ACTION_LABEL={INSERT:'creó',UPDATE:'editó',DELETE:'eliminó'};
 const AUDIT_IGNORE_FIELDS=['updated_at','updated_by','created_at','created_by','id','tenant_id'];
 function auditRecordName(row){
