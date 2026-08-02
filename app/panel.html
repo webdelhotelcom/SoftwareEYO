@@ -1571,6 +1571,19 @@ const MN=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic
 const MNF=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 function save(k,v){try{localStorage.setItem('pga_demo_'+k,JSON.stringify(v));}catch(e){}}
 function load(k,d){try{const v=localStorage.getItem('pga_demo_'+k);return v?JSON.parse(v):d;}catch(e){return d;}}
+// Corrección de auditoría (XSS): cualquier campo de texto libre que un
+// usuario haya cargado (nombre, notas, concepto, etc.) debe pasar por
+// acá antes de insertarse en innerHTML — si no, un huésped, huésped o
+// usuario de bajo permiso podría plantar HTML/JS que se ejecute en la
+// sesión de otro usuario del mismo tenant que lo vea (ej. un admin).
+function esc(value){
+  return String(value??'')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'",'&#039;');
+}
 function fmt(n){return '$'+Intl.NumberFormat('es-AR').format(Math.round(n||0));}
 function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`;}
 function today(){return new Date().toISOString().split('T')[0];}
@@ -2062,14 +2075,14 @@ function updateDashboard(){
       <div class="quick-action-btn" onclick="showPage('alerts')"><i class="ti ti-bell" style="color:var(--amber)"></i>Alertas (${getAlertsCount()})</div>
       <div class="quick-action-btn primary" onclick="openNewReservation()"><i class="ti ti-plus"></i>Nueva reserva</div>
     </div>
-    ${ciH.length?`<div class="alert alert-blue" style="margin-bottom:6px"><i class="ti ti-door-enter"></i><div class="alert-body"><div class="alert-title">Check-in hoy: ${ciH.map(r=>r.huesped.split(' ')[0]).join(', ')}</div></div></div>`:''}
-    ${coH.length?`<div class="alert alert-amber" style="margin-bottom:6px"><i class="ti ti-door-exit"></i><div class="alert-body"><div class="alert-title">Check-out hoy: ${coH.map(r=>r.huesped.split(' ')[0]).join(', ')}</div></div></div>`:''}
+    ${ciH.length?`<div class="alert alert-blue" style="margin-bottom:6px"><i class="ti ti-door-enter"></i><div class="alert-body"><div class="alert-title">Check-in hoy: ${esc(ciH.map(r=>r.huesped.split(' ')[0]).join(', '))}</div></div></div>`:''}
+    ${coH.length?`<div class="alert alert-amber" style="margin-bottom:6px"><i class="ti ti-door-exit"></i><div class="alert-body"><div class="alert-title">Check-out hoy: ${esc(coH.map(r=>r.huesped.split(' ')[0]).join(', '))}</div></div></div>`:''}
   `;
   const soon=reservations.filter(r=>{const d=new Date(r.checkin+'T12:00:00');return d>=todayDate&&r.estado!=='cancelada';}).sort((a,b)=>a.checkin.localeCompare(b.checkin)).slice(0,5);
   const soonO=reservations.filter(r=>{const d=new Date(r.checkout+'T12:00:00');return d>=todayDate&&r.estado!=='cancelada';}).sort((a,b)=>a.checkout.localeCompare(b.checkout)).slice(0,5);
   const ciEl=document.getElementById('upcoming-checkin');const coEl=document.getElementById('upcoming-checkout');
-  if(ciEl)ciEl.innerHTML=soon.length?soon.map(r=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:12px;align-items:center"><div><strong>${r.huesped}</strong> · ${getPropName(r.propiedadId)}</div><div style="display:flex;gap:5px;align-items:center;flex-shrink:0"><span style="color:var(--text2)">${fmtDate(r.checkin)}</span>${r.telefono?`<a href="https://wa.me/${r.telefono.replace(/\D/g,'')}" target="_blank" class="btn btn-xs btn-success"><i class="ti ti-brand-whatsapp"></i></a>`:''}</div></div>`).join(''):'<div class="empty-state"><i class="ti ti-check"></i><p>Sin check-ins próximos</p></div>';
-  if(coEl)coEl.innerHTML=soonO.length?soonO.map(r=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:12px;align-items:center"><div><strong>${r.huesped}</strong> · ${getPropName(r.propiedadId)}</div><span style="color:var(--text2)">${fmtDate(r.checkout)}</span></div>`).join(''):'<div class="empty-state"><i class="ti ti-check"></i><p>Sin check-outs próximos</p></div>';
+  if(ciEl)ciEl.innerHTML=soon.length?soon.map(r=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:12px;align-items:center"><div><strong>${esc(r.huesped)}</strong> · ${esc(getPropName(r.propiedadId))}</div><div style="display:flex;gap:5px;align-items:center;flex-shrink:0"><span style="color:var(--text2)">${fmtDate(r.checkin)}</span>${r.telefono?`<a href="https://wa.me/${encodeURIComponent(r.telefono.replace(/\D/g,''))}" target="_blank" class="btn btn-xs btn-success"><i class="ti ti-brand-whatsapp"></i></a>`:''}</div></div>`).join(''):'<div class="empty-state"><i class="ti ti-check"></i><p>Sin check-ins próximos</p></div>';
+  if(coEl)coEl.innerHTML=soonO.length?soonO.map(r=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:12px;align-items:center"><div><strong>${esc(r.huesped)}</strong> · ${esc(getPropName(r.propiedadId))}</div><span style="color:var(--text2)">${fmtDate(r.checkout)}</span></div>`).join(''):'<div class="empty-state"><i class="ti ti-check"></i><p>Sin check-outs próximos</p></div>';
   const bM=Array(12).fill(0).map(()=>({bruto:0,neto:0,gastos:0,cnt:0}));
   res.forEach(r=>{const m=parseInt(r.checkin.split('-')[1])-1;bM[m].bruto+=r.precio;bM[m].neto+=calcRes(r).cobrado;bM[m].cnt+=1;});
   exps.forEach(e=>{const m=parseInt(e.fecha.split('-')[1])-1;bM[m].gastos+=e.monto;});
@@ -2112,7 +2125,7 @@ function updateAlertBadge(){const n=getAlertsCount();const b=document.getElement
 function renderAlerts(){
   const al=getAlerts();
   const el=document.getElementById('alerts-list');
-  if(el)el.innerHTML=al.length?al.map(a=>`<div class="alert alert-${a.type}"><i class="ti ${a.icon}"></i><div class="alert-body"><div class="alert-title">${a.title}</div><div class="alert-sub">${a.sub}</div></div></div>`).join(''):'<div class="empty-state"><i class="ti ti-check"></i><p>Sin alertas activas</p></div>';
+  if(el)el.innerHTML=al.length?al.map(a=>`<div class="alert alert-${a.type}"><i class="ti ${a.icon}"></i><div class="alert-body"><div class="alert-title">${esc(a.title)}</div><div class="alert-sub">${esc(a.sub)}</div></div></div>`).join(''):'<div class="empty-state"><i class="ti ti-check"></i><p>Sin alertas activas</p></div>';
   renderTasks();updateAlertBadge();
 }
 function renderTasks(){
@@ -2121,7 +2134,7 @@ function renderTasks(){
   if(!all.length){el.innerHTML='<div class="empty-state"><i class="ti ti-check"></i><p>Sin tareas pendientes</p></div>';return;}
   el.innerHTML=all.map(t=>`<div class="task-item ${t.done?'done':''}">
     <input type="checkbox" class="task-check" ${t.done?'checked':''} onchange="toggleTask('${t.id}',this.checked)">
-    <div class="task-body"><div class="task-label">${t.label}</div><div class="task-meta">${t.due?`Vence: ${fmtDate(t.due)} · `:''}<span class="badge badge-gray" style="font-size:10px">${t.cat}</span>${t.propId?' · '+getPropName(t.propId):''}</div></div>
+    <div class="task-body"><div class="task-label">${esc(t.label)}</div><div class="task-meta">${t.due?`Vence: ${fmtDate(t.due)} · `:''}<span class="badge badge-gray" style="font-size:10px">${esc(t.cat)}</span>${t.propId?' · '+esc(getPropName(t.propId)):''}</div></div>
     <button class="btn btn-xs btn-danger" onclick="deleteTask('${t.id}')"><i class="ti ti-trash"></i></button>
   </div>`).join('');
 }
@@ -2168,7 +2181,7 @@ function renderCalendar(){
   const CBG={confirmada:'#c0dd97','sena-confirmada':'#85b7eb','esperando-sena':'#fac775','sena-parcial':'#fac775',alojado:'#b5d4f4',cancelada:'#f09595',finalizada:'#d3d1c7','checkin-pendiente':'#85b7eb',consulta:'#e0dfdb'};
   const CTX={confirmada:'#3B6D11','sena-confirmada':'#0c447c','esperando-sena':'#854F0B','sena-parcial':'#854F0B',alojado:'#042C53',cancelada:'#a32d2d',finalizada:'#5F5E5A','checkin-pendiente':'#0c447c',consulta:'#5c5c57'};
   properties.forEach(prop=>{
-    h+=`<div style="background:var(--bg2);padding:4px 6px;border-bottom:0.5px solid var(--border);border-right:0.5px solid var(--border);font-weight:500;font-size:9px;display:flex;align-items:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" title="${prop.nombre}">${prop.nombre}</div>`;
+    h+=`<div style="background:var(--bg2);padding:4px 6px;border-bottom:0.5px solid var(--border);border-right:0.5px solid var(--border);font-weight:500;font-size:9px;display:flex;align-items:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" title="${esc(prop.nombre)}">${esc(prop.nombre)}</div>`;
     for(let d=1;d<=days;d++){
       const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const _bkAll=reservations.filter(r=>r.propiedadId===prop.id&&ds>=r.checkin&&ds<r.checkout);
@@ -2176,7 +2189,7 @@ function renderCalendar(){
       const bk=_bkAll.sort((a,b)=>_bkPri.indexOf(a.estado)-_bkPri.indexOf(b.estado))[0];
       const isTd=ds===ts;
       if(bk){const bg=CBG[bk.estado]||'#d3d1c7';const tc=CTX[bk.estado]||'#5F5E5A';const isF=ds===bk.checkin;
-        h+=`<div style="background:${isTd?'rgba(26,26,24,.04)':'var(--bg)'};border-bottom:0.5px solid var(--border);border-right:0.5px solid var(--border);min-height:24px;position:relative;cursor:pointer" onclick="viewReservation('${bk.id}')" title="${bk.huesped}"><div style="position:absolute;inset:2px;border-radius:3px;background:${bg};display:flex;align-items:center;padding:0 2px;overflow:hidden;white-space:nowrap;font-size:8px;font-weight:600;color:${tc}">${isF&&DAY>28?bk.huesped.split(' ')[0]:''}</div></div>`;
+        h+=`<div style="background:${isTd?'rgba(26,26,24,.04)':'var(--bg)'};border-bottom:0.5px solid var(--border);border-right:0.5px solid var(--border);min-height:24px;position:relative;cursor:pointer" onclick="viewReservation('${bk.id}')" title="${esc(bk.huesped)}"><div style="position:absolute;inset:2px;border-radius:3px;background:${bg};display:flex;align-items:center;padding:0 2px;overflow:hidden;white-space:nowrap;font-size:8px;font-weight:600;color:${tc}">${isF&&DAY>28?esc(bk.huesped.split(' ')[0]):''}</div></div>`;
       }else{
         h+=`<div style="background:${isTd?'rgba(26,26,24,.04)':'var(--bg)'};border-bottom:0.5px solid var(--border);border-right:0.5px solid var(--border);min-height:24px"></div>`;
       }
@@ -2208,8 +2221,8 @@ function renderReservationsTable(){
   tb.innerHTML=rows.map(r=>{
     const c=calcRes(r);const saldo=!['finalizada','cancelada'].includes(r.estado)?c.saldo:0;
     return`<tr>
-      <td><div style="font-weight:500">${r.huesped}</div><div style="font-size:10px;color:var(--text3)">${r.huespedes} huésp.</div></td>
-      <td style="font-size:11px">${getPropName(r.propiedadId)}</td>
+      <td><div style="font-weight:500">${esc(r.huesped)}</div><div style="font-size:10px;color:var(--text3)">${r.huespedes} huésp.</div></td>
+      <td style="font-size:11px">${esc(getPropName(r.propiedadId))}</td>
       <td style="white-space:nowrap">${fmtDate(r.checkin)}</td>
       <td style="white-space:nowrap">${fmtDate(r.checkout)}</td>
       <td>${r.noches}</td>
@@ -2393,16 +2406,16 @@ function viewReservation(id){
   document.getElementById('btn-copy-msg').onclick=()=>copyMessageForReservation(id);
   document.getElementById('modal-res-detail-body').innerHTML=`
     <div class="detail-grid">
-      <div class="detail-item"><label>Huésped</label><span><strong>${r.huesped}</strong></span></div>
+      <div class="detail-item"><label>Huésped</label><span><strong>${esc(r.huesped)}</strong></span></div>
       <div class="detail-item"><label>Huéspedes</label><span>${r.huespedes}</span></div>
-      <div class="detail-item"><label>Teléfono</label><span>${r.telefono?`<a href="https://wa.me/${r.telefono.replace(/\D/g,'')}" target="_blank" class="btn btn-xs btn-success"><i class="ti ti-brand-whatsapp"></i> ${r.telefono}</a>`:r.telefono||'—'}</span></div>
-      <div class="detail-item"><label>Email</label><span>${r.email||'—'}</span></div>
-      <div class="detail-item"><label>Alojamiento</label><span>${getPropName(r.propiedadId)}</span></div>
+      <div class="detail-item"><label>Teléfono</label><span>${r.telefono?`<a href="https://wa.me/${encodeURIComponent(r.telefono.replace(/\D/g,''))}" target="_blank" class="btn btn-xs btn-success"><i class="ti ti-brand-whatsapp"></i> ${esc(r.telefono)}</a>`:esc(r.telefono)||'—'}</span></div>
+      <div class="detail-item"><label>Email</label><span>${esc(r.email)||'—'}</span></div>
+      <div class="detail-item"><label>Alojamiento</label><span>${esc(getPropName(r.propiedadId))}</span></div>
       <div class="detail-item"><label>Estado</label><span>${badgeS(r.estado)}</span></div>
       <div class="detail-item"><label>Check-in</label><span>${fmtDate(r.checkin)}</span></div>
       <div class="detail-item"><label>Check-out</label><span>${fmtDate(r.checkout)} (${r.noches} noches)</span></div>
-      <div class="detail-item"><label>Canal</label><span>${r.canal}</span></div>
-      <div class="detail-item"><label>Método de pago</label><span>${r.metodoPago||'—'}</span></div>
+      <div class="detail-item"><label>Canal</label><span>${esc(r.canal)}</span></div>
+      <div class="detail-item"><label>Método de pago</label><span>${esc(r.metodoPago)||'—'}</span></div>
     </div>
     <div class="calc-box" style="margin-bottom:1rem">
       <div style="font-size:10px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Desglose financiero</div>
@@ -2415,14 +2428,14 @@ function viewReservation(id){
       <div class="calc-row"><span style="color:var(--text2)">Depósito propietario (40%)</span><span style="color:var(--green)">${fmt(c.propMonto)}</span></div>
       <div class="calc-row total"><span>Saldo al check-in</span><span style="color:var(--red)">${fmt(c.saldo)}</span></div>
     </div>
-    ${r.senaParcial>0?`<div class="alert alert-green" style="margin-bottom:.75rem"><i class="ti ti-cash"></i><div class="alert-body"><div class="alert-title">Seña recibida: ${fmt(r.senaParcial)}</div>${r.comprobante?`<div class="alert-sub">${r.comprobante}</div>`:''}</div></div>`:''}
+    ${r.senaParcial>0?`<div class="alert alert-green" style="margin-bottom:.75rem"><i class="ti ti-cash"></i><div class="alert-body"><div class="alert-title">Seña recibida: ${fmt(r.senaParcial)}</div>${r.comprobante?`<div class="alert-sub">${esc(r.comprobante)}</div>`:''}</div></div>`:''}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:.75rem">
       <div class="card card-sm"><div style="font-size:10px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase">Comisión gestión</div>${r.comisionPagada==='si'?`<span class="badge badge-green">Cobrada</span><div style="font-size:11px;color:var(--text3);margin-top:3px">${fmtDate(r.fechaComision)}</div>`:`<span class="badge badge-amber">Pendiente</span>`}</div>
       <div class="card card-sm"><div style="font-size:10px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase">Depósito propietario</div>${r.depositoPagado==='si'?`<span class="badge badge-green">Realizado</span><div style="font-size:11px;color:var(--text3);margin-top:3px">${fmtDate(r.fechaDeposito)}</div>`:`<span class="badge badge-amber">Pendiente</span>`}</div>
     </div>
-    ${r.notas?`<div class="card card-sm" style="margin-bottom:.75rem"><div style="font-size:10px;font-weight:600;color:var(--text2);margin-bottom:4px;text-transform:uppercase">Notas</div><div style="font-size:12px">${r.notas}</div></div>`:''}
+    ${r.notas?`<div class="card card-sm" style="margin-bottom:.75rem"><div style="font-size:10px;font-weight:600;color:var(--text2);margin-bottom:4px;text-transform:uppercase">Notas</div><div style="font-size:12px">${esc(r.notas)}</div></div>`:''}
     <div class="card card-sm"><div style="font-size:10px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase">Historial de cambios</div>
-    ${(r.history||[]).map(h=>`<div class="history-item"><div class="history-dot green"></div><div style="flex:1"><span style="font-weight:500">${h.msg}</span></div><div class="history-time">${fmtDate(h.date)} · ${h.user}</div></div>`).join('')||'<div style="font-size:12px;color:var(--text3)">Sin historial</div>'}
+    ${(r.history||[]).map(h=>`<div class="history-item"><div class="history-dot green"></div><div style="flex:1"><span style="font-weight:500">${esc(h.msg)}</span></div><div class="history-time">${fmtDate(h.date)} · ${esc(h.user)}</div></div>`).join('')||'<div style="font-size:12px;color:var(--text3)">Sin historial</div>'}
     </div>
   `;
   openModal('modal-res-detail');
@@ -2448,10 +2461,10 @@ function renderProperties(){
         <div style="width:38px;height:38px;background:var(--bg3);border-radius:var(--radius);display:flex;align-items:center;justify-content:center"><i class="ti ti-home" style="font-size:18px;color:var(--text2)"></i></div>
         ${badgeA(p.estado)}
       </div>
-      <div style="font-size:14px;font-weight:500;margin-bottom:3px">${p.nombre}</div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:10px"><i class="ti ti-map-pin" style="font-size:11px"></i> ${p.direccion}</div>
+      <div style="font-size:14px;font-weight:500;margin-bottom:3px">${esc(p.nombre)}</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:10px"><i class="ti ti-map-pin" style="font-size:11px"></i> ${esc(p.direccion)}</div>
       <div style="border-top:0.5px solid var(--border);padding-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
-        <div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;font-weight:600">Propietario</div><div style="font-size:11px;font-weight:500">${owner?.nombre||'—'}</div></div>
+        <div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;font-weight:600">Propietario</div><div style="font-size:11px;font-weight:500">${esc(owner?.nombre)||'—'}</div></div>
         <div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;font-weight:600">Base/noche</div><div style="font-size:11px;font-weight:500">${fmt(p.precio)}</div></div>
         <div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;font-weight:600">Reservas</div><div style="font-size:11px;font-weight:500">${pR.length}</div></div>
         <div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;font-weight:600">Neto cobrado</div><div style="font-size:11px;font-weight:500;color:var(--green)">${fmt(tN)}</div></div>
@@ -2517,17 +2530,17 @@ function showPropertyDetail(id){
     <div class="calc-row"><span style="color:var(--text2)">Mi comisión gestión</span><span style="color:var(--blue)">-${fmt(tCom)}</span></div>
     <div class="calc-row total"><span>Resultado para propietario</span><span style="color:${tNeto-tGastos-tCom>=0?'var(--green)':'var(--red)'}">${fmt(tNeto-tGastos-tCom)}</span></div>
   </div>`;
-  document.getElementById('prop-detail-res-tbody').innerHTML=pR.map(r=>`<tr><td>${r.huesped}</td><td>${fmtDate(r.checkin)}</td><td>${fmtDate(r.checkout)}</td><td>${r.noches}</td><td>${fmt(r.precio)}</td><td style="color:var(--green)">${fmt(calcRes(r).cobrado)}</td><td>${badgeS(r.estado)}</td></tr>`).join('');
+  document.getElementById('prop-detail-res-tbody').innerHTML=pR.map(r=>`<tr><td>${esc(r.huesped)}</td><td>${fmtDate(r.checkin)}</td><td>${fmtDate(r.checkout)}</td><td>${r.noches}</td><td>${fmt(r.precio)}</td><td style="color:var(--green)">${fmt(calcRes(r).cobrado)}</td><td>${badgeS(r.estado)}</td></tr>`).join('');
   renderPropExpenses(id);
   document.getElementById('prop-detail-info').innerHTML=`<div class="detail-grid">
-    <div class="detail-item"><label>Propietario</label><span>${owner?.nombre||'—'}</span></div>
-    <div class="detail-item"><label>Teléfono prop.</label><span>${owner?.telefono||'—'}</span></div>
+    <div class="detail-item"><label>Propietario</label><span>${esc(owner?.nombre)||'—'}</span></div>
+    <div class="detail-item"><label>Teléfono prop.</label><span>${esc(owner?.telefono)||'—'}</span></div>
     <div class="detail-item"><label>Capacidad</label><span>${prop.capacidad} personas</span></div>
     <div class="detail-item"><label>Precio base/noche</label><span>${fmt(prop.precio)}</span></div>
     <div class="detail-item"><label>Comisión gestión</label><span>${prop.comisionPct||10}%</span></div>
     <div class="detail-item"><label>Estado</label><span>${badgeA(prop.estado)}</span></div>
-    <div class="detail-item" style="grid-column:span 2"><label>Cuenta bancaria</label><span style="font-size:11px">${prop.cuenta||'—'}</span></div>
-  </div>${prop.notas?`<div style="margin-top:8px;font-size:12px;color:var(--text2);background:var(--bg2);padding:8px;border-radius:var(--radius)">${prop.notas}</div>`:''}`;
+    <div class="detail-item" style="grid-column:span 2"><label>Cuenta bancaria</label><span style="font-size:11px">${esc(prop.cuenta)||'—'}</span></div>
+  </div>${prop.notas?`<div style="margin-top:8px;font-size:12px;color:var(--text2);background:var(--bg2);padding:8px;border-radius:var(--radius)">${esc(prop.notas)}</div>`:''}`;
   renderSeasons(id);
   ['ptab-overview','ptab-reservations','ptab-expenses','ptab-stats','ptab-seasons','ptab-info'].forEach((t,i)=>{document.getElementById(t).style.display=i===0?'block':'none';});
   document.querySelectorAll('#page-property-detail .tab').forEach((t,i)=>t.classList.toggle('active',i===0));
@@ -2536,7 +2549,7 @@ function showPropertyDetail(id){
 function renderPropExpenses(propId){
   const pE=expenses.filter(e=>e.propiedadId===propId);
   const el=document.getElementById('prop-detail-exp-tbody');if(!el)return;
-  el.innerHTML=pE.length?pE.map(e=>`<tr><td>${fmtDate(e.fecha)}</td><td>${e.concepto}</td><td><span class="badge badge-gray">${e.categoria}</span></td><td style="font-weight:500;color:var(--red)">${fmt(e.monto)}</td><td style="font-size:11px;color:var(--text2)">${e.reservaId?reservations.find(r=>r.id===e.reservaId)?.huesped||'—':'—'}</td><td>${currentUser?.role==='admin'?`<button class="btn btn-xs btn-danger" onclick="deleteExpense('${e.id}')"><i class="ti ti-trash"></i></button>`:''}</td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--text2)">Sin gastos registrados</td></tr>';
+  el.innerHTML=pE.length?pE.map(e=>`<tr><td>${fmtDate(e.fecha)}</td><td>${esc(e.concepto)}</td><td><span class="badge badge-gray">${esc(e.categoria)}</span></td><td style="font-weight:500;color:var(--red)">${fmt(e.monto)}</td><td style="font-size:11px;color:var(--text2)">${e.reservaId?esc(reservations.find(r=>r.id===e.reservaId)?.huesped)||'—':'—'}</td><td>${can('eliminar_gastos')?`<button class="btn btn-xs btn-danger" onclick="deleteExpense('${e.id}')"><i class="ti ti-trash"></i></button>`:''}</td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--text2)">Sin gastos registrados</td></tr>';
 }
 function renderPropCharts(propId){
   const pR=reservations.filter(r=>r.propiedadId===propId&&r.estado!=='cancelada');
@@ -2556,7 +2569,7 @@ function renderSeasons(propId){
   const sl=document.getElementById('seasons-list');if(!sl)return;
   const s=prop.seasons||[];
   sl.innerHTML=s.length?s.map((se,i)=>`<div class="season-item">
-    <div class="form-group" style="margin:0;flex:2;min-width:120px"><label style="font-size:9px">Nombre</label><input type="text" value="${se.nombre}" onchange="updateSeason('${propId}',${i},'nombre',this.value)"></div>
+    <div class="form-group" style="margin:0;flex:2;min-width:120px"><label style="font-size:9px">Nombre</label><input type="text" value="${esc(se.nombre)}" onchange="updateSeason('${propId}',${i},'nombre',this.value)"></div>
     <div class="form-group" style="margin:0;flex:1;min-width:100px"><label style="font-size:9px">Desde</label><input type="date" value="${se.desde}" onchange="updateSeason('${propId}',${i},'desde',this.value)"></div>
     <div class="form-group" style="margin:0;flex:1;min-width:100px"><label style="font-size:9px">Hasta</label><input type="date" value="${se.hasta}" onchange="updateSeason('${propId}',${i},'hasta',this.value)"></div>
     <div class="form-group" style="margin:0;flex:1;min-width:90px"><label style="font-size:9px">Precio/noche</label><input type="number" value="${se.precio}" onchange="updateSeason('${propId}',${i},'precio',this.value)"></div>
@@ -2635,10 +2648,10 @@ function renderOwners(){
     return`<div class="card">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
         <div style="width:38px;height:38px;border-radius:50%;background:var(--bg3);border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:var(--text2)">${ini}</div>
-        <div><div style="font-size:14px;font-weight:500">${o.nombre}</div><div style="font-size:11px;color:var(--text2)">${oP.length} alojamiento${oP.length!==1?'s':''}</div></div>
+        <div><div style="font-size:14px;font-weight:500">${esc(o.nombre)}</div><div style="font-size:11px;color:var(--text2)">${oP.length} alojamiento${oP.length!==1?'s':''}</div></div>
       </div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:3px"><i class="ti ti-phone" style="font-size:11px"></i> ${o.telefono||'—'}</div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:10px"><i class="ti ti-mail" style="font-size:11px"></i> ${o.email||'—'}</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:3px"><i class="ti ti-phone" style="font-size:11px"></i> ${esc(o.telefono)||'—'}</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:10px"><i class="ti ti-mail" style="font-size:11px"></i> ${esc(o.email)||'—'}</div>
       <div style="border-top:0.5px solid var(--border);padding-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
         <div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;font-weight:600">Neto cobrado</div><div style="font-size:11px;font-weight:500">${fmt(tN)}</div></div>
         <div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;font-weight:600">Gastos</div><div style="font-size:11px;font-weight:500;color:var(--red)">${fmt(tG)}</div></div>
@@ -2672,11 +2685,11 @@ function showOwnerDetail(id){
     <div class="metric-card green"><div class="metric-label">Depósitos realizados</div><div class="metric-value">${fmt(dR)}</div></div>
     <div class="metric-card amber"><div class="metric-label">Depósitos pendientes</div><div class="metric-value">${fmt(dP)}</div></div>
   `;
-  document.getElementById('owner-detail-info').innerHTML=`<div class="card-header"><div class="card-title">Contacto</div></div><div class="detail-grid"><div class="detail-item"><label>Teléfono</label><span>${owner.telefono||'—'}</span></div><div class="detail-item"><label>Email</label><span>${owner.email||'—'}</span></div><div class="detail-item" style="grid-column:span 2"><label>Cuenta bancaria</label><span style="font-size:11px">${owner.cuenta||'—'}</span></div></div>`;
-  document.getElementById('owner-detail-props').innerHTML=`<div class="card-header"><div class="card-title">Alojamientos</div></div>${oP.map(p=>`<div style="padding:6px 0;border-bottom:0.5px solid var(--border);font-size:12px;display:flex;justify-content:space-between;align-items:center"><span><i class="ti ti-home" style="font-size:11px;color:var(--text3)"></i> ${p.nombre}</span>${badgeA(p.estado)}</div>`).join('')||'<p style="font-size:12px;color:var(--text3);margin-top:8px">Sin alojamientos</p>'}`;
+  document.getElementById('owner-detail-info').innerHTML=`<div class="card-header"><div class="card-title">Contacto</div></div><div class="detail-grid"><div class="detail-item"><label>Teléfono</label><span>${esc(owner.telefono)||'—'}</span></div><div class="detail-item"><label>Email</label><span>${esc(owner.email)||'—'}</span></div><div class="detail-item" style="grid-column:span 2"><label>Cuenta bancaria</label><span style="font-size:11px">${esc(owner.cuenta)||'—'}</span></div></div>`;
+  document.getElementById('owner-detail-props').innerHTML=`<div class="card-header"><div class="card-title">Alojamientos</div></div>${oP.map(p=>`<div style="padding:6px 0;border-bottom:0.5px solid var(--border);font-size:12px;display:flex;justify-content:space-between;align-items:center"><span><i class="ti ti-home" style="font-size:11px;color:var(--text3)"></i> ${esc(p.nombre)}</span>${badgeA(p.estado)}</div>`).join('')||'<p style="font-size:12px;color:var(--text3);margin-top:8px">Sin alojamientos</p>'}`;
   document.getElementById('owner-detail-res').innerHTML=oR.map(r=>{
     const c=calcRes(r);const pExp=expenses.filter(e=>e.propiedadId===r.propiedadId&&e.reservaId===r.id).reduce((s,e)=>s+e.monto,0);
-    return`<tr><td>${getPropName(r.propiedadId)}</td><td>${r.huesped}</td><td>${fmtDate(r.checkin)}</td><td>${fmt(r.precio)}</td><td style="color:var(--red)">${fmt(pExp)}</td><td style="color:var(--green);font-weight:500">${fmt(c.propMonto-pExp)}</td><td style="color:var(--blue)">${fmt(c.comisionGest)}</td><td>${r.depositoPagado==='si'?'<span class="badge badge-green">Hecho</span>':'<span class="badge badge-amber">Pend.</span>'}</td></tr>`;
+    return`<tr><td>${esc(getPropName(r.propiedadId))}</td><td>${esc(r.huesped)}</td><td>${fmtDate(r.checkin)}</td><td>${fmt(r.precio)}</td><td style="color:var(--red)">${fmt(pExp)}</td><td style="color:var(--green);font-weight:500">${fmt(c.propMonto-pExp)}</td><td style="color:var(--blue)">${fmt(c.comisionGest)}</td><td>${r.depositoPagado==='si'?'<span class="badge badge-green">Hecho</span>':'<span class="badge badge-amber">Pend.</span>'}</td></tr>`;
   }).join('');
   showPage('owner-detail');
 }
@@ -2762,7 +2775,7 @@ function renderFinances(){
     if(el)chartInstances['chartFinEvo']=new Chart(el,{type:'line',data:{labels:MNF,datasets:[{label:'Ingresos netos',data:bM.map(m=>m.neto),borderColor:'#2d7a4f',backgroundColor:'rgba(45,122,79,.07)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#2d7a4f'},{label:'Gastos',data:bM.map(m=>m.gastos),borderColor:'#a32d2d',backgroundColor:'rgba(163,45,45,.05)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#a32d2d'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}},scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>'$'+Intl.NumberFormat('es-AR').format(v)},grid:{color:'rgba(0,0,0,.05)'}}}}});
   },100);
   const pend=reservations.filter(r=>!['finalizada','cancelada'].includes(r.estado)&&r.checkin.startsWith(yr));
-  document.getElementById('fin-pending-tbody').innerHTML=pend.map(r=>`<tr><td>${r.huesped}</td><td>${getPropName(r.propiedadId)}</td><td>${fmtDate(r.checkin)}</td><td>${fmt(r.precio)}</td><td style="color:var(--red);font-weight:500">${fmt(calcRes(r).saldo)}</td><td>${badgeS(r.estado)}</td></tr>`).join('');
+  document.getElementById('fin-pending-tbody').innerHTML=pend.map(r=>`<tr><td>${esc(r.huesped)}</td><td>${esc(getPropName(r.propiedadId))}</td><td>${fmtDate(r.checkin)}</td><td>${fmt(r.precio)}</td><td style="color:var(--red);font-weight:500">${fmt(calcRes(r).saldo)}</td><td>${badgeS(r.estado)}</td></tr>`).join('');
 }
 
 // EXPENSES
@@ -2783,12 +2796,12 @@ function renderExpensesPage(){
     <div class="metric-card red"><div class="metric-label">Total gastos</div><div class="metric-value">${fmt(total)}</div></div>
     <div class="metric-card"><div class="metric-label">Cantidad</div><div class="metric-value">${rows.length}</div></div>
     <div class="metric-card amber"><div class="metric-label">Promedio</div><div class="metric-value">${fmt(rows.length?total/rows.length:0)}</div></div>
-    <div class="metric-card"><div class="metric-label">Mayor categoría</div><div class="metric-value" style="font-size:14px">${top?top[0]:'—'}</div><div class="metric-sub">${top?fmt(top[1]):''}</div></div>
+    <div class="metric-card"><div class="metric-label">Mayor categoría</div><div class="metric-value" style="font-size:14px">${top?esc(top[0]):'—'}</div><div class="metric-sub">${top?fmt(top[1]):''}</div></div>
   `;
   document.getElementById('exp-tbody').innerHTML=rows.map(e=>`<tr>
-    <td>${fmtDate(e.fecha)}</td><td>${getPropName(e.propiedadId)}</td><td><span class="badge badge-gray">${e.categoria}</span></td>
-    <td>${e.concepto}</td><td style="font-weight:500;color:var(--red)">${fmt(e.monto)}</td>
-    <td style="font-size:11px;color:var(--text2)">${e.reservaId?reservations.find(r=>r.id===e.reservaId)?.huesped||'—':'—'}</td>
+    <td>${fmtDate(e.fecha)}</td><td>${esc(getPropName(e.propiedadId))}</td><td><span class="badge badge-gray">${esc(e.categoria)}</span></td>
+    <td>${esc(e.concepto)}</td><td style="font-weight:500;color:var(--red)">${fmt(e.monto)}</td>
+    <td style="font-size:11px;color:var(--text2)">${e.reservaId?esc(reservations.find(r=>r.id===e.reservaId)?.huesped)||'—':'—'}</td>
     <td style="display:flex;gap:4px">
     ${can('editar_gastos')?`<button class="btn btn-xs" onclick="editExpense('${e.id}')"><i class="ti ti-edit"></i></button>`:''}
     ${can('eliminar_gastos')?`<button class="btn btn-xs btn-danger" onclick="deleteExpense('${e.id}')"><i class="ti ti-trash"></i></button>`:''}</td>
@@ -2903,7 +2916,7 @@ function generateReport(){
   document.getElementById('report-preview').innerHTML=`
     <div id="report-content" style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:2rem">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:2px solid var(--accent)">
-        <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;font-weight:600;margin-bottom:4px">Reporte mensual</div><div style="font-size:20px;font-weight:500">${MNF[parseInt(mo)-1]} ${yr}</div><div style="font-size:13px;color:var(--text2);margin-top:4px">${propName} · ${ownerName}</div></div>
+        <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;font-weight:600;margin-bottom:4px">Reporte mensual</div><div style="font-size:20px;font-weight:500">${MNF[parseInt(mo)-1]} ${yr}</div><div style="font-size:13px;color:var(--text2);margin-top:4px">${esc(propName)} · ${esc(ownerName)}</div></div>
         <div style="text-align:right"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">Generado el</div><div style="font-size:12px">${new Date().toLocaleDateString('es-AR')}</div></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:2rem">
@@ -2925,7 +2938,7 @@ function generateReport(){
           <div class="fin-row"><span class="fin-label">Depósito (40%) a propietario</span><span class="fin-value">${fmt(tDep)}</span></div>
           <div class="fin-row"><span class="fin-label">Realizado</span><span class="fin-value green">${fmt(depR)}</span></div>
           <div class="fin-row"><span class="fin-label">Pendiente</span><span class="fin-value amber">${fmt(tDep-depR)}</span></div>
-          ${Object.entries(catGastos).map(([k,v])=>`<div class="fin-row"><span class="fin-label" style="padding-left:10px;color:var(--text3)">${k}</span><span class="fin-value" style="color:var(--text2)">${fmt(v)}</span></div>`).join('')}
+          ${Object.entries(catGastos).map(([k,v])=>`<div class="fin-row"><span class="fin-label" style="padding-left:10px;color:var(--text3)">${esc(k)}</span><span class="fin-value" style="color:var(--text2)">${fmt(v)}</span></div>`).join('')}
         </div>
       </div>
       <div style="font-size:11px;font-weight:600;margin-bottom:10px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Detalle de reservas</div>
@@ -2939,7 +2952,7 @@ function generateReport(){
           <th style="padding:6px 10px;text-align:right;border-bottom:0.5px solid var(--border);font-size:10px;text-transform:uppercase;font-weight:600">Neto</th>
           <th style="padding:6px 10px;text-align:right;border-bottom:0.5px solid var(--border);font-size:10px;text-transform:uppercase;font-weight:600">Estado</th>
         </tr></thead>
-        <tbody>${aR.map(r=>`<tr style="border-bottom:0.5px solid var(--border)"><td style="padding:6px 10px">${r.huesped}</td><td style="padding:6px 10px">${fmtDate(r.checkin)}</td><td style="padding:6px 10px">${r.noches}</td><td style="padding:6px 10px">${r.canal}</td><td style="padding:6px 10px;text-align:right">${fmt(r.precio)}</td><td style="padding:6px 10px;text-align:right;color:var(--green)">${fmt(calcRes(r).cobrado)}</td><td style="padding:6px 10px;text-align:right">${STATUS[r.estado]?.label||r.estado}</td></tr>`).join('')}</tbody>
+        <tbody>${aR.map(r=>`<tr style="border-bottom:0.5px solid var(--border)"><td style="padding:6px 10px">${esc(r.huesped)}</td><td style="padding:6px 10px">${fmtDate(r.checkin)}</td><td style="padding:6px 10px">${r.noches}</td><td style="padding:6px 10px">${esc(r.canal)}</td><td style="padding:6px 10px;text-align:right">${fmt(r.precio)}</td><td style="padding:6px 10px;text-align:right;color:var(--green)">${fmt(calcRes(r).cobrado)}</td><td style="padding:6px 10px;text-align:right">${esc(STATUS[r.estado]?.label||r.estado)}</td></tr>`).join('')}</tbody>
       </table>
       <div style="margin-top:2rem;padding-top:1rem;border-top:0.5px solid var(--border);font-size:10px;color:var(--text3);text-align:center">Panel de Gestión de Alojamientos · Reporte generado el ${new Date().toLocaleDateString('es-AR')}</div>
     </div>`;
@@ -3155,7 +3168,7 @@ function loadMsgReservation(){
   if(!r){document.getElementById('msg-res-info').innerHTML='';renderMessages();return;}
   const c=calcRes(r);
   document.getElementById('msg-res-info').innerHTML=`<div class="detail-grid" style="margin-top:.75rem">
-    <div class="detail-item"><label>Alojamiento</label><span>${getPropName(r.propiedadId)}</span></div>
+    <div class="detail-item"><label>Alojamiento</label><span>${esc(getPropName(r.propiedadId))}</span></div>
     <div class="detail-item"><label>Check-in</label><span>${fmtDate(r.checkin)}</span></div>
     <div class="detail-item"><label>Seña</label><span>${fmt(c.sena)}</span></div>
     <div class="detail-item"><label>Saldo</label><span>${fmt(c.saldo)}</span></div>
@@ -3176,7 +3189,7 @@ function renderMessages(r,prop,c){
   const el=document.getElementById('msg-templates-list');if(!el)return;
   el.innerHTML=T.map(t=>`<div class="msg-template" onclick="copyMsg(this)">
     <div class="msg-template-title"><span><i class="ti ${t.icon}" style="font-size:13px;margin-right:4px"></i>${t.title}</span><button class="btn btn-xs" style="pointer-events:none"><i class="ti ti-copy"></i> Copiar</button></div>
-    <div class="msg-template-body">${t.msg}</div>
+    <div class="msg-template-body">${esc(t.msg)}</div>
   </div>`).join('');
 }
 function copyMsg(el){
@@ -3205,8 +3218,8 @@ function renderWhatsappPage(){
   const el=document.getElementById('wsp-list');
   if(!list.length){el.innerHTML='<div class="card" style="text-align:center;color:var(--text3);padding:2rem">No hay check-ins cargados para esta fecha.</div>';return;}
   el.innerHTML=list.map(r=>`<div class="msg-template" style="margin-bottom:10px" onclick="copyWspOne('${r.id}')">
-    <div class="msg-template-title"><span><i class="ti ti-brand-whatsapp" style="font-size:13px;margin-right:4px;color:var(--green)"></i>${r.huesped} — ${getPropName(r.propiedadId)}</span><button class="btn btn-xs" style="pointer-events:none"><i class="ti ti-copy"></i> Copiar</button></div>
-    <div class="msg-template-body" style="white-space:pre-line">${buildWspText(r)}</div>
+    <div class="msg-template-title"><span><i class="ti ti-brand-whatsapp" style="font-size:13px;margin-right:4px;color:var(--green)"></i>${esc(r.huesped)} — ${esc(getPropName(r.propiedadId))}</span><button class="btn btn-xs" style="pointer-events:none"><i class="ti ti-copy"></i> Copiar</button></div>
+    <div class="msg-template-body" style="white-space:pre-line">${esc(buildWspText(r))}</div>
   </div>`).join('');
 }
 function copyWspOne(id){
@@ -4243,7 +4256,7 @@ function renderMonthly(){
           <th style="text-align:right;padding:5px 8px;font-weight:600;color:var(--text2)">Ingresos</th>
         </tr></thead>
         <tbody>${propRows.map(p=>`<tr style="border-bottom:0.5px solid var(--border)">
-          <td style="padding:6px 8px">${p.nombre}</td>
+          <td style="padding:6px 8px">${esc(p.nombre)}</td>
           <td style="text-align:center;padding:6px 4px">${p.reservas}</td>
           <td style="text-align:center;padding:6px 4px">${p.noches}</td>
           <td style="text-align:center;padding:6px 4px">${p.ocup}%</td>
@@ -4259,14 +4272,14 @@ function renderMonthly(){
         <div>
           <div style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Entradas</div>
           ${ciList.map(r=>`<div style="padding:4px 0;border-bottom:0.5px solid var(--border);font-size:11px">
-            <div style="font-weight:600">${r.huesped.split(' ')[0]}</div>
+            <div style="font-weight:600">${esc(r.huesped.split(' ')[0])}</div>
             <div style="color:var(--text2)">${fmtDate(r.checkin)} · ${r.noches}n</div>
           </div>`).join('')||'<div style="color:var(--text3);font-size:11px">Sin check-ins</div>'}
         </div>
         <div>
           <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Salidas</div>
           ${coList.map(r=>`<div style="padding:4px 0;border-bottom:0.5px solid var(--border);font-size:11px">
-            <div style="font-weight:600">${r.huesped.split(' ')[0]}</div>
+            <div style="font-weight:600">${esc(r.huesped.split(' ')[0])}</div>
             <div style="color:var(--text2)">${fmtDate(r.checkout)} · ${r.noches}n</div>
           </div>`).join('')||'<div style="color:var(--text3);font-size:11px">Sin check-outs</div>'}
         </div>
@@ -4678,13 +4691,13 @@ function renderBilling(){
     <div class="metric-card"><div class="metric-label">Comprobantes emitidos</div><div class="metric-value">${facturas.length}</div></div>
     <div class="metric-card"><div class="metric-label">Facturado UYU</div><div class="metric-value">${invMoney(totUYU,'UYU')}</div></div>
     <div class="metric-card"><div class="metric-label">Facturado USD</div><div class="metric-value">${invMoney(totUSD,'USD')}</div></div>
-    <div class="metric-card"><div class="metric-label">Numeración restante (CAE)</div><div class="metric-value">${restante}</div><div style="font-size:11px;color:var(--text3)">Próximo: ${cfg.serie||'A'} ${cfg.prox||1}</div></div>`;
+    <div class="metric-card"><div class="metric-label">Numeración restante (CAE)</div><div class="metric-value">${restante}</div><div style="font-size:11px;color:var(--text3)">Próximo: ${esc(cfg.serie)||'A'} ${cfg.prox||1}</div></div>`;
   const tb=document.getElementById('billing-tbody');
   if(tb){
     if(!list.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:1.5rem">Sin comprobantes todavía. Configurá el emisor y generá el primero.</td></tr>';}
     else tb.innerHTML=list.map(f=>`<tr>
-      <td>${f.tipo}</td><td>${f.serie} ${f.numero}</td><td>${fmtDate(f.fecha)}</td>
-      <td>${f.receptorNombre||'Consumidor final'}</td><td>${f.moneda}</td><td>${invMoney(f.total,f.moneda)}</td>
+      <td>${esc(f.tipo)}</td><td>${esc(f.serie)} ${f.numero}</td><td>${fmtDate(f.fecha)}</td>
+      <td>${esc(f.receptorNombre)||'Consumidor final'}</td><td>${esc(f.moneda)}</td><td>${invMoney(f.total,f.moneda)}</td>
       <td><span class="badge badge-amber">Interno</span></td>
       <td style="text-align:right"><button class="btn btn-sm" onclick="printInvoiceById('${f.id}')"><i class="ti ti-printer"></i></button></td>
     </tr>`).join('');
@@ -4700,7 +4713,7 @@ function openNewInvoice(){
   if(!billingCfg.rut||!billingCfg.serie){showToast('Primero configurá los datos del emisor y el CAE','error');openBillingConfig();return;}
   invLines=[{cant:1,desc:'Alojamiento',precio:0,ivaKey:'22'}];
   const rs=document.getElementById('inv-reserva');
-  if(rs){rs.innerHTML='<option value="">— Comprobante manual —</option>'+reservations.map(r=>`<option value="${r.id}">${r.huesped} — ${getPropName(r.propiedadId)} (${fmtDate(r.checkin)})</option>`).join('');}
+  if(rs){rs.innerHTML='<option value="">— Comprobante manual —</option>'+reservations.map(r=>`<option value="${r.id}">${esc(r.huesped)} — ${esc(getPropName(r.propiedadId))} (${fmtDate(r.checkin)})</option>`).join('');}
   ['inv-recep-nombre','inv-doc-num','inv-recep-dom'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   document.getElementById('inv-tipo').value='e-Ticket';document.getElementById('inv-moneda').value='UYU';
   onInvTipoChange();renderInvLines();openModal('modal-invoice');
@@ -4722,7 +4735,7 @@ function renderInvLines(){
     const imp=(+l.cant||0)*(+l.precio||0);
     return `<tr>
       <td><input type="number" min="0" value="${l.cant}" style="width:56px" oninput="updInvLine(${i},'cant',this.value)"></td>
-      <td><input type="text" value="${(l.desc||'').replace(/"/g,'&quot;')}" placeholder="Concepto" oninput="updInvLine(${i},'desc',this.value)"></td>
+      <td><input type="text" value="${esc(l.desc)}" placeholder="Concepto" oninput="updInvLine(${i},'desc',this.value)"></td>
       <td><input type="number" min="0" value="${l.precio}" style="width:100px" oninput="updInvLine(${i},'precio',this.value)"></td>
       <td><select onchange="updInvLine(${i},'ivaKey',this.value)">${IVA_RATES.map(r=>`<option value="${r.k}" ${l.ivaKey===r.k?'selected':''}>${r.label}</option>`).join('')}</select></td>
       <td style="white-space:nowrap">${invMoney(imp,document.getElementById('inv-moneda').value)}</td>
@@ -4784,11 +4797,11 @@ function printInvoiceById(id){const f=facturas.find(x=>x.id===id);if(f)printInvo
 function printInvoice(f){
   const e=f.emisor||billingCfg;const cur=f.moneda;
   const groups={};f.lines.forEach(l=>{const base=(+l.cant||0)*(+l.precio||0);const r=IVA_RATES.find(x=>x.k===l.ivaKey)||IVA_RATES[0];const iva=Math.round(base*r.rate*100)/100;groups[r.k]=groups[r.k]||{base:0,iva:0,label:r.label};groups[r.k].base+=base;groups[r.k].iva+=iva;});
-  const rows=f.lines.map(l=>{const base=(+l.cant||0)*(+l.precio||0);const r=IVA_RATES.find(x=>x.k===l.ivaKey)||IVA_RATES[0];return `<tr><td>${l.cant}</td><td>${(l.desc||'').replace(/</g,'&lt;')}</td><td class="r">${invMoney(l.precio,cur)}</td><td class="c">${r.label}</td><td class="r">${invMoney(base,cur)}</td></tr>`;}).join('');
+  const rows=f.lines.map(l=>{const base=(+l.cant||0)*(+l.precio||0);const r=IVA_RATES.find(x=>x.k===l.ivaKey)||IVA_RATES[0];return `<tr><td>${l.cant}</td><td>${esc(l.desc)}</td><td class="r">${invMoney(l.precio,cur)}</td><td class="c">${r.label}</td><td class="r">${invMoney(base,cur)}</td></tr>`;}).join('');
   let totalsRows='';Object.keys(groups).forEach(k=>{totalsRows+=`<tr><td colspan="4" class="r">Neto ${groups[k].label}</td><td class="r">${invMoney(groups[k].base,cur)}</td></tr>`;});
   Object.keys(groups).forEach(k=>{if(groups[k].iva>0)totalsRows+=`<tr><td colspan="4" class="r">IVA ${groups[k].label}</td><td class="r">${invMoney(groups[k].iva,cur)}</td></tr>`;});
   const win=window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>${f.tipo} ${f.serie} ${f.numero}</title>
+  win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>${esc(f.tipo)} ${esc(f.serie)} ${f.numero}</title>
   <style>
     *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
     body{margin:0;padding:24px;color:#1a2332;font-size:12px}
@@ -4816,21 +4829,21 @@ function printInvoice(f){
   <div class="doc">
     <div class="top">
       <div class="emisor">
-        <h1>${e.razon||'Razón social'}${e.fantasia?(' — '+e.fantasia):''}</h1>
-        <div><b>RUT:</b> ${e.rut||'—'}</div>
-        <div>${e.domicilio||'Domicilio fiscal'}</div>
-        <div>${e.giro||''}${e.sucursal?(' · Sucursal '+e.sucursal):''}</div>
+        <h1>${esc(e.razon)||'Razón social'}${e.fantasia?(' — '+esc(e.fantasia)):''}</h1>
+        <div><b>RUT:</b> ${esc(e.rut)||'—'}</div>
+        <div>${esc(e.domicilio)||'Domicilio fiscal'}</div>
+        <div>${esc(e.giro)||''}${e.sucursal?(' · Sucursal '+esc(e.sucursal)):''}</div>
       </div>
       <div class="box">
-        <div class="t">${f.tipo.toUpperCase()}</div>
-        <div class="n">${f.serie} ${String(f.numero).padStart(7,'0')}</div>
-        <small>CAE N° ${e.cae||'—'}${e.caeVenc?(' · Vto '+fmtDate(e.caeVenc)):''}</small><br>
+        <div class="t">${esc(f.tipo.toUpperCase())}</div>
+        <div class="n">${esc(f.serie)} ${String(f.numero).padStart(7,'0')}</div>
+        <small>CAE N° ${esc(e.cae)||'—'}${e.caeVenc?(' · Vto '+fmtDate(e.caeVenc)):''}</small><br>
         <small>Fecha: ${fmtDate(f.fecha)}</small>
       </div>
     </div>
     <div class="receptor">
-      <div><b>Receptor:</b> ${f.receptorNombre||'Consumidor final'}<br>${f.docTipo&&f.docNum?(f.docTipo+': '+f.docNum):'—'}</div>
-      <div style="text-align:right">${f.domicilio||''}<br><b>Moneda:</b> ${f.moneda}</div>
+      <div><b>Receptor:</b> ${esc(f.receptorNombre)||'Consumidor final'}<br>${f.docTipo&&f.docNum?(esc(f.docTipo)+': '+esc(f.docNum)):'—'}</div>
+      <div style="text-align:right">${esc(f.domicilio)||''}<br><b>Moneda:</b> ${esc(f.moneda)}</div>
     </div>
     <table>
       <thead><tr><th>Cant.</th><th>Descripción</th><th class="r">P. unit. (sin IVA)</th><th class="c">IVA</th><th class="r">Importe neto</th></tr></thead>
@@ -4844,10 +4857,10 @@ function printInvoice(f){
       <div class="qr">Código QR<br>(se genera al<br>emitir en DGI)</div>
       <div class="sello">
         <b>Sello digital DGI</b><br>
-        RUT emisor: ${e.rut||'—'} · Tipo: ${f.tipo}<br>
-        Serie/N°: ${f.serie} ${f.numero} · Fecha: ${fmtDate(f.fecha)}<br>
+        RUT emisor: ${esc(e.rut)||'—'} · Tipo: ${esc(f.tipo)}<br>
+        Serie/N°: ${esc(f.serie)} ${f.numero} · Fecha: ${fmtDate(f.fecha)}<br>
         Monto total: ${invMoney(f.total,cur)}<br>
-        <b>Código de seguridad:</b> ${f.codigoSeguridad}
+        <b>Código de seguridad:</b> ${esc(f.codigoSeguridad)}
       </div>
     </div>
     <div class="legal">
@@ -5006,14 +5019,14 @@ function renderReception(){
     if(!llegadas.length)arr.innerHTML='<div style="color:var(--text3);font-size:13px">Sin llegadas para hoy.</div>';
     else arr.innerHTML=llegadas.map(s=>{const r=roomById(s.roomId);const rn=r?r.numero:'—';
       const act=s.estado==='reservada'?`<button class="btn btn-sm btn-primary" onclick="checkInStay('${s.id}')"><i class="ti ti-login"></i> Check-in</button>`:`<button class="btn btn-sm" onclick="openFolio('${s.id}')"><i class="ti ti-receipt"></i> Cuenta</button>`;
-      return `<div class="hk-row"><div><b>${s.huesped}</b> · Hab. ${rn} · ${fmtDate(s.checkin)} → ${fmtDate(s.checkout)} <span class="st-chip st-${s.estado==='reservada'?'reservada':'ocupada'}">${s.estado==='reservada'?'Reservada':'Alojado'}</span></div>${act}</div>`;}).join('');
+      return `<div class="hk-row"><div><b>${esc(s.huesped)}</b> · Hab. ${esc(rn)} · ${fmtDate(s.checkin)} → ${fmtDate(s.checkout)} <span class="st-chip st-${s.estado==='reservada'?'reservada':'ocupada'}">${s.estado==='reservada'?'Reservada':'Alojado'}</span></div>${act}</div>`;}).join('');
   }
   const dep=document.getElementById('reception-departures');
   if(dep){
     const inh=stays.filter(s=>s.estado==='in_house');
     if(!inh.length)dep.innerHTML='<div style="color:var(--text3);font-size:13px">Sin huéspedes alojados.</div>';
     else dep.innerHTML=inh.map(s=>{const r=roomById(s.roomId);const rn=r?r.numero:'—';const sd=folioSaldo(s);const sale=s.checkout<=hoy;
-      return `<div class="hk-row"><div><b>${s.huesped}</b> · Hab. ${rn} · sale ${fmtDate(s.checkout)} ${sale?'<span class="st-chip st-ocupada">Sale hoy</span>':''}<div style="font-size:11px;color:var(--text2)">Saldo a cobrar: ${fmt(sd.saldo)}</div></div><button class="btn btn-sm" onclick="openFolio('${s.id}')"><i class="ti ti-receipt"></i> Cuenta / Check-out</button></div>`;}).join('');
+      return `<div class="hk-row"><div><b>${esc(s.huesped)}</b> · Hab. ${esc(rn)} · sale ${fmtDate(s.checkout)} ${sale?'<span class="st-chip st-ocupada">Sale hoy</span>':''}<div style="font-size:11px;color:var(--text2)">Saldo a cobrar: ${fmt(sd.saldo)}</div></div><button class="btn btn-sm" onclick="openFolio('${s.id}')"><i class="ti ti-receipt"></i> Cuenta / Check-out</button></div>`;}).join('');
   }
 }
 
@@ -5024,13 +5037,13 @@ function renderRoomTypes(){
   el.innerHTML=roomTypes.map(t=>{
     const chips=[t.ac?'A/C':null,t.tv?'TV':null,t.frigobar?'Frigobar':null,t.banio==='privado'?'Baño privado':'Baño compartido'].filter(Boolean)
       .map(c=>`<span class="st-chip st-inspeccionada" style="margin-top:0">${c}</span>`).join(' ');
-    const admin=currentUser?.role==='admin';
+    const canEditType=can('administrar_tipos_habitacion');
     return `<div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="font-weight:600;font-size:15px">${t.nombre}</div><div style="font-weight:600;color:var(--orange,#F5A623)">${fmt(t.precio)}<span style="font-size:10px;color:var(--text3)">/noche</span></div></div>
-      <div style="font-size:12px;color:var(--text2);margin:4px 0">Capacidad ${t.capacidad} · ${t.camas} cama(s) ${t.tipoCama?('· '+t.tipoCama):''}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="font-weight:600;font-size:15px">${esc(t.nombre)}</div><div style="font-weight:600;color:var(--orange,#F5A623)">${fmt(t.precio)}<span style="font-size:10px;color:var(--text3)">/noche</span></div></div>
+      <div style="font-size:12px;color:var(--text2);margin:4px 0">Capacidad ${t.capacidad} · ${t.camas} cama(s) ${t.tipoCama?('· '+esc(t.tipoCama)):''}</div>
       <div style="display:flex;gap:5px;flex-wrap:wrap;margin:6px 0">${chips}</div>
-      ${t.descripcion?`<div style="font-size:12px;color:var(--text3)">${t.descripcion}</div>`:''}
-      ${admin?`<div style="margin-top:10px;display:flex;gap:5px"><button class="btn btn-sm" style="flex:1" onclick="editRoomType('${t.id}')"><i class="ti ti-edit"></i> Editar</button><button class="btn btn-sm" style="background:var(--red);color:#fff;border-color:var(--red)" onclick="deleteRoomType('${t.id}')"><i class="ti ti-trash"></i></button></div>`:''}
+      ${t.descripcion?`<div style="font-size:12px;color:var(--text3)">${esc(t.descripcion)}</div>`:''}
+      ${canEditType?`<div style="margin-top:10px;display:flex;gap:5px"><button class="btn btn-sm" style="flex:1" onclick="editRoomType('${t.id}')"><i class="ti ti-edit"></i> Editar</button><button class="btn btn-sm" style="background:var(--red);color:#fff;border-color:var(--red)" onclick="deleteRoomType('${t.id}')"><i class="ti ti-trash"></i></button></div>`:''}
     </div>`;
   }).join('');
 }
@@ -5079,11 +5092,11 @@ function renderRooms(){
   el.innerHTML=rooms.map(r=>{const st=stInfo(r.estado);const s=stayOfRoom(r.id);
     return `<div class="room-card st-b-${st.cls}" onclick="roomClick('${r.id}')" title="Click para acción rápida">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div><div class="room-num">Hab. ${r.numero}</div><div class="room-meta">${roomTypeName(r.tipoId)}${r.piso?(' · Piso '+r.piso):''}</div></div>
+        <div><div class="room-num">Hab. ${esc(r.numero)}</div><div class="room-meta">${esc(roomTypeName(r.tipoId))}${r.piso?(' · Piso '+esc(r.piso)):''}</div></div>
         ${admin?`<div style="display:flex;gap:3px" onclick="event.stopPropagation()"><button class="btn btn-xs btn-icon" onclick="editRoom('${r.id}')"><i class="ti ti-edit"></i></button><button class="btn btn-xs btn-icon" style="color:var(--red)" onclick="deleteRoom('${r.id}')"><i class="ti ti-trash"></i></button></div>`:''}
       </div>
       <span class="st-chip st-${st.cls}">${st.label}</span>
-      ${s?`<div class="room-meta" style="margin-top:6px">${s.huesped} · sale ${fmtDate(s.checkout)}</div>`:''}
+      ${s?`<div class="room-meta" style="margin-top:6px">${esc(s.huesped)} · sale ${fmtDate(s.checkout)}</div>`:''}
     </div>`;}).join('');
 }
 async function roomClick(id){const r=roomById(id);if(!r)return;
@@ -5092,7 +5105,7 @@ async function roomClick(id){const r=roomById(id);if(!r)return;
   if(r.estado==='mantenimiento'||r.estado==='fuera_servicio'){editRoom(id);return;}
   openCheckin(id);
 }
-function populateRoomTypeSelect(){const s=document.getElementById('room-tipo');if(!s)return;s.innerHTML='<option value="">Seleccionar...</option>'+roomTypes.map(t=>`<option value="${t.id}">${t.nombre} (${fmt(t.precio)})</option>`).join('');
+function populateRoomTypeSelect(){const s=document.getElementById('room-tipo');if(!s)return;s.innerHTML='<option value="">Seleccionar...</option>'+roomTypes.map(t=>`<option value="${t.id}">${esc(t.nombre)} (${fmt(t.precio)})</option>`).join('');
   const es=document.getElementById('room-estado');if(es)es.innerHTML=ROOM_STATES.map(st=>`<option value="${st.key}">${st.label}</option>`).join('');}
 function openNewRoom(){populateRoomTypeSelect();document.getElementById('room-id').value='';document.getElementById('modal-room-title').textContent='Nueva habitación';
   document.getElementById('room-numero').value='';document.getElementById('room-piso').value='';document.getElementById('room-notas').value='';
@@ -5124,7 +5137,7 @@ async function deleteRoom(id){if(stayOfRoom(id)){showToast('La habitación está
 function openCheckin(preRoomId){
   const sel=document.getElementById('ci-room');
   const libres=rooms.filter(r=>r.estado!=='ocupada'&&r.estado!=='fuera_servicio'&&r.estado!=='mantenimiento');
-  sel.innerHTML=libres.map(r=>`<option value="${r.id}">Hab. ${r.numero} — ${roomTypeName(r.tipoId)}</option>`).join('')||'<option value="">Sin habitaciones libres</option>';
+  sel.innerHTML=libres.map(r=>`<option value="${r.id}">Hab. ${esc(r.numero)} — ${esc(roomTypeName(r.tipoId))}</option>`).join('')||'<option value="">Sin habitaciones libres</option>';
   ['ci-huesped','ci-doc','ci-pais','ci-sena','ci-notas'].forEach(id=>document.getElementById(id).value='');
   const hoy=isoToday();document.getElementById('ci-checkin').value=hoy;
   const d=new Date();d.setDate(d.getDate()+1);document.getElementById('ci-checkout').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -5156,12 +5169,12 @@ function openFolio(id){const s=stays.find(x=>x.id===id);if(!s)return;
   document.getElementById('folio-stay-id').value=id;
   const r=roomById(s.roomId);
   document.getElementById('modal-folio-title').textContent='Cuenta — '+s.huesped;
-  document.getElementById('folio-head').innerHTML=`Hab. ${r?r.numero:'—'} · ${fmtDate(s.checkin)} → ${fmtDate(s.checkout)} · ${s.pais||''}`;
+  document.getElementById('folio-head').innerHTML=`Hab. ${esc(r?r.numero:'—')} · ${fmtDate(s.checkin)} → ${fmtDate(s.checkout)} · ${esc(s.pais)||''}`;
   renderFolioList(s);
   document.getElementById('folio-concepto').value='';document.getElementById('folio-monto').value='';document.getElementById('folio-tipo').value='cargo';
   openModal('modal-folio');}
 function renderFolioList(s){const el=document.getElementById('folio-list');const sd=folioSaldo(s);
-  el.innerHTML=(s.folio||[]).map((f,i)=>`<div class="folio-row"><span>${f.concepto} <span style="color:var(--text3);font-size:11px">${f.tipo==='pago'?'(pago)':''}</span></span><span style="display:flex;gap:8px;align-items:center"><b style="color:${f.tipo==='pago'?'var(--green,#2D7A4F)':'var(--text)'}">${f.tipo==='pago'?'−':''}${fmt(f.monto)}</b><button class="btn btn-xs btn-icon" style="color:var(--red)" onclick="delFolioItem(${i})"><i class="ti ti-x"></i></button></span></div>`).join('')
+  el.innerHTML=(s.folio||[]).map((f,i)=>`<div class="folio-row"><span>${esc(f.concepto)} <span style="color:var(--text3);font-size:11px">${f.tipo==='pago'?'(pago)':''}</span></span><span style="display:flex;gap:8px;align-items:center"><b style="color:${f.tipo==='pago'?'var(--green,#2D7A4F)':'var(--text)'}">${f.tipo==='pago'?'−':''}${fmt(f.monto)}</b><button class="btn btn-xs btn-icon" style="color:var(--red)" onclick="delFolioItem(${i})"><i class="ti ti-x"></i></button></span></div>`).join('')
     +`<div class="folio-row" style="border-bottom:0;font-weight:700;margin-top:4px"><span>Saldo a cobrar</span><span>${fmt(sd.saldo)}</span></div>`;}
 async function saveFolio(s){
   const {error}=await supabaseClient.from('stays').update({folio:s.folio}).eq('id',s.id);
@@ -5204,7 +5217,7 @@ function renderHousekeeping(){const el=document.getElementById('hk-list');if(!el
     let btn='';
     if(t.estado==='pendiente')btn=`<button class="btn btn-sm" onclick="hkAdvance('${t.id}','proceso')"><i class="ti ti-player-play"></i> Empezar</button>`;
     else if(t.estado==='proceso')btn=`<button class="btn btn-sm btn-primary" onclick="hkAdvance('${t.id}','terminada')"><i class="ti ti-check"></i> Terminar</button>`;
-    return `<div class="hk-row"><div><b>Hab. ${rn}</b> <span class="st-chip st-${clsMap[t.estado]}">${lbl[t.estado]}</span>${t.notas?`<div style="font-size:11px;color:var(--text2)">${t.notas}</div>`:''}</div><div style="display:flex;gap:6px">${btn}</div></div>`;}).join('');
+    return `<div class="hk-row"><div><b>Hab. ${esc(rn)}</b> <span class="st-chip st-${clsMap[t.estado]}">${lbl[t.estado]}</span>${t.notas?`<div style="font-size:11px;color:var(--text2)">${esc(t.notas)}</div>`:''}</div><div style="display:flex;gap:6px">${btn}</div></div>`;}).join('');
 }
 async function hkAdvance(id,to){const t=hkTasks.find(x=>x.id===id);if(!t)return;
   const {error}=await supabaseClient.from('hk_tasks').update({estado:to}).eq('id',id);
@@ -5214,7 +5227,7 @@ async function hkAdvance(id,to){const t=hkTasks.find(x=>x.id===id);if(!t)return;
   renderHousekeeping();renderRooms();showToast('Tarea actualizada');}
 
 /* ---------- MANTENIMIENTO ---------- */
-function populateMaintRoom(){const s=document.getElementById('mt-room');if(!s)return;s.innerHTML=rooms.map(r=>`<option value="${r.id}">Hab. ${r.numero}</option>`).join('');}
+function populateMaintRoom(){const s=document.getElementById('mt-room');if(!s)return;s.innerHTML=rooms.map(r=>`<option value="${r.id}">Hab. ${esc(r.numero)}</option>`).join('');}
 function openNewMaint(){populateMaintRoom();document.getElementById('mt-id').value='';document.getElementById('modal-maint-title').textContent='Nueva incidencia';
   ['mt-categoria','mt-responsable','mt-costo','mt-notas'].forEach(id=>document.getElementById(id).value='');document.getElementById('mt-prioridad').value='media';document.getElementById('mt-fuera').checked=false;openModal('modal-maint');}
 async function saveMaint(){const rid=document.getElementById('mt-room').value;if(!rid){showToast('Elegí la habitación','error');return;}
@@ -5229,7 +5242,7 @@ function renderMaintenance(){const el=document.getElementById('mt-list');if(!el)
   if(!abiertas.length){el.innerHTML='<div class="card" style="color:var(--text3)">No hay incidencias abiertas.</div>';return;}
   const pcls={alta:'ocupada',media:'limpieza',baja:'reservada'};
   el.innerHTML=abiertas.map(t=>{const r=roomById(t.roomId);const rn=r?r.numero:'—';
-    return `<div class="mt-row"><div><b>Hab. ${rn}</b> <span class="st-chip st-${pcls[t.prioridad]||'reservada'}">${t.prioridad}</span> ${t.categoria?('· '+t.categoria):''}<div style="font-size:11px;color:var(--text2)">${t.notas||''} ${t.responsable?('· '+t.responsable):''} ${t.costo?('· '+fmt(t.costo)):''}</div></div><button class="btn btn-sm btn-primary" onclick="closeMaint('${t.id}')"><i class="ti ti-check"></i> Cerrar</button></div>`;}).join('');
+    return `<div class="mt-row"><div><b>Hab. ${esc(rn)}</b> <span class="st-chip st-${pcls[t.prioridad]||'reservada'}">${esc(t.prioridad)}</span> ${t.categoria?('· '+esc(t.categoria)):''}<div style="font-size:11px;color:var(--text2)">${esc(t.notas)||''} ${t.responsable?('· '+esc(t.responsable)):''} ${t.costo?('· '+fmt(t.costo)):''}</div></div><button class="btn btn-sm btn-primary" onclick="closeMaint('${t.id}')"><i class="ti ti-check"></i> Cerrar</button></div>`;}).join('');
 }
 async function closeMaint(id){const t=maintTickets.find(x=>x.id===id);if(!t)return;
   const {error}=await supabaseClient.from('maint_tickets').update({estado:'cerrada'}).eq('id',id);
@@ -5263,7 +5276,7 @@ function renderCashbox(){
     .map(([l,v,c])=>`<div class="metric-card"><div class="metric-label">${l}</div><div class="metric-value" style="color:var(${c},var(--text))">${fmt(v)}</div></div>`).join('');
   if(body){
     if(!cur.movimientos.length)body.innerHTML='<div style="color:var(--text3)">Sin movimientos todavía.</div>';
-    else body.innerHTML='<div style="font-weight:600;margin-bottom:.5rem">Movimientos del turno</div>'+cur.movimientos.slice().reverse().map(m=>`<div class="folio-row"><span>${m.concepto||m.tipo} <span style="color:var(--text3);font-size:11px">(${m.tipo})</span></span><b style="color:${m.tipo==='egreso'?'var(--red)':'var(--green,#2D7A4F)'}">${m.tipo==='egreso'?'−':''}${fmt(m.monto)}</b></div>`).join('');
+    else body.innerHTML='<div style="font-weight:600;margin-bottom:.5rem">Movimientos del turno</div>'+cur.movimientos.slice().reverse().map(m=>`<div class="folio-row"><span>${esc(m.concepto)||esc(m.tipo)} <span style="color:var(--text3);font-size:11px">(${esc(m.tipo)})</span></span><b style="color:${m.tipo==='egreso'?'var(--red)':'var(--green,#2D7A4F)'}">${m.tipo==='egreso'?'−':''}${fmt(m.monto)}</b></div>`).join('');
   }
 }
 async function doOpenCash(){
@@ -5379,8 +5392,8 @@ function renderGuests(){
   if(!list.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:1rem">Sin huéspedes'+(q?' para esa búsqueda':'')+'.</td></tr>';return;}
   tb.innerHTML=list.map(g=>{const s=guestStats(g);
     return `<tr style="cursor:pointer" onclick="editGuest('${g.id}')">
-      <td><b>${guestFullName(g)||'—'}</b>${g.pais?`<div style="font-size:11px;color:var(--text2)">${g.pais}</div>`:''}</td>
-      <td>${g.telefono||'—'}</td><td>${g.doc?((g.tipoDoc||'')+' '+g.doc):'—'}</td>
+      <td><b>${esc(guestFullName(g))||'—'}</b>${g.pais?`<div style="font-size:11px;color:var(--text2)">${esc(g.pais)}</div>`:''}</td>
+      <td>${esc(g.telefono)||'—'}</td><td>${g.doc?(esc(g.tipoDoc)+' '+esc(g.doc)):'—'}</td>
       <td>${s.count}</td><td>${s.ultima?fmtDate(s.ultima):'—'}</td><td>${fmt(s.gastado)}</td>
       <td onclick="event.stopPropagation()" style="text-align:right;white-space:nowrap"><button class="btn btn-xs btn-icon" onclick="editGuest('${g.id}')"><i class="ti ti-edit"></i></button><button class="btn btn-xs btn-icon" style="color:var(--red)" onclick="deleteGuest('${g.id}')"><i class="ti ti-trash"></i></button></td>
     </tr>`;}).join('');
@@ -5420,7 +5433,7 @@ function renderGuestHistory(g){const s=guestStats(g);const wrap=document.getElem
   const head=`<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;margin-bottom:.5rem"><span>Estadías: <b>${s.count}</b></span><span>Total gastado: <b>${fmt(s.gastado)}</b></span><span>Última: <b>${s.ultima?fmtDate(s.ultima):'—'}</b></span></div>`;
   if(!s.list.length){el.innerHTML=head+'<div style="color:var(--text3);font-size:12px">Sin estadías registradas.</div>';return;}
   el.innerHTML=head+s.list.slice().sort((a,b)=>(b.checkin||'').localeCompare(a.checkin||'')).map(r=>{const p=(properties.find(x=>x.id===r.propiedadId)||{}).nombre||'—';
-    return `<div class="folio-row"><span>${fmtDate(r.checkin)} → ${fmtDate(r.checkout)} · ${p}</span><span>${fmt((r.precio||0)-(r.descuento||0))}</span></div>`;}).join('');
+    return `<div class="folio-row"><span>${fmtDate(r.checkin)} → ${fmtDate(r.checkout)} · ${esc(p)}</span><span>${fmt((r.precio||0)-(r.descuento||0))}</span></div>`;}).join('');
 }
 async function saveGuest(){const nombre=document.getElementById('guest-nombre').value.trim();if(!nombre){showToast('Ingresá el nombre','error');return;}
   const tel=document.getElementById('guest-telefono').value.trim();const doc=document.getElementById('guest-doc').value.trim();
@@ -5447,7 +5460,7 @@ async function deleteGuest(id){
   guests=guests.filter(g=>g.id!==id);populateGuestSelect();renderGuests();showToast('Huésped eliminado');
 }
 function populateGuestSelect(){const s=document.getElementById('res-guest');if(!s)return;const cur=s.value;
-  s.innerHTML='<option value="">— Nuevo / sin registrar —</option>'+guests.slice().sort((a,b)=>guestFullName(a).localeCompare(guestFullName(b))).map(g=>`<option value="${g.id}">${guestFullName(g)}${g.telefono?(' · '+g.telefono):''}</option>`).join('');
+  s.innerHTML='<option value="">— Nuevo / sin registrar —</option>'+guests.slice().sort((a,b)=>guestFullName(a).localeCompare(guestFullName(b))).map(g=>`<option value="${g.id}">${esc(guestFullName(g))}${g.telefono?(' · '+esc(g.telefono)):''}</option>`).join('');
   s.value=cur;}
 function selectGuestForRes(){const v=document.getElementById('res-guest').value;const hid=document.getElementById('res-guest-id');
   if(!v){if(hid)hid.value='';return;}
@@ -5509,7 +5522,7 @@ function renderUsersTable(){
   if(btn){const full=(max==null)||tenantUsers.length>=max; btn.disabled=full; btn.style.opacity=full?'.5':''; btn.style.cursor=full?'not-allowed':'';}
   const roleLabel=k=>ROLES.find(r=>r.key===k)?.label||k;
   tb.innerHTML=tenantUsers.map(u=>`<tr>
-    <td>${u.email||'—'}${u.id===currentUser.id?' <span class="badge badge-gray" style="font-size:9px">vos</span>':''}</td>
+    <td>${esc(u.email)||'—'}${u.id===currentUser.id?' <span class="badge badge-gray" style="font-size:9px">vos</span>':''}</td>
     <td>${roleLabel(u.role)}</td>
     <td>${u.active?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-gray">Desactivado</span>'}</td>
     <td style="font-size:11px;color:var(--text2)">${u.last_active_at?fmtDate(u.last_active_at.slice(0,10)):'—'}</td>
@@ -5679,8 +5692,8 @@ async function renderAuditPage(){
     const cuando=dt.toLocaleDateString('es-AR')+' '+dt.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
     return `<tr>
       <td style="font-size:11px;color:var(--text2);white-space:nowrap">${cuando}</td>
-      <td style="font-size:12px">${e.user_email||'—'}</td>
-      <td style="font-size:12px">${summarizeAuditEntry(e)}</td>
+      <td style="font-size:12px">${esc(e.user_email)||'—'}</td>
+      <td style="font-size:12px">${esc(summarizeAuditEntry(e))}</td>
     </tr>`;
   }).join('');
 }
