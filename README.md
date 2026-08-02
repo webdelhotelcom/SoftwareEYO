@@ -14,7 +14,7 @@ EYO/
     config.js             → configuración real con tus claves (NO versionado, ver .gitignore).
     _headers               → headers de seguridad HTTP para Netlify (CSP, X-Frame-Options, etc.).
   supabase/
-    migrations/           → esquema SQL versionado, 0001 a 0021. Se corren TODAS en orden en el SQL Editor de Supabase (ver docs/supabase-setup.md).
+    migrations/           → esquema SQL versionado, 0001 en adelante (el número más alto que exista en la carpeta). Se corren TODAS en orden en el SQL Editor de Supabase (ver docs/supabase-setup.md).
     testing/               → scripts SQL solo para la prueba de aislamiento entre clientes (no es parte del producto).
   docs/
     supabase-setup.md      → paso a paso para crear el proyecto de Supabase y cargar el esquema completo.
@@ -23,6 +23,8 @@ EYO/
     migracion-localstorage.md → cómo traer datos de la demo vieja (localStorage) a Supabase, con deduplicación.
     limites-gratuitos.md   → qué límites del plan gratuito de Supabase hay que vigilar y cómo.
     pruebas-aislamiento.md → pruebas en vivo de que un cliente no accede a datos de otro (aislamiento + permisos por rol).
+    dispositivos-navegadores.md → qué anchos/navegadores se probaron de verdad y cuáles no.
+    obsidian/               → base de conocimiento del proyecto (arquitectura, historia, decisiones) — abrí esta carpeta como vault en Obsidian, o empezá por docs/obsidian/00-Indice.md.
   .env.example            → referencia de las variables necesarias (ver docs/supabase-setup.md).
 
   # Demo y sitio comercial originales — HISTÓRICOS, no se editan más.
