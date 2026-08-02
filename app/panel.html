@@ -445,6 +445,9 @@ tr:hover td{background:var(--bg2)}
       <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Housekeeping (Supabase)</div>
       <button class="btn btn-sm btn-full" onclick="exportHkTasksBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar limpieza</button>
       <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar limpieza<input type="file" id="import-hktasks-file" accept=".json" onchange="importHkTasksBackup(this)" style="display:none"></label>
+      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Mantenimiento (Supabase)</div>
+      <button class="btn btn-sm btn-full" onclick="exportMaintTicketsBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar mantenimiento</button>
+      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar mantenimiento<input type="file" id="import-mainttickets-file" accept=".json" onchange="importMaintTicketsBackup(this)" style="display:none"></label>
     </div>
   </div>
 </aside>
@@ -923,6 +926,7 @@ tr:hover td{background:var(--bg2)}
       <option value="rooms">Habitaciones</option>
       <option value="stays">Estadías</option>
       <option value="hk_tasks">Housekeeping</option>
+      <option value="maint_tickets">Mantenimiento</option>
     </select>
     <select id="audit-filter-accion" onchange="renderAuditPage()">
       <option value="">Todas las acciones</option>
@@ -1868,6 +1872,7 @@ async function loadSessionUser(authUser){
   await loadRooms();
   await loadStays();
   await loadHkTasks();
+  await loadMaintTickets();
   supabaseClient.from('profiles').update({last_active_at:new Date().toISOString()}).eq('id',authUser.id).then(()=>{});
   calYear=2026;calMonth=0; // demo: arranca en enero 2026 (temporada)
   showPage('dashboard');
@@ -3266,17 +3271,16 @@ function downloadListPDF(title,subtitle,columns,rows,filename){
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 // ══ BACKUP / RESTORE (localStorage) ══════════════════════════════════
 // Todos los módulos de datos del negocio (Alojamientos, Propietarios,
-// Reservas, Gastos, Huéspedes, Tareas, Usuarios) ya viven en Supabase —
-// usá los botones específicos de cada uno para hacerles backup. Esto de
-// acá abajo es solo para lo que todavía sigue en el navegador: Pre-
-// facturación y los módulos hoteleros (Habitaciones, Housekeeping,
-// Mantenimiento, Caja), que son la parte del proyecto que sigue pendiente.
+// Reservas, Gastos, Huéspedes, Tareas, Usuarios, Habitaciones, Estadías,
+// Housekeeping, Mantenimiento) ya viven en Supabase — usá los botones
+// específicos de cada uno para hacerles backup. Esto de acá abajo es
+// solo para lo que todavía sigue en el navegador: Pre-facturación y Caja,
+// que son la parte del proyecto que sigue pendiente.
 function exportarDatos(){
   const data = {
     version: 9,
     exportedAt: new Date().toISOString(),
     billingCfg, facturas,
-    maintTickets, nextMaintId,
     cashSessions, nextCashId,
   };
   const json = JSON.stringify(data, null, 2);
@@ -3309,11 +3313,9 @@ function importarDatos(input){
       // botón específico de cada uno.
       if(data.billingCfg !== undefined) billingCfg = data.billingCfg;
       if(data.facturas !== undefined) facturas = data.facturas;
-      if(data.maintTickets !== undefined){ maintTickets = data.maintTickets; nextMaintId = data.nextMaintId||1; }
       if(data.cashSessions !== undefined){ cashSessions = data.cashSessions; nextCashId = data.nextCashId||1; }
       // Persist everything
       saveBilling?.();
-      save('maintTickets',maintTickets);save('nextMaintId',nextMaintId);
       save('cashSessions',cashSessions);save('nextCashId',nextCashId);
       // Refresh UI
       populateSelects();
@@ -3987,6 +3989,49 @@ async function importHkTasksBackup(input){
       await loadHkTasks();
       input.value='';
       showToast(fail?`Restauradas ${ok}, fallaron ${fail}`:`Restauradas ${ok} tareas de limpieza`, fail?'error':'ok');
+    }catch(err){
+      showToast('Error al leer el archivo: '+err.message,'error');
+      input.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function exportMaintTicketsBackup(){
+  if(!supabaseClient||!currentUser){showToast('Iniciá sesión primero','error');return;}
+  const {data,error}=await supabaseClient.from('maint_tickets').select('*');
+  if(error){showToast('No se pudo exportar: '+error.message,'error');return;}
+  const backup={version:1,exportedAt:new Date().toISOString(),tenantId:currentUser.tenantId,maintTickets:data||[]};
+  const json=JSON.stringify(backup,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`eyo-mantenimiento-backup-${today()}.json`;a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup de mantenimiento exportado');
+}
+
+async function importMaintTicketsBackup(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const backup=JSON.parse(e.target.result);
+      const rows=backup.maintTickets;
+      if(!Array.isArray(rows)){showToast('Archivo no válido: falta la lista de incidencias de mantenimiento','error');input.value='';return;}
+      if(!confirm(`¿Restaurar ${rows.length} incidencia(s) de mantenimiento del backup del ${backup.exportedAt?new Date(backup.exportedAt).toLocaleString('es-AR'):'fecha desconocida'}?\n\nSe agregan como incidencias NUEVAS (no reemplaza las existentes).`)){
+        input.value='';return;
+      }
+      let ok=0,fail=0;
+      for(const row of rows){
+        const payload=maintTicketToDb(maintTicketFromDb(row));
+        payload.tenant_id=currentUser.tenantId;
+        const {error}=await supabaseClient.from('maint_tickets').insert(payload);
+        if(error)fail++;else ok++;
+      }
+      await loadMaintTickets();
+      input.value='';
+      showToast(fail?`Restauradas ${ok}, fallaron ${fail}`:`Restauradas ${ok} incidencias`, fail?'error':'ok');
     }catch(err){
       showToast('Error al leer el archivo: '+err.message,'error');
       input.value='';
@@ -4759,9 +4804,8 @@ let roomTypes=[];
 let rooms=[];
 let stays=[];
 let hkTasks=[];
-let maintTickets=load('maintTickets',[]);
+let maintTickets=[];
 let cashSessions=load('cashSessions',[]);
-let nextMaintId=load('nextMaintId',1);
 let nextCashId=load('nextCashId',1);
 
 function roomTypeFromDb(row){
@@ -4807,8 +4851,19 @@ async function loadStays(){
   stays=(data||[]).map(stayFromDb);
 }
 function saveHotel(){
-  save('maintTickets',maintTickets);save('cashSessions',cashSessions);
-  save('nextMaintId',nextMaintId);save('nextCashId',nextCashId);
+  save('cashSessions',cashSessions);save('nextCashId',nextCashId);
+}
+function maintTicketFromDb(row){
+  return {id:row.id,roomId:row.room_id||'',prioridad:row.prioridad,categoria:row.categoria||'',responsable:row.responsable||'',costo:Number(row.costo)||0,estado:row.estado,notas:row.notas||'',fecha:row.fecha};
+}
+function maintTicketToDb(data){
+  return {room_id:data.roomId||null,prioridad:data.prioridad,categoria:data.categoria||null,responsable:data.responsable||null,costo:data.costo||0,estado:data.estado,notas:data.notas||null,fecha:data.fecha||isoToday()};
+}
+async function loadMaintTickets(){
+  if(!supabaseClient||!currentUser)return;
+  const {data,error}=await supabaseClient.from('maint_tickets').select('*').order('fecha',{ascending:false});
+  if(error){showToast('No se pudieron cargar las incidencias de mantenimiento: '+error.message,'error');return;}
+  maintTickets=(data||[]).map(maintTicketFromDb);
 }
 function hkTaskFromDb(row){
   return {id:row.id,roomId:row.room_id||'',responsable:row.responsable||'',estado:row.estado,notas:row.notas||'',ts:row.ts};
@@ -5065,20 +5120,25 @@ function populateMaintRoom(){const s=document.getElementById('mt-room');if(!s)re
 function openNewMaint(){populateMaintRoom();document.getElementById('mt-id').value='';document.getElementById('modal-maint-title').textContent='Nueva incidencia';
   ['mt-categoria','mt-responsable','mt-costo','mt-notas'].forEach(id=>document.getElementById(id).value='');document.getElementById('mt-prioridad').value='media';document.getElementById('mt-fuera').checked=false;openModal('modal-maint');}
 async function saveMaint(){const rid=document.getElementById('mt-room').value;if(!rid){showToast('Elegí la habitación','error');return;}
-  const t={id:nextMaintId++,roomId:rid,prioridad:document.getElementById('mt-prioridad').value,categoria:document.getElementById('mt-categoria').value.trim(),responsable:document.getElementById('mt-responsable').value.trim(),costo:parseFloat(document.getElementById('mt-costo').value)||0,estado:'abierta',notas:document.getElementById('mt-notas').value.trim(),fecha:isoToday()};
-  maintTickets.push(t);
+  const data={roomId:rid,prioridad:document.getElementById('mt-prioridad').value,categoria:document.getElementById('mt-categoria').value.trim(),responsable:document.getElementById('mt-responsable').value.trim(),costo:parseFloat(document.getElementById('mt-costo').value)||0,estado:'abierta',notas:document.getElementById('mt-notas').value.trim(),fecha:isoToday()};
+  const {data:inserted,error}=await supabaseClient.from('maint_tickets').insert({...maintTicketToDb(data),tenant_id:currentUser.tenantId}).select().single();
+  if(error){showToast('No se pudo registrar la incidencia: '+error.message,'error');return;}
+  maintTickets.push(maintTicketFromDb(inserted));
   if(document.getElementById('mt-fuera').checked){await setRoomEstado(rid,'mantenimiento');}
-  saveHotel();closeModal('modal-maint');renderMaintenance();renderRooms();showToast('Incidencia registrada');}
+  closeModal('modal-maint');renderMaintenance();renderRooms();showToast('Incidencia registrada');}
 function renderMaintenance(){const el=document.getElementById('mt-list');if(!el)return;
   const abiertas=maintTickets.filter(t=>t.estado!=='cerrada');
   if(!abiertas.length){el.innerHTML='<div class="card" style="color:var(--text3)">No hay incidencias abiertas.</div>';return;}
   const pcls={alta:'ocupada',media:'limpieza',baja:'reservada'};
   el.innerHTML=abiertas.map(t=>{const r=roomById(t.roomId);const rn=r?r.numero:'—';
-    return `<div class="mt-row"><div><b>Hab. ${rn}</b> <span class="st-chip st-${pcls[t.prioridad]||'reservada'}">${t.prioridad}</span> ${t.categoria?('· '+t.categoria):''}<div style="font-size:11px;color:var(--text2)">${t.notas||''} ${t.responsable?('· '+t.responsable):''} ${t.costo?('· '+fmt(t.costo)):''}</div></div><button class="btn btn-sm btn-primary" onclick="closeMaint(${t.id})"><i class="ti ti-check"></i> Cerrar</button></div>`;}).join('');
+    return `<div class="mt-row"><div><b>Hab. ${rn}</b> <span class="st-chip st-${pcls[t.prioridad]||'reservada'}">${t.prioridad}</span> ${t.categoria?('· '+t.categoria):''}<div style="font-size:11px;color:var(--text2)">${t.notas||''} ${t.responsable?('· '+t.responsable):''} ${t.costo?('· '+fmt(t.costo)):''}</div></div><button class="btn btn-sm btn-primary" onclick="closeMaint('${t.id}')"><i class="ti ti-check"></i> Cerrar</button></div>`;}).join('');
 }
-async function closeMaint(id){const t=maintTickets.find(x=>x.id===id);if(!t)return;t.estado='cerrada';const r=roomById(t.roomId);
+async function closeMaint(id){const t=maintTickets.find(x=>x.id===id);if(!t)return;
+  const {error}=await supabaseClient.from('maint_tickets').update({estado:'cerrada'}).eq('id',id);
+  if(error){showToast('No se pudo cerrar la incidencia: '+error.message,'error');return;}
+  t.estado='cerrada';const r=roomById(t.roomId);
   if(r&&(r.estado==='mantenimiento'||r.estado==='fuera_servicio'))await setRoomEstado(r.id,'disponible');
-  saveHotel();renderMaintenance();renderRooms();showToast('Incidencia cerrada');}
+  renderMaintenance();renderRooms();showToast('Incidencia cerrada');}
 
 /* ---------- CAJA Y TURNOS ---------- */
 function cashOpenSession(){return cashSessions.find(c=>c.abierta);}
@@ -5463,7 +5523,7 @@ async function submitChangeOwnPassword(){
 // AUDITORÍA — se llena sola por triggers en la base (ver 0011_audit_log.sql).
 // Acá solo se lee y se arma un resumen legible.
 // ══════════════════════════════════════════════════════════════
-const AUDIT_MODULE_LABEL={properties:'alojamiento',owners:'propietario',reservations:'reserva',expenses:'gasto',guests:'huésped',profiles:'usuario',tasks:'tarea',room_types:'tipo de habitación',rooms:'habitación',stays:'estadía',hk_tasks:'tarea de limpieza'};
+const AUDIT_MODULE_LABEL={properties:'alojamiento',owners:'propietario',reservations:'reserva',expenses:'gasto',guests:'huésped',profiles:'usuario',tasks:'tarea',room_types:'tipo de habitación',rooms:'habitación',stays:'estadía',hk_tasks:'tarea de limpieza',maint_tickets:'incidencia de mantenimiento'};
 const AUDIT_ACTION_LABEL={INSERT:'creó',UPDATE:'editó',DELETE:'eliminó'};
 const AUDIT_IGNORE_FIELDS=['updated_at','updated_by','created_at','created_by','id','tenant_id'];
 function auditRecordName(row){
