@@ -1888,7 +1888,29 @@ async function loadSessionUser(authUser){
   showPage('dashboard');
   document.getElementById('dash-date').textContent=todayLabel();
   updateAlertBadge();
+  startActiveUserWatch();
   return true;
+}
+
+// Si un administrador desactiva a este usuario mientras ya tiene la
+// sesión abierta, PostgreSQL deja de aceptarle lecturas/escrituras de
+// inmediato (current_tenant_id()/has_permission() ahora exigen
+// active=true — ver 0020_deactivated_user_lockout.sql). Este chequeo
+// periódico es solo para avisarle con un mensaje claro y sacarlo del
+// panel, en vez de que se encuentre con errores sueltos de Supabase.
+let activeUserWatchTimer=null;
+function startActiveUserWatch(){
+  if(activeUserWatchTimer)clearInterval(activeUserWatchTimer);
+  activeUserWatchTimer=setInterval(async()=>{
+    if(!currentUser||!supabaseClient)return;
+    const {data,error}=await supabaseClient.from('profiles').select('active').eq('id',currentUser.id).maybeSingle();
+    if(error)return;
+    if(!data||data.active===false){
+      clearInterval(activeUserWatchTimer);activeUserWatchTimer=null;
+      alert('Tu usuario fue desactivado. La sesión se cerrará.');
+      await doLogout();
+    }
+  },60000);
 }
 
 // Límite efectivo = override de client_limits si existe, si no el default de plan_config.
@@ -1905,6 +1927,7 @@ async function loadTenantLimits(tenantId,plan){
 }
 
 async function doLogout(){
+  if(activeUserWatchTimer){clearInterval(activeUserWatchTimer);activeUserWatchTimer=null;}
   if(supabaseClient)await supabaseClient.auth.signOut();
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
