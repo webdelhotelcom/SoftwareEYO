@@ -439,6 +439,9 @@ tr:hover td{background:var(--bg2)}
       <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Habitaciones (Supabase)</div>
       <button class="btn btn-sm btn-full" onclick="exportRoomsBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar habitaciones</button>
       <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar habitaciones<input type="file" id="import-rooms-file" accept=".json" onchange="importRoomsBackup(this)" style="display:none"></label>
+      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Estadías (Supabase)</div>
+      <button class="btn btn-sm btn-full" onclick="exportStaysBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar estadías</button>
+      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar estadías<input type="file" id="import-stays-file" accept=".json" onchange="importStaysBackup(this)" style="display:none"></label>
     </div>
   </div>
 </aside>
@@ -915,6 +918,7 @@ tr:hover td{background:var(--bg2)}
       <option value="tasks">Tareas</option>
       <option value="room_types">Tipos de habitación</option>
       <option value="rooms">Habitaciones</option>
+      <option value="stays">Estadías</option>
     </select>
     <select id="audit-filter-accion" onchange="renderAuditPage()">
       <option value="">Todas las acciones</option>
@@ -1858,6 +1862,7 @@ async function loadSessionUser(authUser){
   await loadTasks();
   await loadRoomTypes();
   await loadRooms();
+  await loadStays();
   supabaseClient.from('profiles').update({last_active_at:new Date().toISOString()}).eq('id',authUser.id).then(()=>{});
   calYear=2026;calMonth=0; // demo: arranca en enero 2026 (temporada)
   showPage('dashboard');
@@ -3266,7 +3271,6 @@ function exportarDatos(){
     version: 9,
     exportedAt: new Date().toISOString(),
     billingCfg, facturas,
-    stays, nextStayId,
     hkTasks, nextHkId,
     maintTickets, nextMaintId,
     cashSessions, nextCashId,
@@ -3301,13 +3305,11 @@ function importarDatos(input){
       // botón específico de cada uno.
       if(data.billingCfg !== undefined) billingCfg = data.billingCfg;
       if(data.facturas !== undefined) facturas = data.facturas;
-      if(data.stays !== undefined){ stays = data.stays; nextStayId = data.nextStayId||1; }
       if(data.hkTasks !== undefined){ hkTasks = data.hkTasks; nextHkId = data.nextHkId||1; }
       if(data.maintTickets !== undefined){ maintTickets = data.maintTickets; nextMaintId = data.nextMaintId||1; }
       if(data.cashSessions !== undefined){ cashSessions = data.cashSessions; nextCashId = data.nextCashId||1; }
       // Persist everything
       saveBilling?.();
-      save('stays',stays);save('nextStayId',nextStayId);
       save('hkTasks',hkTasks);save('nextHkId',nextHkId);
       save('maintTickets',maintTickets);save('nextMaintId',nextMaintId);
       save('cashSessions',cashSessions);save('nextCashId',nextCashId);
@@ -3897,6 +3899,49 @@ async function importRoomsBackup(input){
       await loadRooms();
       input.value='';
       showToast(fail?`Restauradas ${ok}, fallaron ${fail}`:`Restauradas ${ok} habitaciones`, fail?'error':'ok');
+    }catch(err){
+      showToast('Error al leer el archivo: '+err.message,'error');
+      input.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function exportStaysBackup(){
+  if(!supabaseClient||!currentUser){showToast('Iniciá sesión primero','error');return;}
+  const {data,error}=await supabaseClient.from('stays').select('*');
+  if(error){showToast('No se pudo exportar: '+error.message,'error');return;}
+  const backup={version:1,exportedAt:new Date().toISOString(),tenantId:currentUser.tenantId,stays:data||[]};
+  const json=JSON.stringify(backup,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`eyo-estadias-backup-${today()}.json`;a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup de estadías exportado');
+}
+
+async function importStaysBackup(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const backup=JSON.parse(e.target.result);
+      const rows=backup.stays;
+      if(!Array.isArray(rows)){showToast('Archivo no válido: falta la lista de estadías','error');input.value='';return;}
+      if(!confirm(`¿Restaurar ${rows.length} estadía(s) del backup del ${backup.exportedAt?new Date(backup.exportedAt).toLocaleString('es-AR'):'fecha desconocida'}?\n\nSe agregan como estadías NUEVAS (no reemplaza las existentes). La habitación se mantiene solo si sigue existiendo con el mismo id.`)){
+        input.value='';return;
+      }
+      let ok=0,fail=0;
+      for(const row of rows){
+        const payload=stayToDb(stayFromDb(row));
+        payload.tenant_id=currentUser.tenantId;
+        const {error}=await supabaseClient.from('stays').insert(payload);
+        if(error)fail++;else ok++;
+      }
+      await loadStays();
+      input.value='';
+      showToast(fail?`Restauradas ${ok}, fallaron ${fail}`:`Restauradas ${ok} estadías`, fail?'error':'ok');
     }catch(err){
       showToast('Error al leer el archivo: '+err.message,'error');
       input.value='';
@@ -4667,11 +4712,10 @@ function nochesEntre(a,b){if(!a||!b)return 1;const d1=new Date(a),d2=new Date(b)
 
 let roomTypes=[];
 let rooms=[];
-let stays=load('stays',[]);
+let stays=[];
 let hkTasks=load('hkTasks',[]);
 let maintTickets=load('maintTickets',[]);
 let cashSessions=load('cashSessions',[]);
-let nextStayId=load('nextStayId',1);
 let nextHkId=load('nextHkId',1);
 let nextMaintId=load('nextMaintId',1);
 let nextCashId=load('nextCashId',1);
@@ -4706,10 +4750,20 @@ async function setRoomEstado(id,estado){
   const {error}=await supabaseClient.from('rooms').update({estado}).eq('id',id);
   if(error)showToast('No se pudo actualizar el estado de la habitación: '+error.message,'error');
 }
+function stayFromDb(row){
+  return {id:row.id,huesped:row.huesped,doc:row.doc||'',pais:row.pais||'',roomId:row.room_id||'',checkin:row.checkin,checkout:row.checkout,horaLlegada:row.hora_llegada||'',estado:row.estado,precioNoche:Number(row.precio_noche)||0,notas:row.notas||'',folio:row.folio||[]};
+}
+function stayToDb(data){
+  return {huesped:data.huesped,doc:data.doc||null,pais:data.pais||null,room_id:data.roomId||null,checkin:data.checkin,checkout:data.checkout,hora_llegada:data.horaLlegada||null,estado:data.estado,precio_noche:data.precioNoche,notas:data.notas||null,folio:data.folio||[]};
+}
+async function loadStays(){
+  if(!supabaseClient||!currentUser)return;
+  const {data,error}=await supabaseClient.from('stays').select('*').order('checkin',{ascending:false});
+  if(error){showToast('No se pudieron cargar las estadías: '+error.message,'error');return;}
+  stays=(data||[]).map(stayFromDb);
+}
 function saveHotel(){
-  save('stays',stays);
   save('hkTasks',hkTasks);save('maintTickets',maintTickets);save('cashSessions',cashSessions);
-  save('nextStayId',nextStayId);
   save('nextHkId',nextHkId);save('nextMaintId',nextMaintId);save('nextCashId',nextCashId);
 }
 function roomTypeName(id){const t=roomTypes.find(x=>x.id===id);return t?t.nombre:'—';}
@@ -4737,7 +4791,7 @@ function renderReception(){
   if(arr){
     if(!llegadas.length)arr.innerHTML='<div style="color:var(--text3);font-size:13px">Sin llegadas para hoy.</div>';
     else arr.innerHTML=llegadas.map(s=>{const r=roomById(s.roomId);const rn=r?r.numero:'—';
-      const act=s.estado==='reservada'?`<button class="btn btn-sm btn-primary" onclick="checkInStay(${s.id})"><i class="ti ti-login"></i> Check-in</button>`:`<button class="btn btn-sm" onclick="openFolio(${s.id})"><i class="ti ti-receipt"></i> Cuenta</button>`;
+      const act=s.estado==='reservada'?`<button class="btn btn-sm btn-primary" onclick="checkInStay('${s.id}')"><i class="ti ti-login"></i> Check-in</button>`:`<button class="btn btn-sm" onclick="openFolio('${s.id}')"><i class="ti ti-receipt"></i> Cuenta</button>`;
       return `<div class="hk-row"><div><b>${s.huesped}</b> · Hab. ${rn} · ${fmtDate(s.checkin)} → ${fmtDate(s.checkout)} <span class="st-chip st-${s.estado==='reservada'?'reservada':'ocupada'}">${s.estado==='reservada'?'Reservada':'Alojado'}</span></div>${act}</div>`;}).join('');
   }
   const dep=document.getElementById('reception-departures');
@@ -4745,7 +4799,7 @@ function renderReception(){
     const inh=stays.filter(s=>s.estado==='in_house');
     if(!inh.length)dep.innerHTML='<div style="color:var(--text3);font-size:13px">Sin huéspedes alojados.</div>';
     else dep.innerHTML=inh.map(s=>{const r=roomById(s.roomId);const rn=r?r.numero:'—';const sd=folioSaldo(s);const sale=s.checkout<=hoy;
-      return `<div class="hk-row"><div><b>${s.huesped}</b> · Hab. ${rn} · sale ${fmtDate(s.checkout)} ${sale?'<span class="st-chip st-ocupada">Sale hoy</span>':''}<div style="font-size:11px;color:var(--text2)">Saldo a cobrar: ${fmt(sd.saldo)}</div></div><button class="btn btn-sm" onclick="openFolio(${s.id})"><i class="ti ti-receipt"></i> Cuenta / Check-out</button></div>`;}).join('');
+      return `<div class="hk-row"><div><b>${s.huesped}</b> · Hab. ${rn} · sale ${fmtDate(s.checkout)} ${sale?'<span class="st-chip st-ocupada">Sale hoy</span>':''}<div style="font-size:11px;color:var(--text2)">Saldo a cobrar: ${fmt(sd.saldo)}</div></div><button class="btn btn-sm" onclick="openFolio('${s.id}')"><i class="ti ti-receipt"></i> Cuenta / Check-out</button></div>`;}).join('');
   }
 }
 
@@ -4873,11 +4927,17 @@ async function doCheckin(){
   const precio=parseFloat(document.getElementById('ci-precio').value)||0;const n=nochesEntre(ci,co);const sena=parseFloat(document.getElementById('ci-sena').value)||0;
   const folio=[{id:1,concepto:'Alojamiento ('+n+' noche'+(n!==1?'s':'')+')',monto:precio*n,tipo:'cargo',cat:'alojamiento',fecha:isoToday()}];
   if(sena>0)folio.push({id:2,concepto:'Seña / pago',monto:sena,tipo:'pago',cat:'pago',fecha:isoToday()});
-  stays.push({id:nextStayId++,huesped,doc:document.getElementById('ci-doc').value.trim(),pais:document.getElementById('ci-pais').value.trim(),roomId:rid,checkin:ci,checkout:co,horaLlegada:document.getElementById('ci-hora').value,estado:'in_house',precioNoche:precio,notas:document.getElementById('ci-notas').value.trim(),folio});
-  await setRoomEstado(rid,'ocupada');saveHotel();closeModal('modal-checkin');showToast('Check-in registrado');
+  const data={huesped,doc:document.getElementById('ci-doc').value.trim(),pais:document.getElementById('ci-pais').value.trim(),roomId:rid,checkin:ci,checkout:co,horaLlegada:document.getElementById('ci-hora').value,estado:'in_house',precioNoche:precio,notas:document.getElementById('ci-notas').value.trim(),folio};
+  const {data:inserted,error}=await supabaseClient.from('stays').insert({...stayToDb(data),tenant_id:currentUser.tenantId}).select().single();
+  if(error){showToast('No se pudo registrar el check-in: '+error.message,'error');return;}
+  stays.push(stayFromDb(inserted));
+  await setRoomEstado(rid,'ocupada');closeModal('modal-checkin');showToast('Check-in registrado');
   renderRooms();renderReception();
 }
-async function checkInStay(id){const s=stays.find(x=>x.id===id);if(!s)return;s.estado='in_house';await setRoomEstado(s.roomId,'ocupada');saveHotel();renderReception();renderRooms();showToast('Check-in realizado');}
+async function checkInStay(id){const s=stays.find(x=>x.id===id);if(!s)return;
+  const {error}=await supabaseClient.from('stays').update({estado:'in_house'}).eq('id',id);
+  if(error){showToast('No se pudo hacer el check-in: '+error.message,'error');return;}
+  s.estado='in_house';await setRoomEstado(s.roomId,'ocupada');renderReception();renderRooms();showToast('Check-in realizado');}
 function openFolio(id){const s=stays.find(x=>x.id===id);if(!s)return;
   document.getElementById('folio-stay-id').value=id;
   const r=roomById(s.roomId);
@@ -4889,18 +4949,24 @@ function openFolio(id){const s=stays.find(x=>x.id===id);if(!s)return;
 function renderFolioList(s){const el=document.getElementById('folio-list');const sd=folioSaldo(s);
   el.innerHTML=(s.folio||[]).map((f,i)=>`<div class="folio-row"><span>${f.concepto} <span style="color:var(--text3);font-size:11px">${f.tipo==='pago'?'(pago)':''}</span></span><span style="display:flex;gap:8px;align-items:center"><b style="color:${f.tipo==='pago'?'var(--green,#2D7A4F)':'var(--text)'}">${f.tipo==='pago'?'−':''}${fmt(f.monto)}</b><button class="btn btn-xs btn-icon" style="color:var(--red)" onclick="delFolioItem(${i})"><i class="ti ti-x"></i></button></span></div>`).join('')
     +`<div class="folio-row" style="border-bottom:0;font-weight:700;margin-top:4px"><span>Saldo a cobrar</span><span>${fmt(sd.saldo)}</span></div>`;}
-function addFolioItem(){const id=parseInt(document.getElementById('folio-stay-id').value);const s=stays.find(x=>x.id===id);if(!s)return;
+async function saveFolio(s){
+  const {error}=await supabaseClient.from('stays').update({folio:s.folio}).eq('id',s.id);
+  if(error)showToast('No se pudo guardar la cuenta: '+error.message,'error');
+}
+async function addFolioItem(){const id=document.getElementById('folio-stay-id').value;const s=stays.find(x=>x.id===id);if(!s)return;
   const concepto=document.getElementById('folio-concepto').value.trim();const monto=parseFloat(document.getElementById('folio-monto').value)||0;
   if(!concepto||monto<=0){showToast('Cargá concepto e importe','error');return;}
   s.folio=s.folio||[];s.folio.push({id:(s.folio.length?Math.max(...s.folio.map(f=>f.id))+1:1),concepto,monto,tipo:document.getElementById('folio-tipo').value,cat:document.getElementById('folio-tipo').value==='pago'?'pago':'extra',fecha:isoToday()});
-  saveHotel();renderFolioList(s);document.getElementById('folio-concepto').value='';document.getElementById('folio-monto').value='';showToast('Movimiento agregado');}
-function delFolioItem(i){const id=parseInt(document.getElementById('folio-stay-id').value);const s=stays.find(x=>x.id===id);if(!s)return;s.folio.splice(i,1);saveHotel();renderFolioList(s);}
-async function doCheckout(){const id=parseInt(document.getElementById('folio-stay-id').value);const s=stays.find(x=>x.id===id);if(!s)return;
+  await saveFolio(s);renderFolioList(s);document.getElementById('folio-concepto').value='';document.getElementById('folio-monto').value='';showToast('Movimiento agregado');}
+async function delFolioItem(i){const id=document.getElementById('folio-stay-id').value;const s=stays.find(x=>x.id===id);if(!s)return;s.folio.splice(i,1);await saveFolio(s);renderFolioList(s);}
+async function doCheckout(){const id=document.getElementById('folio-stay-id').value;const s=stays.find(x=>x.id===id);if(!s)return;
   const sd=folioSaldo(s);
   if(sd.saldo>0&&!confirm('Queda un saldo a cobrar de '+fmt(sd.saldo)+'. ¿Hacer el check-out igual?'))return;
+  const {error}=await supabaseClient.from('stays').update({estado:'checked_out'}).eq('id',id);
+  if(error){showToast('No se pudo hacer el check-out: '+error.message,'error');return;}
   s.estado='checked_out';const r=roomById(s.roomId);
-  if(r){await setRoomEstado(r.id,'limpieza');hkTasks.push({id:nextHkId++,roomId:r.id,responsable:'',estado:'pendiente',notas:'Post check-out',ts:isoToday()});}
-  saveHotel();closeModal('modal-folio');showToast('Check-out realizado — habitación enviada a limpieza');
+  if(r){await setRoomEstado(r.id,'limpieza');hkTasks.push({id:nextHkId++,roomId:r.id,responsable:'',estado:'pendiente',notas:'Post check-out',ts:isoToday()});saveHotel();}
+  closeModal('modal-folio');showToast('Check-out realizado — habitación enviada a limpieza');
   renderReception();renderRooms();
 }
 
@@ -5325,7 +5391,7 @@ async function submitChangeOwnPassword(){
 // AUDITORÍA — se llena sola por triggers en la base (ver 0011_audit_log.sql).
 // Acá solo se lee y se arma un resumen legible.
 // ══════════════════════════════════════════════════════════════
-const AUDIT_MODULE_LABEL={properties:'alojamiento',owners:'propietario',reservations:'reserva',expenses:'gasto',guests:'huésped',profiles:'usuario',tasks:'tarea',room_types:'tipo de habitación',rooms:'habitación'};
+const AUDIT_MODULE_LABEL={properties:'alojamiento',owners:'propietario',reservations:'reserva',expenses:'gasto',guests:'huésped',profiles:'usuario',tasks:'tarea',room_types:'tipo de habitación',rooms:'habitación',stays:'estadía'};
 const AUDIT_ACTION_LABEL={INSERT:'creó',UPDATE:'editó',DELETE:'eliminó'};
 const AUDIT_IGNORE_FIELDS=['updated_at','updated_by','created_at','created_by','id','tenant_id'];
 function auditRecordName(row){
