@@ -406,10 +406,7 @@ tr:hover td{background:var(--bg2)}
   </div>
   <div style="padding:0 12px 12px">
     <div style="border-top:0.5px solid var(--border);padding-top:10px;display:flex;flex-direction:column;gap:6px">
-      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">Datos (todavía en este navegador)</div>
-      <button class="btn btn-sm btn-full" onclick="exportarDatos()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar backup</button>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar backup<input type="file" id="import-file" accept=".json" onchange="importarDatos(this)" style="display:none"></label>
-      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Alojamientos (Supabase)</div>
+      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">Alojamientos (Supabase)</div>
       <button class="btn btn-sm btn-full" onclick="exportPropertiesBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar alojamientos</button>
       <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar alojamientos<input type="file" id="import-properties-file" accept=".json" onchange="importPropertiesBackup(this)" style="display:none"></label>
       <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0" title="Para traer los alojamientos de un backup exportado desde la demo vieja (localStorage)"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-file" accept=".json" onchange="importLegacyPropertiesFromDemo(this)" style="display:none"></label>
@@ -451,6 +448,9 @@ tr:hover td{background:var(--bg2)}
       <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Caja (Supabase)</div>
       <button class="btn btn-sm btn-full" onclick="exportCashSessionsBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar caja</button>
       <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar caja<input type="file" id="import-cashsessions-file" accept=".json" onchange="importCashSessionsBackup(this)" style="display:none"></label>
+      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Pre-facturación (Supabase)</div>
+      <button class="btn btn-sm btn-full" onclick="exportFacturasBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar comprobantes</button>
+      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar comprobantes<input type="file" id="import-facturas-file" accept=".json" onchange="importFacturasBackup(this)" style="display:none"></label>
     </div>
   </div>
 </aside>
@@ -931,6 +931,8 @@ tr:hover td{background:var(--bg2)}
       <option value="hk_tasks">Housekeeping</option>
       <option value="maint_tickets">Mantenimiento</option>
       <option value="cash_sessions">Caja</option>
+      <option value="billing_config">Config. facturación</option>
+      <option value="facturas">Comprobantes</option>
     </select>
     <select id="audit-filter-accion" onchange="renderAuditPage()">
       <option value="">Todas las acciones</option>
@@ -1878,6 +1880,8 @@ async function loadSessionUser(authUser){
   await loadHkTasks();
   await loadMaintTickets();
   await loadCashSessions();
+  await loadBillingConfig();
+  await loadFacturas();
   supabaseClient.from('profiles').update({last_active_at:new Date().toISOString()}).eq('id',authUser.id).then(()=>{});
   calYear=2026;calMonth=0; // demo: arranca en enero 2026 (temporada)
   showPage('dashboard');
@@ -3274,70 +3278,10 @@ function downloadListPDF(title,subtitle,columns,rows,filename){
 
 // INIT
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
-// ══ BACKUP / RESTORE (localStorage) ══════════════════════════════════
-// Todos los módulos de datos del negocio (Alojamientos, Propietarios,
-// Reservas, Gastos, Huéspedes, Tareas, Usuarios, Habitaciones, Estadías,
-// Housekeeping, Mantenimiento, Caja) ya viven en Supabase — usá los
-// botones específicos de cada uno para hacerles backup. Esto de acá
-// abajo es solo para lo que todavía sigue en el navegador:
-// Pre-facturación, la última parte del proyecto que sigue pendiente.
-function exportarDatos(){
-  const data = {
-    version: 9,
-    exportedAt: new Date().toISOString(),
-    billingCfg, facturas,
-  };
-  const json = JSON.stringify(data, null, 2);
-  const blob = new Blob([json], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const fecha = new Date().toISOString().slice(0,10);
-  a.href = url;
-  a.download = `panel-alojamientos-backup-${fecha}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('Backup exportado correctamente');
-}
-
-function importarDatos(input){
-  const file = input.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e){
-    try {
-      const data = JSON.parse(e.target.result);
-      if(!data.version){
-        showToast('Archivo no válido — falta versión','error');
-        input.value=''; return;
-      }
-      if(!confirm(`¿Importar backup del ${data.exportedAt ? new Date(data.exportedAt).toLocaleString('es-AR') : 'fecha desconocida'}?\n\nEsto reemplazará TODOS los datos actuales. Esta acción no se puede deshacer.`)){
-        input.value=''; return;
-      }
-      // Los módulos que ya viven en Supabase no se restauran acá: usá el
-      // botón específico de cada uno.
-      if(data.billingCfg !== undefined) billingCfg = data.billingCfg;
-      if(data.facturas !== undefined) facturas = data.facturas;
-      // Persist everything
-      saveBilling?.();
-      // Refresh UI
-      populateSelects();
-      const activePage = document.querySelector('.page.active')?.id?.replace('page-','');
-      if(activePage) showPage(activePage);
-      else showPage('dashboard');
-      input.value='';
-      showToast('✅ Backup importado correctamente');
-    } catch(err){
-      showToast('Error al leer el archivo: ' + err.message, 'error');
-      input.value='';
-    }
-  };
-  reader.readAsText(file);
-}
-
 // ══ BACKUP / RESTORE de Alojamientos (Supabase) ═════════════════════
-// A diferencia de exportarDatos()/importarDatos() (que leen/escriben
-// localStorage), esto lee y escribe directo contra la base de datos real,
-// filtrado automáticamente al tenant actual por RLS.
+// Todos los módulos de datos del negocio viven en Supabase — esto lee
+// y escribe directo contra la base de datos real, filtrado
+// automáticamente al tenant actual por RLS.
 async function exportPropertiesBackup(){
   if(!supabaseClient||!currentUser){showToast('Iniciá sesión primero','error');return;}
   const {data,error}=await supabaseClient.from('properties').select('*');
@@ -4085,6 +4029,49 @@ async function importCashSessionsBackup(input){
   reader.readAsText(file);
 }
 
+async function exportFacturasBackup(){
+  if(!supabaseClient||!currentUser){showToast('Iniciá sesión primero','error');return;}
+  const {data,error}=await supabaseClient.from('facturas').select('*');
+  if(error){showToast('No se pudo exportar: '+error.message,'error');return;}
+  const backup={version:1,exportedAt:new Date().toISOString(),tenantId:currentUser.tenantId,facturas:data||[]};
+  const json=JSON.stringify(backup,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`eyo-facturas-backup-${today()}.json`;a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup de comprobantes exportado');
+}
+
+async function importFacturasBackup(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const backup=JSON.parse(e.target.result);
+      const rows=backup.facturas;
+      if(!Array.isArray(rows)){showToast('Archivo no válido: falta la lista de comprobantes','error');input.value='';return;}
+      if(!confirm(`¿Restaurar ${rows.length} comprobante(s) del backup del ${backup.exportedAt?new Date(backup.exportedAt).toLocaleString('es-AR'):'fecha desconocida'}?\n\nSe agregan como comprobantes NUEVOS (no reemplaza los existentes). Revisá la numeración después: puede haber duplicados.`)){
+        input.value='';return;
+      }
+      let ok=0,fail=0;
+      for(const row of rows){
+        const payload=facturaToDb(facturaFromDb(row));
+        payload.tenant_id=currentUser.tenantId;
+        const {error}=await supabaseClient.from('facturas').insert(payload);
+        if(error)fail++;else ok++;
+      }
+      await loadFacturas();
+      input.value='';
+      showToast(fail?`Restaurados ${ok}, fallaron ${fail}`:`Restaurados ${ok} comprobantes`, fail?'error':'ok');
+    }catch(err){
+      showToast('Error al leer el archivo: '+err.message,'error');
+      input.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
 async function deleteProperty(id){
   if(!confirm('¿Eliminar este alojamiento? Esta acción no se puede deshacer.')) return;
   const {error}=await supabaseClient.from('properties').delete().eq('id',id);
@@ -4601,12 +4588,36 @@ function updatePlanUsage(){
 }
 
 /* ==================== FACTURACIÓN DGI ==================== */
-let billingCfg=load('billingCfg',{razon:'',fantasia:'',rut:'',giro:'Servicios de alojamiento',domicilio:'',sucursal:'1',cae:'',caeVenc:'',serie:'A',desde:1,hasta:1000,prox:1});
-let facturas=load('facturas',[]);
+let billingCfg={razon:'',fantasia:'',rut:'',giro:'Servicios de alojamiento',domicilio:'',sucursal:'1',cae:'',caeVenc:'',serie:'A',desde:1,hasta:1000,prox:1};
+let facturas=[];
 let invLines=[];
 const IVA_RATES=[{k:'22',label:'22% (básica)',rate:0.22},{k:'10',label:'10% (mínima)',rate:0.10},{k:'0',label:'Exento',rate:0}];
 function invMoney(n,cur){return (cur==='USD'?'USD ':'$ ')+Intl.NumberFormat('es-UY',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n||0);}
-function saveBilling(){save('billingCfg',billingCfg);save('facturas',facturas);}
+function billingCfgFromDb(row){
+  if(!row)return {razon:'',fantasia:'',rut:'',giro:'Servicios de alojamiento',domicilio:'',sucursal:'1',cae:'',caeVenc:'',serie:'A',desde:1,hasta:1000,prox:1};
+  return {razon:row.razon||'',fantasia:row.fantasia||'',rut:row.rut||'',giro:row.giro||'',domicilio:row.domicilio||'',sucursal:row.sucursal||'1',cae:row.cae||'',caeVenc:row.cae_venc||'',serie:row.serie||'A',desde:row.desde||1,hasta:row.hasta||1000,prox:row.prox||1};
+}
+function billingCfgToDb(data){
+  return {razon:data.razon||null,fantasia:data.fantasia||null,rut:data.rut||null,giro:data.giro||null,domicilio:data.domicilio||null,sucursal:data.sucursal||null,cae:data.cae||null,cae_venc:data.caeVenc||null,serie:data.serie||'A',desde:data.desde||1,hasta:data.hasta||1000,prox:data.prox||1};
+}
+async function loadBillingConfig(){
+  if(!supabaseClient||!currentUser)return;
+  const {data,error}=await supabaseClient.from('billing_config').select('*').eq('tenant_id',currentUser.tenantId).maybeSingle();
+  if(error){showToast('No se pudo cargar la configuración de facturación: '+error.message,'error');return;}
+  billingCfg=billingCfgFromDb(data);
+}
+function facturaFromDb(row){
+  return {id:row.id,tipo:row.tipo,serie:row.serie,numero:row.numero,fecha:row.fecha,moneda:row.moneda,receptorNombre:row.receptor_nombre||'',docTipo:row.doc_tipo||'',docNum:row.doc_num||'',domicilio:row.domicilio||'',lines:row.lines||[],neto:Number(row.neto)||0,ivaTotal:Number(row.iva_total)||0,total:Number(row.total)||0,codigoSeguridad:row.codigo_seguridad||'',cae:row.cae||'',caeVenc:row.cae_venc||'',emisor:row.emisor||{}};
+}
+function facturaToDb(data){
+  return {tipo:data.tipo,serie:data.serie,numero:data.numero,fecha:data.fecha,moneda:data.moneda,receptor_nombre:data.receptorNombre||null,doc_tipo:data.docTipo||null,doc_num:data.docNum||null,domicilio:data.domicilio||null,lines:data.lines||[],neto:data.neto||0,iva_total:data.ivaTotal||0,total:data.total||0,codigo_seguridad:data.codigoSeguridad||null,cae:data.cae||null,cae_venc:data.caeVenc||null,emisor:data.emisor||{}};
+}
+async function loadFacturas(){
+  if(!supabaseClient||!currentUser)return;
+  const {data,error}=await supabaseClient.from('facturas').select('*').order('fecha',{ascending:false});
+  if(error){showToast('No se pudieron cargar los comprobantes: '+error.message,'error');return;}
+  facturas=(data||[]).map(facturaFromDb);
+}
 
 function openBillingConfig(){
   const c=billingCfg;
@@ -4616,12 +4627,15 @@ function openBillingConfig(){
   set('cfg-serie',c.serie);set('cfg-desde',c.desde);set('cfg-hasta',c.hasta);set('cfg-prox',c.prox);
   openModal('modal-billing-config');
 }
-function saveBillingConfig(){
+async function saveBillingConfig(){
   const g=id=>document.getElementById(id).value.trim();
-  billingCfg={razon:g('cfg-razon'),fantasia:g('cfg-fantasia'),rut:g('cfg-rut'),giro:g('cfg-giro'),
+  const data={razon:g('cfg-razon'),fantasia:g('cfg-fantasia'),rut:g('cfg-rut'),giro:g('cfg-giro'),
     domicilio:g('cfg-domicilio'),sucursal:g('cfg-sucursal'),cae:g('cfg-cae'),caeVenc:g('cfg-cae-venc'),
     serie:g('cfg-serie')||'A',desde:+g('cfg-desde')||1,hasta:+g('cfg-hasta')||1000,prox:+g('cfg-prox')||1};
-  saveBilling();closeModal('modal-billing-config');renderBilling();showToast('Configuración guardada ✅','success');
+  const {error}=await supabaseClient.from('billing_config').upsert({...billingCfgToDb(data),tenant_id:currentUser.tenantId},{onConflict:'tenant_id'});
+  if(error){showToast('No se pudo guardar la configuración: '+error.message,'error');return;}
+  billingCfg=data;
+  closeModal('modal-billing-config');renderBilling();showToast('Configuración guardada ✅','success');
 }
 
 function renderBilling(){
@@ -4645,7 +4659,7 @@ function renderBilling(){
       <td>${f.tipo}</td><td>${f.serie} ${f.numero}</td><td>${fmtDate(f.fecha)}</td>
       <td>${f.receptorNombre||'Consumidor final'}</td><td>${f.moneda}</td><td>${invMoney(f.total,f.moneda)}</td>
       <td><span class="badge badge-amber">Interno</span></td>
-      <td style="text-align:right"><button class="btn btn-sm" onclick="printInvoiceById(${f.id})"><i class="ti ti-printer"></i></button></td>
+      <td style="text-align:right"><button class="btn btn-sm" onclick="printInvoiceById('${f.id}')"><i class="ti ti-printer"></i></button></td>
     </tr>`).join('');
   }
 }
@@ -4709,7 +4723,7 @@ function renderInvTotals(){
   html+=`<div style="display:flex;justify-content:space-between;font-weight:700;border-top:0.5px solid var(--border);margin-top:6px;padding-top:6px;font-size:15px"><span>TOTAL</span><span>${invMoney(c.total,cur)}</span></div>`;
   const el=document.getElementById('inv-totals');if(el)el.innerHTML=html;
 }
-function emitInvoice(){
+async function emitInvoice(){
   const tipo=document.getElementById('inv-tipo').value;
   const moneda=document.getElementById('inv-moneda').value;
   const nombre=document.getElementById('inv-recep-nombre').value.trim();
@@ -4720,17 +4734,21 @@ function emitInvoice(){
   if(!invLines.some(l=>(+l.precio||0)>0)){showToast('Agregá al menos una línea con importe','error');return;}
   if((billingCfg.prox||1)>(billingCfg.hasta||0)){showToast('Se agotó la numeración del CAE. Renová el rango en la DGI.','error');return;}
   const c=invCompute();
-  const f={
-    id:(load('nextFactId',1)),tipo,serie:billingCfg.serie||'A',numero:billingCfg.prox||1,
+  const data={
+    tipo,serie:billingCfg.serie||'A',numero:billingCfg.prox||1,
     fecha:today(),moneda,receptorNombre:nombre,docTipo,docNum,domicilio:dom,
     lines:JSON.parse(JSON.stringify(invLines)),neto:c.neto,ivaTotal:c.ivaTotal,total:c.total,
     codigoSeguridad:String(Math.floor(100000000+Math.random()*899999999)),
     cae:billingCfg.cae,caeVenc:billingCfg.caeVenc,emisor:JSON.parse(JSON.stringify(billingCfg))
   };
+  const {data:inserted,error}=await supabaseClient.from('facturas').insert({...facturaToDb(data),tenant_id:currentUser.tenantId}).select().single();
+  if(error){showToast('No se pudo generar el comprobante: '+error.message,'error');return;}
+  const f=facturaFromDb(inserted);
   facturas.push(f);
-  save('nextFactId',f.id+1);
-  billingCfg.prox=(billingCfg.prox||1)+1;
-  saveBilling();
+  const nuevoProx=(billingCfg.prox||1)+1;
+  const {error:cfgError}=await supabaseClient.from('billing_config').update({prox:nuevoProx}).eq('tenant_id',currentUser.tenantId);
+  if(cfgError)showToast('El comprobante se generó pero no se pudo actualizar la numeración: '+cfgError.message,'error');
+  else billingCfg.prox=nuevoProx;
   closeModal('modal-invoice');renderBilling();
   showToast('Comprobante '+f.serie+' '+f.numero+' generado ✅','success');
   printInvoice(f);
@@ -5587,12 +5605,12 @@ async function submitChangeOwnPassword(){
 // AUDITORÍA — se llena sola por triggers en la base (ver 0011_audit_log.sql).
 // Acá solo se lee y se arma un resumen legible.
 // ══════════════════════════════════════════════════════════════
-const AUDIT_MODULE_LABEL={properties:'alojamiento',owners:'propietario',reservations:'reserva',expenses:'gasto',guests:'huésped',profiles:'usuario',tasks:'tarea',room_types:'tipo de habitación',rooms:'habitación',stays:'estadía',hk_tasks:'tarea de limpieza',maint_tickets:'incidencia de mantenimiento',cash_sessions:'turno de caja'};
+const AUDIT_MODULE_LABEL={properties:'alojamiento',owners:'propietario',reservations:'reserva',expenses:'gasto',guests:'huésped',profiles:'usuario',tasks:'tarea',room_types:'tipo de habitación',rooms:'habitación',stays:'estadía',hk_tasks:'tarea de limpieza',maint_tickets:'incidencia de mantenimiento',cash_sessions:'turno de caja',billing_config:'configuración de facturación',facturas:'comprobante'};
 const AUDIT_ACTION_LABEL={INSERT:'creó',UPDATE:'editó',DELETE:'eliminó'};
 const AUDIT_IGNORE_FIELDS=['updated_at','updated_by','created_at','created_by','id','tenant_id'];
 function auditRecordName(row){
   if(!row)return'';
-  return row.nombre||row.huesped||row.email||row.concepto||(row.numero?('Hab. '+row.numero):'')||'';
+  return row.nombre||row.huesped||row.email||row.concepto||row.razon||(row.serie&&row.numero?(row.serie+' '+row.numero):'')||(row.numero?('Hab. '+row.numero):'')||'';
 }
 function summarizeAuditEntry(e){
   const modLabel=AUDIT_MODULE_LABEL[e.table_name]||e.table_name;
