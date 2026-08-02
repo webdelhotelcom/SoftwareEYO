@@ -164,7 +164,7 @@ select t.id, r.role, p.key,
       'ver_gastos','ver_alojamientos','ver_propietarios','ver_datos_bancarios',
       'crear_prefacturacion','editar_prefacturacion','anular_prefacturacion','administrar_configuracion_fiscal'
     )
-    when r.role = 'propietario' then p.key in ('ver_resultados','ver_reportes','ver_alojamientos')
+    when r.role = 'propietario' then p.key in ('ver_resultados','ver_reportes','ver_alojamientos','editar_gastos')
     else false
   end
 from public.tenants t
