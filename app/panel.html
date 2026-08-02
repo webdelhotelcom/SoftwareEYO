@@ -3353,6 +3353,7 @@ async function importPropertiesBackup(input){
         if(error)fail++;else ok++;
       }
       await loadProperties();
+      await logRestoreEvent('properties','backup_propio',ok,fail,rows.length,backup.exportedAt||'');
       input.value='';
       showToast(fail?`Restaurados ${ok}, fallaron ${fail} (revisá el límite de tu plan)`:`Restaurados ${ok} alojamientos`, fail?'error':'ok');
     }catch(err){
@@ -3380,8 +3381,11 @@ async function importLegacyPropertiesFromDemo(input){
       if(!confirm(`¿Migrar ${rows.length} alojamiento(s) de la demo anterior a esta cuenta?\n\nSe crean como alojamientos nuevos en Supabase.`)){
         input.value='';return;
       }
-      let ok=0,fail=0;
+      let ok=0,fail=0,dup=0;
+      const seen=new Set(properties.map(p=>(p.nombre||'').trim().toLowerCase()+'|'+(p.direccion||'').trim().toLowerCase()));
       for(const legacy of rows){
+        const key=(legacy.nombre||'').trim().toLowerCase()+'|'+(legacy.direccion||'').trim().toLowerCase();
+        if(seen.has(key)){dup++;continue;}
         // Forma vieja (localStorage): nombre, direccion, propietarioId (numérico
         // de la demo, no se migra), capacidad, precio, comisionPct, estado, etc.
         const payload={
@@ -3393,11 +3397,12 @@ async function importLegacyPropertiesFromDemo(input){
           notas:legacy.notas||'',seasons:legacy.seasons||[],tenant_id:currentUser.tenantId
         };
         const {error}=await supabaseClient.from('properties').insert(payload);
-        if(error)fail++;else ok++;
+        if(error)fail++;else{ok++;seen.add(key);}
       }
       await loadProperties();
+      await logRestoreEvent('properties','demo_anterior',ok,fail,rows.length,dup?`${dup} duplicado(s) omitido(s)`:'');
       input.value='';
-      showToast(fail?`Migrados ${ok}, fallaron ${fail} (revisá el límite de tu plan)`:`Migrados ${ok} alojamientos`, fail?'error':'ok');
+      showToast(`Migrados ${ok}${fail?`, fallaron ${fail}`:''}${dup?`, ${dup} ya existían (omitidos)`:''}`, (fail)?'error':'ok');
     }catch(err){
       showToast('Error al leer el archivo: '+err.message,'error');
       input.value='';
@@ -3441,6 +3446,7 @@ async function importOwnersBackup(input){
         if(error)fail++;else ok++;
       }
       await loadOwners();
+      await logRestoreEvent('owners','backup_propio',ok,fail,rows.length,backup.exportedAt||'');
       input.value='';
       showToast(fail?`Restaurados ${ok}, fallaron ${fail}`:`Restaurados ${ok} propietarios`, fail?'error':'ok');
     }catch(err){
@@ -3462,15 +3468,19 @@ async function importLegacyOwnersFromDemo(input){
       if(!confirm(`¿Migrar ${rows.length} propietario(s) de la demo anterior a esta cuenta?`)){
         input.value='';return;
       }
-      let ok=0,fail=0;
+      let ok=0,fail=0,dup=0;
+      const seen=new Set(owners.map(o=>((o.email||'').trim().toLowerCase())||((o.telefono||'').trim())).filter(Boolean));
       for(const legacy of rows){
+        const key=((legacy.email||'').trim().toLowerCase())||((legacy.telefono||'').trim());
+        if(key&&seen.has(key)){dup++;continue;}
         const payload={nombre:legacy.nombre,telefono:legacy.telefono||'',email:legacy.email||'',cuenta:legacy.cuenta||'',notas:legacy.notas||'',tenant_id:currentUser.tenantId};
         const {error}=await supabaseClient.from('owners').insert(payload);
-        if(error)fail++;else ok++;
+        if(error)fail++;else{ok++;if(key)seen.add(key);}
       }
       await loadOwners();
+      await logRestoreEvent('owners','demo_anterior',ok,fail,rows.length,dup?`${dup} duplicado(s) omitido(s)`:'');
       input.value='';
-      showToast(fail?`Migrados ${ok}, fallaron ${fail}`:`Migrados ${ok} propietarios`, fail?'error':'ok');
+      showToast(`Migrados ${ok}${fail?`, fallaron ${fail}`:''}${dup?`, ${dup} ya existían (omitidos)`:''}`, fail?'error':'ok');
     }catch(err){
       showToast('Error al leer el archivo: '+err.message,'error');
       input.value='';
@@ -3514,6 +3524,7 @@ async function importReservationsBackup(input){
         if(error)fail++;else ok++;
       }
       await loadReservations();
+      await logRestoreEvent('reservations','backup_propio',ok,fail,rows.length,backup.exportedAt||'');
       input.value='';
       showToast(fail?`Restauradas ${ok}, fallaron ${fail}`:`Restauradas ${ok} reservas`, fail?'error':'ok');
     }catch(err){
@@ -3546,11 +3557,14 @@ async function importLegacyReservationsFromDemo(input){
       if(!confirm(`¿Migrar ${legacyRes.length} reserva(s) de la demo anterior a esta cuenta?\n\nSe emparejan por nombre de alojamiento — las que no encuentren alojamiento correspondiente en Supabase se saltean.`)){
         input.value='';return;
       }
-      let ok=0,fail=0,skipped=0;
+      let ok=0,fail=0,skipped=0,dup=0;
+      const seen=new Set(reservations.map(r=>(r.huesped||'').trim().toLowerCase()+'|'+r.checkin+'|'+r.checkout+'|'+r.propiedadId));
       for(const legacy of legacyRes){
         const propName=legacyIdToName[legacy.propiedadId];
         const newPropId=propName?nameToNewId[propName]:null;
         if(!newPropId){skipped++;continue;}
+        const key=(legacy.huesped||'').trim().toLowerCase()+'|'+legacy.checkin+'|'+legacy.checkout+'|'+newPropId;
+        if(seen.has(key)){dup++;continue;}
         const payload={
           huesped:legacy.huesped,telefono:legacy.telefono||'',email:legacy.email||'',
           huespedes:legacy.huespedes||1,propiedad_id:newPropId,
@@ -3565,11 +3579,12 @@ async function importLegacyReservationsFromDemo(input){
           guest_id:null,history:legacy.history||[],tenant_id:currentUser.tenantId
         };
         const {error}=await supabaseClient.from('reservations').insert(payload);
-        if(error)fail++;else ok++;
+        if(error)fail++;else{ok++;seen.add(key);}
       }
       await loadReservations();
+      await logRestoreEvent('reservations','demo_anterior',ok,fail,legacyRes.length,[skipped?`${skipped} sin alojamiento`:'',dup?`${dup} duplicado(s) omitido(s)`:''].filter(Boolean).join(', '));
       input.value='';
-      showToast(`Migradas ${ok}${fail?`, fallaron ${fail}`:''}${skipped?`, ${skipped} sin alojamiento correspondiente`:''}`, (fail||skipped)?'error':'ok');
+      showToast(`Migradas ${ok}${fail?`, fallaron ${fail}`:''}${skipped?`, ${skipped} sin alojamiento correspondiente`:''}${dup?`, ${dup} ya existían (omitidas)`:''}`, (fail||skipped)?'error':'ok');
     }catch(err){
       showToast('Error al leer el archivo: '+err.message,'error');
       input.value='';
@@ -3612,6 +3627,7 @@ async function importExpensesBackup(input){
         if(error)fail++;else ok++;
       }
       await loadExpenses();
+      await logRestoreEvent('expenses','backup_propio',ok,fail,rows.length,backup.exportedAt||'');
       input.value='';
       showToast(fail?`Restaurados ${ok}, fallaron ${fail}`:`Restaurados ${ok} gastos`, fail?'error':'ok');
     }catch(err){
@@ -3644,18 +3660,22 @@ async function importLegacyExpensesFromDemo(input){
       if(!confirm(`¿Migrar ${legacyExp.length} gasto(s) de la demo anterior a esta cuenta?\n\nSe emparejan por nombre de alojamiento (sin vínculo a la reserva asociada) — los que no encuentren alojamiento correspondiente se saltean.`)){
         input.value='';return;
       }
-      let ok=0,fail=0,skipped=0;
+      let ok=0,fail=0,skipped=0,dup=0;
+      const seen=new Set(expenses.map(x=>x.propiedadId+'|'+x.fecha+'|'+(x.concepto||'').trim().toLowerCase()+'|'+x.monto));
       for(const legacy of legacyExp){
         const propName=legacyIdToName[legacy.propiedadId];
         const newPropId=propName?nameToNewId[propName]:null;
         if(!newPropId){skipped++;continue;}
+        const key=newPropId+'|'+legacy.fecha+'|'+(legacy.concepto||'').trim().toLowerCase()+'|'+(legacy.monto||0);
+        if(seen.has(key)){dup++;continue;}
         const payload={propiedad_id:newPropId,fecha:legacy.fecha,categoria:legacy.categoria,concepto:legacy.concepto||'',monto:legacy.monto||0,reserva_id:null,tenant_id:currentUser.tenantId};
         const {error}=await supabaseClient.from('expenses').insert(payload);
-        if(error)fail++;else ok++;
+        if(error)fail++;else{ok++;seen.add(key);}
       }
       await loadExpenses();
+      await logRestoreEvent('expenses','demo_anterior',ok,fail,legacyExp.length,[skipped?`${skipped} sin alojamiento`:'',dup?`${dup} duplicado(s) omitido(s)`:''].filter(Boolean).join(', '));
       input.value='';
-      showToast(`Migrados ${ok}${fail?`, fallaron ${fail}`:''}${skipped?`, ${skipped} sin alojamiento correspondiente`:''}`, (fail||skipped)?'error':'ok');
+      showToast(`Migrados ${ok}${fail?`, fallaron ${fail}`:''}${skipped?`, ${skipped} sin alojamiento correspondiente`:''}${dup?`, ${dup} ya existían (omitidos)`:''}`, (fail||skipped)?'error':'ok');
     }catch(err){
       showToast('Error al leer el archivo: '+err.message,'error');
       input.value='';
@@ -3698,6 +3718,7 @@ async function importGuestsBackup(input){
         if(error)fail++;else ok++;
       }
       await loadGuests();
+      await logRestoreEvent('guests','backup_propio',ok,fail,rows.length,backup.exportedAt||'');
       input.value='';
       showToast(fail?`Restaurados ${ok}, fallaron ${fail}`:`Restaurados ${ok} huéspedes`, fail?'error':'ok');
     }catch(err){
@@ -3719,15 +3740,19 @@ async function importLegacyGuestsFromDemo(input){
       if(!confirm(`¿Migrar ${rows.length} huésped(es) de la demo anterior a esta cuenta?`)){
         input.value='';return;
       }
-      let ok=0,fail=0;
+      let ok=0,fail=0,dup=0;
+      const seen=new Set(guests.map(g=>(g.doc||'').trim().toLowerCase()||(g.telefono||'').trim()).filter(Boolean));
       for(const legacy of rows){
+        const key=(legacy.doc||'').trim().toLowerCase()||(legacy.telefono||'').trim();
+        if(key&&seen.has(key)){dup++;continue;}
         const payload={nombre:legacy.nombre,apellido:legacy.apellido||'',telefono:legacy.telefono||'',email:legacy.email||'',tipo_doc:legacy.tipoDoc||'CI',doc:legacy.doc||'',pais:legacy.pais||'',fecha_nacimiento:legacy.nac||null,direccion:legacy.direccion||'',obs:legacy.obs||'',tenant_id:currentUser.tenantId};
         const {error}=await supabaseClient.from('guests').insert(payload);
-        if(error)fail++;else ok++;
+        if(error)fail++;else{ok++;if(key)seen.add(key);}
       }
       await loadGuests();
+      await logRestoreEvent('guests','demo_anterior',ok,fail,rows.length,dup?`${dup} duplicado(s) omitido(s)`:'');
       input.value='';
-      showToast(fail?`Migrados ${ok}, fallaron ${fail}`:`Migrados ${ok} huéspedes`, fail?'error':'ok');
+      showToast(`Migrados ${ok}${fail?`, fallaron ${fail}`:''}${dup?`, ${dup} ya existían (omitidos)`:''}`, fail?'error':'ok');
     }catch(err){
       showToast('Error al leer el archivo: '+err.message,'error');
       input.value='';
@@ -3770,6 +3795,7 @@ async function importTasksBackup(input){
         if(error)fail++;else ok++;
       }
       await loadTasks();
+      await logRestoreEvent('tasks','backup_propio',ok,fail,rows.length,backup.exportedAt||'');
       input.value='';
       showToast(fail?`Restauradas ${ok}, fallaron ${fail}`:`Restauradas ${ok} tareas`, fail?'error':'ok');
     }catch(err){
@@ -3791,15 +3817,19 @@ async function importLegacyTasksFromDemo(input){
       if(!confirm(`¿Migrar ${rows.length} tarea(s) de la demo anterior a esta cuenta? (el alojamiento asociado no se migra, se pierde ese vínculo)`)){
         input.value='';return;
       }
-      let ok=0,fail=0;
+      let ok=0,fail=0,dup=0;
+      const seen=new Set(tasks.map(t=>(t.label||'').trim().toLowerCase()+'|'+(t.due||'')));
       for(const legacy of rows){
+        const key=(legacy.label||'').trim().toLowerCase()+'|'+(legacy.due||'');
+        if(seen.has(key)){dup++;continue;}
         const payload={label:legacy.label,cat:legacy.cat||'otro',propiedad_id:null,due:legacy.due||null,done:!!legacy.done,tenant_id:currentUser.tenantId};
         const {error}=await supabaseClient.from('tasks').insert(payload);
-        if(error)fail++;else ok++;
+        if(error)fail++;else{ok++;seen.add(key);}
       }
       await loadTasks();
+      await logRestoreEvent('tasks','demo_anterior',ok,fail,rows.length,dup?`${dup} duplicado(s) omitido(s)`:'');
       input.value='';
-      showToast(fail?`Migradas ${ok}, fallaron ${fail}`:`Migradas ${ok} tareas`, fail?'error':'ok');
+      showToast(`Migradas ${ok}${fail?`, fallaron ${fail}`:''}${dup?`, ${dup} ya existían (omitidas)`:''}`, fail?'error':'ok');
     }catch(err){
       showToast('Error al leer el archivo: '+err.message,'error');
       input.value='';
@@ -3841,6 +3871,7 @@ async function importRoomTypesBackup(input){
         if(error)fail++;else ok++;
       }
       await loadRoomTypes();
+      await logRestoreEvent('room_types','backup_propio',ok,fail,rows.length,backup.exportedAt||'');
       input.value='';
       showToast(fail?`Restaurados ${ok}, fallaron ${fail}`:`Restaurados ${ok} tipos de habitación`, fail?'error':'ok');
     }catch(err){
@@ -3884,6 +3915,7 @@ async function importRoomsBackup(input){
         if(error)fail++;else ok++;
       }
       await loadRooms();
+      await logRestoreEvent('rooms','backup_propio',ok,fail,rows.length,backup.exportedAt||'');
       input.value='';
       showToast(fail?`Restauradas ${ok}, fallaron ${fail}`:`Restauradas ${ok} habitaciones`, fail?'error':'ok');
     }catch(err){
@@ -3927,6 +3959,7 @@ async function importStaysBackup(input){
         if(error)fail++;else ok++;
       }
       await loadStays();
+      await logRestoreEvent('stays','backup_propio',ok,fail,rows.length,backup.exportedAt||'');
       input.value='';
       showToast(fail?`Restauradas ${ok}, fallaron ${fail}`:`Restauradas ${ok} estadías`, fail?'error':'ok');
     }catch(err){
@@ -3970,6 +4003,7 @@ async function importHkTasksBackup(input){
         if(error)fail++;else ok++;
       }
       await loadHkTasks();
+      await logRestoreEvent('hk_tasks','backup_propio',ok,fail,rows.length,backup.exportedAt||'');
       input.value='';
       showToast(fail?`Restauradas ${ok}, fallaron ${fail}`:`Restauradas ${ok} tareas de limpieza`, fail?'error':'ok');
     }catch(err){
@@ -4013,6 +4047,7 @@ async function importMaintTicketsBackup(input){
         if(error)fail++;else ok++;
       }
       await loadMaintTickets();
+      await logRestoreEvent('maint_tickets','backup_propio',ok,fail,rows.length,backup.exportedAt||'');
       input.value='';
       showToast(fail?`Restauradas ${ok}, fallaron ${fail}`:`Restauradas ${ok} incidencias`, fail?'error':'ok');
     }catch(err){
@@ -4056,6 +4091,7 @@ async function importCashSessionsBackup(input){
         if(error)fail++;else ok++;
       }
       await loadCashSessions();
+      await logRestoreEvent('cash_sessions','backup_propio',ok,fail,rows.length,backup.exportedAt||'');
       input.value='';
       showToast(fail?`Restaurados ${ok}, fallaron ${fail}`:`Restaurados ${ok} turnos de caja`, fail?'error':'ok');
     }catch(err){
@@ -4099,6 +4135,7 @@ async function importFacturasBackup(input){
         if(error)fail++;else ok++;
       }
       await loadFacturas();
+      await logRestoreEvent('facturas','backup_propio',ok,fail,rows.length,backup.exportedAt||'');
       input.value='';
       showToast(fail?`Restaurados ${ok}, fallaron ${fail}`:`Restaurados ${ok} comprobantes`, fail?'error':'ok');
     }catch(err){
@@ -5646,8 +5683,17 @@ async function submitChangeOwnPassword(){
 // Acá solo se lee y se arma un resumen legible.
 // ══════════════════════════════════════════════════════════════
 const AUDIT_MODULE_LABEL={properties:'alojamiento',owners:'propietario',reservations:'reserva',expenses:'gasto',guests:'huésped',profiles:'usuario',tasks:'tarea',room_types:'tipo de habitación',rooms:'habitación',stays:'estadía',hk_tasks:'tarea de limpieza',maint_tickets:'incidencia de mantenimiento',cash_sessions:'turno de caja',billing_config:'configuración de facturación',facturas:'comprobante'};
-const AUDIT_ACTION_LABEL={INSERT:'creó',UPDATE:'editó',DELETE:'eliminó'};
+const AUDIT_ACTION_LABEL={INSERT:'creó',UPDATE:'editó',DELETE:'eliminó',RESTORE:'restauró'};
 const AUDIT_IGNORE_FIELDS=['updated_at','updated_by','created_at','created_by','id','tenant_id'];
+// Corrección de auditoría (Fase 5): deja un resumen en audit_log cada vez
+// que se restaura un backup o se migra desde la demo vieja, además de las
+// filas individuales que ya deja el trigger de cada insert. No debe cortar
+// el flujo si falla (el restore en sí ya terminó); solo avisa por consola.
+async function logRestoreEvent(module,tipo,ok,fail,total,referencia){
+  if(!supabaseClient)return;
+  const {error}=await supabaseClient.rpc('log_restore_event',{p_module:module,p_tipo:tipo,p_ok:ok,p_fail:fail,p_total:total,p_referencia:referencia||''});
+  if(error)console.error('No se pudo registrar el evento de restauración:',error.message);
+}
 function auditRecordName(row){
   if(!row)return'';
   return row.nombre||row.huesped||row.email||row.concepto||row.razon||(row.serie&&row.numero?(row.serie+' '+row.numero):'')||(row.numero?('Hab. '+row.numero):'')||'';
@@ -5658,6 +5704,10 @@ function summarizeAuditEntry(e){
   const who=e.user_email||'Alguien';
   const name=auditRecordName(e.new_data)||auditRecordName(e.old_data);
   let base=`${who} ${actLabel} ${modLabel}${name?' "'+name+'"':''}`;
+  if(e.action==='RESTORE' && e.new_data){
+    const d=e.new_data;
+    base=`${who} restauró ${modLabel} (${d.tipo||'backup'}) — ${d.ok||0} de ${d.total||0} registros`+(d.fail?`, ${d.fail} con error`:'')+(d.referencia?` — ${d.referencia}`:'');
+  }
   if(e.action==='UPDATE' && e.old_data && e.new_data){
     const changes=[];
     Object.keys(e.new_data).forEach(k=>{
