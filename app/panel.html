@@ -429,6 +429,10 @@ tr:hover td{background:var(--bg2)}
       <button class="btn btn-sm btn-full" onclick="exportGuestsBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar huéspedes</button>
       <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar huéspedes<input type="file" id="import-guests-file" accept=".json" onchange="importGuestsBackup(this)" style="display:none"></label>
       <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0" title="Para traer los huéspedes de un backup exportado desde la demo vieja (localStorage)"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-guests-file" accept=".json" onchange="importLegacyGuestsFromDemo(this)" style="display:none"></label>
+      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Tareas (Supabase)</div>
+      <button class="btn btn-sm btn-full" onclick="exportTasksBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar tareas</button>
+      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar tareas<input type="file" id="import-tasks-file" accept=".json" onchange="importTasksBackup(this)" style="display:none"></label>
+      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0" title="Para traer las tareas de un backup exportado desde la demo vieja (localStorage)"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-tasks-file" accept=".json" onchange="importLegacyTasksFromDemo(this)" style="display:none"></label>
     </div>
   </div>
 </aside>
@@ -902,6 +906,7 @@ tr:hover td{background:var(--bg2)}
       <option value="expenses">Gastos</option>
       <option value="guests">Huéspedes</option>
       <option value="profiles">Usuarios</option>
+      <option value="tasks">Tareas</option>
     </select>
     <select id="audit-filter-accion" onchange="renderAuditPage()">
       <option value="">Todas las acciones</option>
@@ -1547,10 +1552,9 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 function showToast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.style.background=type==='error'?'var(--red)':'var(--accent)';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
 function clearF(ids){ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
 function saveAll(){
-  // Alojamientos, Propietarios, Reservas y Gastos ya no pasan por acá: cada
-  // cambio se guarda directo en Supabase. El resto de los módulos sigue en
-  // localStorage hasta que se migren.
-  save('tasks',tasks);save('nextTaskId',nextTaskId);
+  // Ya no queda ningún módulo de datos del negocio guardándose acá: todos
+  // pasan directo por Supabase. Esta función queda por compatibilidad con
+  // llamadas viejas, pero no tiene nada que guardar.
 }
 function calcRes(r){
   const bruto=r.precio||0,descuento=r.descuento||0;
@@ -1765,14 +1769,21 @@ async function loadExpenses(){
   expenses=(data||[]).map(expenseFromDb);
 }
 
-let tasks=load('tasks',[
-  {"id": 1, "label": "Coordinar limpieza profunda fin de temporada", "cat": "limpieza", "propId": 12, "due": "2026-02-28", "done": false},
-  {"id": 2, "label": "Enviar liquidación de febrero a Grupo Costa Mansa", "cat": "pago", "propId": 5, "due": "2026-03-03", "done": false},
-  {"id": 3, "label": "Confirmar seña pendiente de reservas de marzo", "cat": "pago", "propId": 3, "due": "2026-02-26", "done": false},
-  {"id": 4, "label": "Revisar aire acondicionado Suite 301", "cat": "mantenimiento", "propId": 5, "due": "2026-02-24", "done": true},
-  {"id": 5, "label": "Responder consultas de WhatsApp pendientes", "cat": "comunicacion", "propId": 1, "due": "2026-02-23", "done": false}
-]);
-let nextTaskId=load('nextTaskId',6);
+// Tareas (tasks) ya NO se guarda en localStorage: vive en Supabase,
+// mismo patrón que el resto de los módulos migrados.
+let tasks=[];
+function taskFromDb(row){
+  return {id:row.id, label:row.label, cat:row.cat, propId:row.propiedad_id||'', due:row.due||'', done:!!row.done};
+}
+function taskToDb(data){
+  return {label:data.label, cat:data.cat, propiedad_id:data.propId||null, due:data.due||null, done:data.done};
+}
+async function loadTasks(){
+  if(!supabaseClient||!currentUser)return;
+  const {data,error}=await supabaseClient.from('tasks').select('*').order('due',{ascending:true,nullsFirst:false});
+  if(error){showToast('No se pudieron cargar las tareas: '+error.message,'error');return;}
+  tasks=(data||[]).map(taskFromDb);
+}
 
 // LOGIN & NAV
 const ROLE_LABELS={
@@ -1836,6 +1847,7 @@ async function loadSessionUser(authUser){
   await loadReservations();
   await loadExpenses();
   await loadGuests();
+  await loadTasks();
   supabaseClient.from('profiles').update({last_active_at:new Date().toISOString()}).eq('id',authUser.id).then(()=>{});
   calYear=2026;calMonth=0; // demo: arranca en enero 2026 (temporada)
   showPage('dashboard');
@@ -2050,20 +2062,33 @@ function renderTasks(){
   const all=[...tasks.filter(t=>!t.done),...tasks.filter(t=>t.done)];
   if(!all.length){el.innerHTML='<div class="empty-state"><i class="ti ti-check"></i><p>Sin tareas pendientes</p></div>';return;}
   el.innerHTML=all.map(t=>`<div class="task-item ${t.done?'done':''}">
-    <input type="checkbox" class="task-check" ${t.done?'checked':''} onchange="toggleTask(${t.id},this.checked)">
+    <input type="checkbox" class="task-check" ${t.done?'checked':''} onchange="toggleTask('${t.id}',this.checked)">
     <div class="task-body"><div class="task-label">${t.label}</div><div class="task-meta">${t.due?`Vence: ${fmtDate(t.due)} · `:''}<span class="badge badge-gray" style="font-size:10px">${t.cat}</span>${t.propId?' · '+getPropName(t.propId):''}</div></div>
-    <button class="btn btn-xs btn-danger" onclick="deleteTask(${t.id})"><i class="ti ti-trash"></i></button>
+    <button class="btn btn-xs btn-danger" onclick="deleteTask('${t.id}')"><i class="ti ti-trash"></i></button>
   </div>`).join('');
 }
 function openNewTask(){clearF(['task-label','task-due']);document.getElementById('task-cat').value='limpieza';document.getElementById('task-prop').value='';openModal('modal-task');}
-function saveTask(){
+async function saveTask(){
   const label=document.getElementById('task-label').value.trim();
   if(!label){showToast('Ingresá la tarea','error');return;}
-  tasks.push({id:nextTaskId++,label,cat:document.getElementById('task-cat').value,propId:document.getElementById('task-prop').value,due:document.getElementById('task-due').value,done:false});
-  saveAll();closeModal('modal-task');renderTasks();updateAlertBadge();showToast('Tarea guardada');
+  const data={label,cat:document.getElementById('task-cat').value,propId:document.getElementById('task-prop').value,due:document.getElementById('task-due').value,done:false};
+  const {data:inserted,error}=await supabaseClient.from('tasks').insert({...taskToDb(data),tenant_id:currentUser.tenantId}).select().single();
+  if(error){showToast('No se pudo guardar: '+error.message,'error');return;}
+  tasks.push(taskFromDb(inserted));
+  closeModal('modal-task');renderTasks();updateAlertBadge();showToast('Tarea guardada');
 }
-function toggleTask(id,done){const t=tasks.find(x=>x.id===id);if(t){t.done=done;saveAll();renderTasks();updateAlertBadge();}}
-function deleteTask(id){if(!confirm('¿Eliminar tarea?'))return;tasks=tasks.filter(t=>t.id!==id);saveAll();renderTasks();updateAlertBadge();}
+async function toggleTask(id,done){
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  const {error}=await supabaseClient.from('tasks').update({done}).eq('id',id);
+  if(error){showToast('No se pudo actualizar: '+error.message,'error');return;}
+  t.done=done;renderTasks();updateAlertBadge();
+}
+async function deleteTask(id){
+  if(!confirm('¿Eliminar tarea?'))return;
+  const {error}=await supabaseClient.from('tasks').delete().eq('id',id);
+  if(error){showToast('No se pudo eliminar: '+error.message,'error');return;}
+  tasks=tasks.filter(t=>t.id!==id);renderTasks();updateAlertBadge();
+}
 
 // CALENDAR
 function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
@@ -3219,16 +3244,24 @@ function downloadListPDF(title,subtitle,columns,rows,filename){
 
 // INIT
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
-// ══ BACKUP / RESTORE ══════════════════════════════════════════════
+// ══ BACKUP / RESTORE (localStorage) ══════════════════════════════════
+// Todos los módulos de datos del negocio (Alojamientos, Propietarios,
+// Reservas, Gastos, Huéspedes, Tareas, Usuarios) ya viven en Supabase —
+// usá los botones específicos de cada uno para hacerles backup. Esto de
+// acá abajo es solo para lo que todavía sigue en el navegador: Pre-
+// facturación y los módulos hoteleros (Habitaciones, Housekeeping,
+// Mantenimiento, Caja), que son la parte del proyecto que sigue pendiente.
 function exportarDatos(){
-  // Alojamientos, Propietarios, Reservas y Gastos NO van en este backup: ya
-  // viven en Supabase, no en localStorage. Para copia de seguridad de esos
-  // usá los botones específicos de cada uno (acá abajo), que traen los
-  // datos reales de la base.
   const data = {
-    version: 8,
+    version: 9,
     exportedAt: new Date().toISOString(),
-    tasks, nextTaskId,
+    billingCfg, facturas,
+    roomTypes, nextRoomTypeId,
+    rooms, nextRoomId,
+    stays, nextStayId,
+    hkTasks, nextHkId,
+    maintTickets, nextMaintId,
+    cashSessions, nextCashId,
   };
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], {type:'application/json'});
@@ -3256,11 +3289,24 @@ function importarDatos(input){
       if(!confirm(`¿Importar backup del ${data.exportedAt ? new Date(data.exportedAt).toLocaleString('es-AR') : 'fecha desconocida'}?\n\nEsto reemplazará TODOS los datos actuales. Esta acción no se puede deshacer.`)){
         input.value=''; return;
       }
-      // Alojamientos, Propietarios, Reservas y Gastos no se restauran acá:
-      // usá los botones específicos de cada uno.
-      if(data.tasks !== undefined){ tasks = data.tasks; nextTaskId = data.nextTaskId||1; }
+      // Los módulos que ya viven en Supabase no se restauran acá: usá el
+      // botón específico de cada uno.
+      if(data.billingCfg !== undefined) billingCfg = data.billingCfg;
+      if(data.facturas !== undefined) facturas = data.facturas;
+      if(data.roomTypes !== undefined){ roomTypes = data.roomTypes; nextRoomTypeId = data.nextRoomTypeId||1; }
+      if(data.rooms !== undefined){ rooms = data.rooms; nextRoomId = data.nextRoomId||1; }
+      if(data.stays !== undefined){ stays = data.stays; nextStayId = data.nextStayId||1; }
+      if(data.hkTasks !== undefined){ hkTasks = data.hkTasks; nextHkId = data.nextHkId||1; }
+      if(data.maintTickets !== undefined){ maintTickets = data.maintTickets; nextMaintId = data.nextMaintId||1; }
+      if(data.cashSessions !== undefined){ cashSessions = data.cashSessions; nextCashId = data.nextCashId||1; }
       // Persist everything
-      saveAll();
+      saveBilling?.();
+      save('roomTypes',roomTypes);save('nextRoomTypeId',nextRoomTypeId);
+      save('rooms',rooms);save('nextRoomId',nextRoomId);
+      save('stays',stays);save('nextStayId',nextStayId);
+      save('hkTasks',hkTasks);save('nextHkId',nextHkId);
+      save('maintTickets',maintTickets);save('nextMaintId',nextMaintId);
+      save('cashSessions',cashSessions);save('nextCashId',nextCashId);
       // Refresh UI
       populateSelects();
       const activePage = document.querySelector('.page.active')?.id?.replace('page-','');
@@ -3689,6 +3735,78 @@ async function importLegacyGuestsFromDemo(input){
       await loadGuests();
       input.value='';
       showToast(fail?`Migrados ${ok}, fallaron ${fail}`:`Migrados ${ok} huéspedes`, fail?'error':'ok');
+    }catch(err){
+      showToast('Error al leer el archivo: '+err.message,'error');
+      input.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ══ BACKUP / RESTORE / MIGRACIÓN de Tareas (Supabase) ═══════════════
+async function exportTasksBackup(){
+  if(!supabaseClient||!currentUser){showToast('Iniciá sesión primero','error');return;}
+  const {data,error}=await supabaseClient.from('tasks').select('*');
+  if(error){showToast('No se pudo exportar: '+error.message,'error');return;}
+  const backup={version:1,exportedAt:new Date().toISOString(),tenantId:currentUser.tenantId,tasks:data||[]};
+  const json=JSON.stringify(backup,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`eyo-tareas-backup-${today()}.json`;a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup de tareas exportado');
+}
+
+async function importTasksBackup(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const backup=JSON.parse(e.target.result);
+      const rows=backup.tasks;
+      if(!Array.isArray(rows)){showToast('Archivo no válido: falta la lista de tareas','error');input.value='';return;}
+      if(!confirm(`¿Restaurar ${rows.length} tarea(s) del backup del ${backup.exportedAt?new Date(backup.exportedAt).toLocaleString('es-AR'):'fecha desconocida'}?\n\nSe agregan como tareas NUEVAS (no reemplaza las existentes).`)){
+        input.value='';return;
+      }
+      let ok=0,fail=0;
+      for(const row of rows){
+        const payload=taskToDb(taskFromDb(row));
+        payload.tenant_id=currentUser.tenantId;
+        const {error}=await supabaseClient.from('tasks').insert(payload);
+        if(error)fail++;else ok++;
+      }
+      await loadTasks();
+      input.value='';
+      showToast(fail?`Restauradas ${ok}, fallaron ${fail}`:`Restauradas ${ok} tareas`, fail?'error':'ok');
+    }catch(err){
+      showToast('Error al leer el archivo: '+err.message,'error');
+      input.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function importLegacyTasksFromDemo(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      const rows=data.tasks;
+      if(!Array.isArray(rows)){showToast('Ese archivo no tiene tareas (¿es un backup de la demo anterior?)','error');input.value='';return;}
+      if(!confirm(`¿Migrar ${rows.length} tarea(s) de la demo anterior a esta cuenta? (el alojamiento asociado no se migra, se pierde ese vínculo)`)){
+        input.value='';return;
+      }
+      let ok=0,fail=0;
+      for(const legacy of rows){
+        const payload={label:legacy.label,cat:legacy.cat||'otro',propiedad_id:null,due:legacy.due||null,done:!!legacy.done,tenant_id:currentUser.tenantId};
+        const {error}=await supabaseClient.from('tasks').insert(payload);
+        if(error)fail++;else ok++;
+      }
+      await loadTasks();
+      input.value='';
+      showToast(fail?`Migradas ${ok}, fallaron ${fail}`:`Migradas ${ok} tareas`, fail?'error':'ok');
     }catch(err){
       showToast('Error al leer el archivo: '+err.message,'error');
       input.value='';
@@ -5098,7 +5216,7 @@ async function submitChangeOwnPassword(){
 // AUDITORÍA — se llena sola por triggers en la base (ver 0011_audit_log.sql).
 // Acá solo se lee y se arma un resumen legible.
 // ══════════════════════════════════════════════════════════════
-const AUDIT_MODULE_LABEL={properties:'alojamiento',owners:'propietario',reservations:'reserva',expenses:'gasto',guests:'huésped',profiles:'usuario'};
+const AUDIT_MODULE_LABEL={properties:'alojamiento',owners:'propietario',reservations:'reserva',expenses:'gasto',guests:'huésped',profiles:'usuario',tasks:'tarea'};
 const AUDIT_ACTION_LABEL={INSERT:'creó',UPDATE:'editó',DELETE:'eliminó'};
 const AUDIT_IGNORE_FIELDS=['updated_at','updated_by','created_at','created_by','id','tenant_id'];
 function auditRecordName(row){
