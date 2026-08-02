@@ -9,7 +9,7 @@ create table public.properties (
   tenant_id uuid not null references public.tenants(id),
   nombre text not null,
   direccion text,
-  propietario_id uuid,          -- se conecta a la tabla owners en la Fase 2
+  propietario_id uuid,          -- conectada a la tabla owners por FK en 0005
   capacidad int not null default 4,
   precio numeric not null default 0,
   comision_pct numeric not null default 10,
@@ -47,7 +47,7 @@ create policy "properties_delete_own_tenant" on public.properties
   for delete using (tenant_id = public.current_tenant_id());
 
 -- Mantiene created_by/updated_at/updated_by al día automáticamente
--- (base del futuro registro de auditoría — Fase 2).
+-- (base del registro de auditoría real, audit_log, agregado en 0011).
 create or replace function public.set_properties_audit_fields()
 returns trigger
 language plpgsql

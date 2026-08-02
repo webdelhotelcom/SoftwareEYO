@@ -20,12 +20,11 @@ Una vez que el proyecto esté listo:
 
 1. Menú lateral → **SQL Editor** → **New query**.
 2. Abrí `supabase/migrations/0001_tenants_and_plans.sql` de este repositorio, copiá todo el contenido, pegalo en el editor y tocá **Run**. Tiene que decir "Success" abajo.
-3. Repetí el mismo paso, en este orden exacto, con:
-   - `0002_profiles_and_auth_helpers.sql`
-   - `0003_rls_core_tables.sql`
-   - `0004_properties_module.sql`
+3. Repetí el mismo paso con **cada archivo de `supabase/migrations/`, en orden numérico**, del `0001` hasta el más alto que exista en la carpeta (hoy llega a `0021`). No te saltees ninguno ni cambies el orden: cada migración da por sentado que las anteriores ya se aplicaron.
 
 Si alguno da error, no sigas con el siguiente — copiame el mensaje de error tal cual aparece y lo resolvemos antes de continuar.
+
+**Ojo con una particularidad del SQL Editor de Supabase:** si pegás varias sentencias juntas en una sola ejecución, todas corren como una sola transacción — si una falla, se deshace TODO lo de esa ejecución, incluso lo que parecía haber salido bien antes del error. Por eso conviene correr cada archivo de migración por separado y confirmar el "Success" de cada uno antes de pasar al siguiente.
 
 ## 3. Conseguir las claves para el panel
 

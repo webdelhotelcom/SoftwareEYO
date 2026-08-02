@@ -46,3 +46,28 @@ Con las credenciales reales del proyecto, uso el cliente de Supabase JS (la mism
 **Conclusión: ningún cliente pudo leer, editar, borrar ni crear datos a nombre del otro, en ningún caso.** El aislamiento por `tenant_id` + RLS funciona correctamente en la base real.
 
 Los dos tenants de prueba quedan en la base hasta que se corra `supabase/testing/cleanup_two_test_tenants.sql` (y se borren a mano los 2 usuarios de prueba en Authentication → Users) — no interfieren con el uso normal del sistema mientras tanto.
+
+## Actualización (2026-08-02): permisos por rol, no solo por tenant_id
+
+La prueba de arriba (2026-08-01) demostró que un cliente no puede tocar los datos de **otro cliente**. Pero en la auditoría de seguridad del 2026-08-02 se encontró que, dentro de un mismo cliente, un **rol de bajo privilegio** (por ejemplo `limpieza`) sí podía editar y borrar alojamientos por la API directa — porque hasta ese momento la mayoría de las políticas RLS de escritura solo revisaban `tenant_id`, nunca el rol ni el permiso del usuario.
+
+**Prueba en vivo que confirmó el problema (antes del fix):**
+
+| # | Acción | Resultado obtenido |
+|---|---|---|
+| 1 | Usuario con rol `limpieza` (sin permiso `editar_alojamientos`) intenta `update properties set nombre=...` por la API, con su propio token | La fila se actualizó igual. ❌ La UI escondía el botón, pero la base de datos no lo impedía. |
+| 2 | El mismo usuario intenta `delete` sobre un alojamiento de su propio tenant | Se borró igual. ❌ |
+
+**Corrección:** migración `0019_permissions_enforcement.sql` — se reescribieron las políticas de insert/update/delete de las 21 tablas para exigir también `has_permission('clave_correspondiente')` (o `is_admin()` según el caso), no solo `tenant_id = current_tenant_id()`. Se agregaron ~47 claves de permiso nuevas y se sembraron los valores por defecto de cada rol para tenants existentes y futuros. Ver `docs/permisos.md` para el detalle de qué permiso protege cada acción.
+
+**Reprueba en vivo después del fix (mismo usuario `limpieza`, mismo tenant, mismas dos acciones):**
+
+| # | Acción | Resultado obtenido |
+|---|---|---|
+| 1 | `update properties set nombre=...` | 0 filas afectadas — rechazado por RLS. ✅ |
+| 2 | `delete from properties where id=...` | 0 filas afectadas — rechazado por RLS. ✅ |
+| 3 | Control: el mismo usuario admin del tenant hace la misma edición | Funciona normalmente. ✅ (la restricción es por permiso, no rota la función para quien sí lo tiene) |
+
+**Prueba relacionada, también corregida el mismo día:** un usuario desactivado (`profiles.active=false`) podía seguir escribiendo datos si ya tenía una sesión abierta en el navegador (no se revisaba en cada consulta, solo al iniciar sesión). Se probó en vivo creando una tarea con una sesión ya desactivada — se creó igual. Corregido en `0020_deactivated_user_lockout.sql`: `current_tenant_id()`/`has_permission()` ahora exigen `active=true` en cada llamada, no solo al loguearse. Reprueba: la misma sesión ya no pudo crear la tarea, y el panel detecta la desactivación en un plazo máximo de 60 segundos y cierra la sesión automáticamente.
+
+**Conclusión actualizada:** el aislamiento entre clientes (tenant_id) y la separación por rol dentro de un mismo cliente (permisos) están ambos aplicados y verificados a nivel de base de datos — no dependen de que el navegador coopere.
