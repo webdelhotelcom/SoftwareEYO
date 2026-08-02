@@ -1569,8 +1569,6 @@ function can(key){ return currentUser?.role==='admin' || !!currentPermissions[ke
 let currentUser=null, calYear=2025, calMonth=0, currentPropId=null, chartInstances={};
 const MN=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const MNF=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-function save(k,v){try{localStorage.setItem('pga_demo_'+k,JSON.stringify(v));}catch(e){}}
-function load(k,d){try{const v=localStorage.getItem('pga_demo_'+k);return v?JSON.parse(v):d;}catch(e){return d;}}
 // Corrección de auditoría (XSS): cualquier campo de texto libre que un
 // usuario haya cargado (nombre, notas, concepto, etc.) debe pasar por
 // acá antes de insertarse en innerHTML — si no, un huésped, huésped o
@@ -1594,11 +1592,6 @@ function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function showToast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.style.background=type==='error'?'var(--red)':'var(--accent)';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
 function clearF(ids){ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
-function saveAll(){
-  // Ya no queda ningún módulo de datos del negocio guardándose acá: todos
-  // pasan directo por Supabase. Esta función queda por compatibilidad con
-  // llamadas viejas, pero no tiene nada que guardar.
-}
 function calcRes(r){
   const bruto=r.precio||0,descuento=r.descuento||0;
   const platPct=r.tieneComisionPlat==='si'?(r.comisionPlatPct||0):0;
@@ -1650,11 +1643,6 @@ async function loadOwners(){
 // separado por tenant_id y protegido por RLS. Este array es solo la copia en
 // memoria que usa la interfaz; loadProperties() la llena después del login
 // y cada alta/edición/baja escribe directo contra la base (ver más abajo).
-// NOTA de migración incremental: Reservas/Gastos/Tareas siguen en localStorage
-// con los IDs numéricos de la demo vieja hasta que se migren en la Fase 2, así
-// que sus referencias a "propiedadId" no van a cruzar con los alojamientos
-// reales de Supabase (que usan UUID) hasta ese momento. No es un bug: es el
-// estado esperado de una migración por módulos.
 let properties=[];
 
 function propertyFromDb(row){
