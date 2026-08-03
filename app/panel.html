@@ -511,6 +511,7 @@ tr:hover td{background:var(--bg2)}
     <div class="nav-item" data-page="expenses" onclick="showPage('expenses')"><i class="ti ti-receipt"></i>Gastos</div>
     <div class="nav-item" data-page="reports" onclick="showPage('reports')"><i class="ti ti-file-description"></i>Reportes</div>
     <div class="nav-item" data-page="hotelreports" onclick="showPage('hotelreports')"><i class="ti ti-chart-bar"></i>Reportes hoteleros</div>
+    <div class="nav-item" data-page="pricing" onclick="showPage('pricing')"><i class="ti ti-tags"></i>Inteligencia de Precios<span style="margin-left:auto;font-size:8px;font-weight:700;background:var(--amber-bg);color:var(--amber);padding:1px 5px;border-radius:6px">BETA</span></div>
     <div class="nav-section">Herramientas</div>
     <div class="nav-item" data-page="messages" onclick="showPage('messages')"><i class="ti ti-message"></i>Mensajes</div>
     <div class="nav-item" data-page="billing" onclick="showPage('billing')"><i class="ti ti-file-invoice"></i>Pre-facturación</div>
@@ -1012,6 +1013,196 @@ tr:hover td{background:var(--bg2)}
     <tbody id="audit-tbody"></tbody></table>
   </div>
 </div>
+
+<!-- INTELIGENCIA DE PRECIOS (beta, Plan Hotel) -->
+<div class="page" id="page-pricing">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Inteligencia de Precios <span style="font-size:9px;font-weight:700;background:var(--amber-bg);color:var(--amber);padding:2px 6px;border-radius:6px;vertical-align:middle">BETA</span></div>
+      <div class="page-subtitle">Analiza el mercado y recibe recomendaciones de precios para aumentar tus reservas e ingresos.</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab(this,'ptab-pricing-config')">Configuración</div>
+    <div class="tab" onclick="showTab(this,'ptab-pricing-competidores')">Competidores</div>
+    <div class="tab" onclick="showTab(this,'ptab-pricing-resultado')">Resultado</div>
+    <div class="tab" onclick="showTab(this,'ptab-pricing-fuentes')">Fuentes de datos</div>
+  </div>
+
+  <!-- CONFIGURACIÓN -->
+  <div id="ptab-pricing-config">
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-header"><div class="card-title">Consulta</div></div>
+      <div class="form-row">
+        <div class="form-group"><label>Alojamiento propio *</label><select id="pi-property" onchange="onPricingPropertyChange()"></select></div>
+        <div class="form-group"><label>Zona</label><input id="pi-zona" type="text" placeholder="Ej: Chuy, centro"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Check-in *</label><input id="pi-checkin" type="date"></div>
+        <div class="form-group"><label>Check-out *</label><input id="pi-checkout" type="date"></div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group"><label>Adultos</label><input id="pi-adultos" type="number" min="1" value="2"></div>
+        <div class="form-group"><label>Niños</label><input id="pi-ninos" type="number" min="0" value="0"></div>
+        <div class="form-group"><label>Habitaciones</label><input id="pi-habitaciones" type="number" min="1" value="1"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Moneda</label><select id="pi-moneda"><option>UYU</option><option>USD</option></select></div>
+        <div class="form-group"><label>Precio actual (por noche)</label><input id="pi-precio-actual" type="number" min="0" step="0.01"></div>
+      </div>
+      <div class="form-group">
+        <label>Objetivo de la estrategia</label>
+        <select id="pi-estrategia">
+          <option value="ganar_reservas">Ganar reservas</option>
+          <option value="equilibrado" selected>Equilibrado</option>
+          <option value="maximizar_ingresos">Maximizar ingresos</option>
+          <option value="personalizado">Precio personalizado</option>
+        </select>
+      </div>
+      <div class="form-group" id="pi-precio-personalizado-wrap" style="display:none">
+        <label>Precio que querés evaluar</label>
+        <input id="pi-precio-personalizado" type="number" min="0" step="0.01">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">Alojamiento propio — configuración de precios</div><button class="btn btn-sm btn-primary" onclick="savePricingPropertyConfig()"><i class="ti ti-check"></i> Guardar</button></div>
+      <p style="font-size:11px;color:var(--text2);margin:0 0 .75rem">El precio mínimo rentable es el piso que la recomendación nunca cruza sin avisarte.</p>
+      <div class="form-row-3">
+        <div class="form-group"><label>Tipo</label>
+          <select id="pi-cfg-tipo"><option value="habitacion_compartida">Habitación sin baño privado</option><option value="habitacion_privada">Habitación con baño privado</option><option value="apartamento">Apartamento completo</option><option value="casa">Casa</option><option value="otro">Otro</option></select>
+        </div>
+        <div class="form-group"><label>Capacidad</label><input id="pi-cfg-capacidad" type="number" min="1"></div>
+        <div class="form-group"><label>Distancia al centro (km)</label><input id="pi-cfg-distancia" type="number" min="0" step="0.1"></div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group"><label>Puntuación (0-10)</label><input id="pi-cfg-puntuacion" type="number" min="0" max="10" step="0.1"></div>
+        <div class="form-group"><label>Cantidad de reseñas</label><input id="pi-cfg-resenas" type="number" min="0"></div>
+        <div class="form-group"><label>Ocupación objetivo (%)</label><input id="pi-cfg-ocupacion" type="number" min="0" max="100"></div>
+      </div>
+      <div class="form-row" style="flex-wrap:wrap;gap:1rem 1.5rem;display:flex">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="pi-cfg-bano" style="width:auto">Baño privado</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="pi-cfg-ac" style="width:auto">Aire acondicionado</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="pi-cfg-cocina" style="width:auto">Cocina</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="pi-cfg-estacionamiento" style="width:auto">Estacionamiento</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="pi-cfg-wifi" style="width:auto">Wi-Fi</label>
+      </div>
+      <div class="form-row-3" style="margin-top:.5rem">
+        <div class="form-group"><label>Precio mínimo rentable *</label><input id="pi-cfg-min-rentable" type="number" min="0" step="0.01"></div>
+        <div class="form-group"><label>Precio habitual</label><input id="pi-cfg-habitual" type="number" min="0" step="0.01"></div>
+        <div class="form-group"><label>Precio máximo recomendado</label><input id="pi-cfg-maximo" type="number" min="0" step="0.01"></div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group"><label>Costo variable por noche</label><input id="pi-cfg-costo-variable" type="number" min="0" step="0.01"></div>
+        <div class="form-group"><label>Comisión de plataforma (%)</label><input id="pi-cfg-comision" type="number" min="0" max="100" step="0.1"></div>
+        <div class="form-group"><label>Gastos de limpieza</label><input id="pi-cfg-limpieza" type="number" min="0" step="0.01"></div>
+      </div>
+      <p id="pi-cfg-status" style="font-size:12px;color:var(--text2)"></p>
+    </div>
+  </div>
+
+  <!-- COMPETIDORES -->
+  <div id="ptab-pricing-competidores" style="display:none">
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-header"><div class="card-title">Grupo de competidores</div></div>
+      <div class="form-row">
+        <div class="form-group"><label>Elegir grupo existente</label><select id="pi-set-select" onchange="onCompetitorSetChange()"><option value="">— Elegir —</option></select></div>
+        <div class="form-group"><label>O crear uno nuevo</label>
+          <div style="display:flex;gap:6px">
+            <input id="pi-set-new-name" type="text" placeholder="Ej: Chuy — centro">
+            <button class="btn btn-sm" type="button" onclick="createCompetitorSet()"><i class="ti ti-plus"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="pi-competitors-card" style="margin-bottom:1rem;display:none">
+      <div class="card-header">
+        <div class="card-title">Competidores <span id="pi-competitors-count" style="font-weight:400;color:var(--text2);font-size:12px"></span></div>
+        <div class="page-actions">
+          <label class="btn btn-sm" style="cursor:pointer;margin:0"><i class="ti ti-file-upload"></i> Importar CSV<input type="file" id="pi-csv-file" accept=".csv" style="display:none" onchange="onCompetitorCsvSelected(this)"></label>
+          <button class="btn btn-sm btn-primary" onclick="openNewCompetitorModal()"><i class="ti ti-plus"></i> Agregar competidor</button>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--text2);margin:0 0 .5rem">El CSV debe tener columnas: nombre, plataforma, zona, checkin, checkout, noches, capacidad, tipo, precio_total, moneda, impuestos_incluidos, cargos_adicionales, precio_final, disponible, distancia_km, puntuacion, resenas, bano_privado, aire_acondicionado, cocina, estacionamiento, cancelacion_gratuita, desayuno, enlace.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th></th><th>Nombre</th><th>Plataforma</th><th>Precio/noche</th><th>Disponible</th><th>Similitud</th><th></th></tr></thead>
+          <tbody id="pi-competitors-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div id="ptab-pricing-resultado" style="display:none">
+    <div class="actions" style="margin-bottom:1rem">
+      <button class="btn btn-primary" onclick="runPricingAnalysis()"><i class="ti ti-sparkles"></i> Analizar y recomendar</button>
+    </div>
+    <div id="pi-resultado-content"><p style="color:var(--text2);font-size:13px">Completá la configuración y los competidores, y tocá "Analizar y recomendar".</p></div>
+  </div>
+
+  <!-- FUENTES DE DATOS -->
+  <div id="ptab-pricing-fuentes" style="display:none">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Fuentes de datos de mercado</div></div>
+      <div id="pi-sources-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVO COMPETIDOR -->
+<div class="modal-overlay" id="modal-competitor">
+<div class="modal modal-lg">
+  <div class="modal-header"><div class="modal-title">Nuevo competidor</div><button class="btn btn-sm btn-icon" onclick="closeModal('modal-competitor')"><i class="ti ti-x"></i></button></div>
+  <div class="modal-body">
+    <input type="hidden" id="comp-id">
+    <div class="form-row">
+      <div class="form-group"><label>Nombre / identificador *</label><input id="comp-nombre" type="text"></div>
+      <div class="form-group"><label>Plataforma</label><input id="comp-plataforma" type="text" placeholder="Booking, Airbnb, otro..."></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Zona</label><input id="comp-zona" type="text"></div>
+      <div class="form-group"><label>Tipo de alojamiento</label>
+        <select id="comp-tipo"><option value="habitacion_compartida">Habitación sin baño privado</option><option value="habitacion_privada">Habitación con baño privado</option><option value="apartamento">Apartamento completo</option><option value="casa">Casa</option><option value="otro">Otro</option></select>
+      </div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group"><label>Check-in</label><input id="comp-checkin" type="date"></div>
+      <div class="form-group"><label>Check-out</label><input id="comp-checkout" type="date"></div>
+      <div class="form-group"><label>Capacidad</label><input id="comp-capacidad" type="number" min="1"></div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group"><label>Precio total *</label><input id="comp-precio-total" type="number" min="0" step="0.01"></div>
+      <div class="form-group"><label>Moneda</label><select id="comp-moneda"><option>UYU</option><option>USD</option></select></div>
+      <div class="form-group"><label>Precio final (con todo incluido)</label><input id="comp-precio-final" type="number" min="0" step="0.01"></div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group"><label>Impuestos incluidos</label><select id="comp-impuestos"><option value="desconocido">Desconocido</option><option value="si">Sí</option><option value="no">No</option></select></div>
+      <div class="form-group"><label>Cargos adicionales</label><input id="comp-cargos" type="number" min="0" step="0.01"></div>
+      <div class="form-group"><label>Disponible</label><select id="comp-disponible"><option value="desconocido">Desconocido</option><option value="si">Sí</option><option value="no">No</option><option value="no_aparecio">No apareció en la búsqueda</option><option value="fuera_de_filtros">Fuera de los filtros</option></select></div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group"><label>Distancia al centro (km)</label><input id="comp-distancia" type="number" min="0" step="0.1"></div>
+      <div class="form-group"><label>Puntuación (0-10)</label><input id="comp-puntuacion" type="number" min="0" max="10" step="0.1"></div>
+      <div class="form-group"><label>Cantidad de reseñas</label><input id="comp-resenas" type="number" min="0"></div>
+    </div>
+    <div class="form-row" style="flex-wrap:wrap;gap:1rem 1.5rem;display:flex">
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="comp-bano" style="width:auto">Baño privado</label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="comp-ac" style="width:auto">Aire acondicionado</label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="comp-cocina" style="width:auto">Cocina</label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="comp-estacionamiento" style="width:auto">Estacionamiento</label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="comp-cancelacion" style="width:auto">Cancelación gratuita</label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="comp-desayuno" style="width:auto">Desayuno</label>
+    </div>
+    <div class="form-group"><label>Enlace (opcional)</label><input id="comp-enlace" type="text" placeholder="https://..."></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('modal-competitor')">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveCompetitor()"><i class="ti ti-check"></i> Guardar</button>
+  </div>
+</div></div>
 
 <!-- AJUSTES -->
 <div class="page" id="page-ajustes">
@@ -1786,7 +1977,7 @@ const ROLES=[
   {key:'contador',label:'Contador'},
   {key:'propietario',label:'Propietario'}
 ];
-const PAGE_PERMISSION={usuarios:'administrar_usuarios',auditoria:'administrar_usuarios',finances:'ver_resultados',owners:'ver_propietarios',billing:'acceder_prefacturacion',reports:'ver_reportes',hotelreports:'ver_reportes'};
+const PAGE_PERMISSION={usuarios:'administrar_usuarios',auditoria:'administrar_usuarios',finances:'ver_resultados',owners:'ver_propietarios',billing:'acceder_prefacturacion',reports:'ver_reportes',hotelreports:'ver_reportes',pricing:'ver_analisis_precios'};
 let currentPermissions={};       // permission_key -> boolean, para el rol del usuario logueado
 let tenantUsers=[];              // profiles del tenant (solo se cargan si sos admin)
 let tenantPermissionsGrid=[];    // filas de role_permissions del tenant (todas), solo admin
@@ -2228,7 +2419,7 @@ function showPage(name){
   const pg=document.getElementById('page-'+name);
   if(pg)pg.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>{if(n.dataset.page===name)n.classList.add('active');});
-  const R={dashboard:updateDashboard,monthly:renderMonthly,calendar:renderCalendar,whatsapp:renderWhatsappPage,reservations:renderReservationsTable,properties:renderProperties,owners:renderOwners,guests:renderGuests,finances:renderFinances,expenses:renderExpensesPage,alerts:renderAlerts,messages:renderMessages,billing:renderBilling,reception:renderReception,roomtypes:renderRoomTypes,rooms:renderRooms,housekeeping:renderHousekeeping,maintenance:renderMaintenance,cashbox:renderCashbox,hotelreports:renderHotelReports,usuarios:renderUsersPage,auditoria:renderAuditPage,ajustes:renderAjustesPage};
+  const R={dashboard:updateDashboard,monthly:renderMonthly,calendar:renderCalendar,whatsapp:renderWhatsappPage,reservations:renderReservationsTable,properties:renderProperties,owners:renderOwners,guests:renderGuests,finances:renderFinances,expenses:renderExpensesPage,alerts:renderAlerts,messages:renderMessages,billing:renderBilling,reception:renderReception,roomtypes:renderRoomTypes,rooms:renderRooms,housekeeping:renderHousekeeping,maintenance:renderMaintenance,cashbox:renderCashbox,hotelreports:renderHotelReports,usuarios:renderUsersPage,auditoria:renderAuditPage,ajustes:renderAjustesPage,pricing:renderPricingPage};
   if(R[name])R[name]();
 }
 function showTab(el,tabId){
@@ -4893,7 +5084,7 @@ const PLAN_CONFIG = {
   profesional:{ label:'Plan Profesional', price:300, bugFixDays:60, includesWebsite:true, includesGoogleBusiness:true,
     pages:['dashboard','monthly','alerts','calendar','whatsapp','reservations','properties','guests','owners','finances','expenses','reports','messages','usuarios','auditoria'] },
   hotel:{ label:'Plan Hotel', priceFrom:500, bugFixDays:90, includesWebsite:true, includesGoogleBusiness:true,
-    pages:['dashboard','reception','monthly','alerts','calendar','whatsapp','reservations','properties','guests','roomtypes','rooms','housekeeping','maintenance','owners','finances','expenses','cashbox','reports','hotelreports','messages','billing','usuarios','auditoria'] }
+    pages:['dashboard','reception','monthly','alerts','calendar','whatsapp','reservations','properties','guests','roomtypes','rooms','housekeeping','maintenance','owners','finances','expenses','cashbox','reports','hotelreports','pricing','messages','billing','usuarios','auditoria'] }
 };
 function planCfg(){ return PLAN_CONFIG[PLAN] || PLAN_CONFIG.hotel; }
 // "id" interno del plan (hotel/profesional/inicial) separado del nombre que se
@@ -4946,6 +5137,662 @@ function updatePlanUsage(){
     btn.disabled=full; btn.style.opacity=full?'.5':''; btn.style.cursor=full?'not-allowed':'';
     btn.title = max==null ? 'Límite no configurado para este cliente' : (full?('Alcanzaste el límite de '+max+' alojamientos de tu plan'):'');
   }
+}
+
+// ==================== INTELIGENCIA DE PRECIOS (beta, Plan Hotel) ====================
+// Fase 1: carga manual + CSV, similitud explicable, estadística con
+// percentiles, recomendación por estrategia sin bajar del mínimo
+// rentable. El feature flag y los permisos se validan en la base de
+// datos (RLS, migración 0025) — mostrar/ocultar acá es solo comodidad
+// visual, igual que el resto del proyecto.
+let pricingPropertyConfigs={};
+let competitorSets=[];
+let currentCompetitorSetId=null;
+let competitors=[];
+let marketDataSources=[];
+
+function numOrNull(v){ return v===''||v===null||v===undefined ? null : parseFloat(v); }
+function intOrNull(v){ return v===''||v===null||v===undefined ? null : parseInt(v,10); }
+
+async function renderPricingPage(){
+  if(!supabaseClient||!currentUser)return;
+  const propSel=document.getElementById('pi-property');
+  if(propSel){
+    const cur=propSel.value;
+    propSel.innerHTML='<option value="">— Elegir —</option>'+properties.map(p=>`<option value="${p.id}">${esc(p.nombre)}</option>`).join('');
+    if(cur){propSel.value=cur;}
+  }
+  if(!document.getElementById('pi-checkin').value){
+    const today=new Date(), tomorrow=new Date(today.getTime()+86400000);
+    document.getElementById('pi-checkin').value=today.toISOString().slice(0,10);
+    document.getElementById('pi-checkout').value=tomorrow.toISOString().slice(0,10);
+  }
+  const estSel=document.getElementById('pi-estrategia');
+  if(estSel && !estSel.dataset.bound){
+    estSel.dataset.bound='1';
+    estSel.addEventListener('change',()=>{
+      document.getElementById('pi-precio-personalizado-wrap').style.display = estSel.value==='personalizado'?'':'none';
+    });
+  }
+  await loadMarketDataSources();
+  renderPricingSources();
+  await loadCompetitorSets();
+  renderCompetitorSetSelect();
+  if(propSel && propSel.value) await loadPricingPropertyConfig(propSel.value);
+}
+
+async function onPricingPropertyChange(){
+  const propId=document.getElementById('pi-property').value;
+  if(!propId)return;
+  await loadPricingPropertyConfig(propId);
+  recomputeAllSimilarity();
+  renderCompetitorsTable();
+}
+
+async function loadPricingPropertyConfig(propId){
+  const {data,error}=await supabaseClient.from('pricing_property_config').select('*').eq('property_id',propId).maybeSingle();
+  if(error){showToast('No se pudo cargar la configuración: '+error.message,'error');return;}
+  const c=data||{};
+  pricingPropertyConfigs[propId]=c;
+  document.getElementById('pi-cfg-tipo').value=c.tipo||'apartamento';
+  document.getElementById('pi-cfg-capacidad').value=c.capacidad??'';
+  document.getElementById('pi-cfg-distancia').value=c.distancia_centro_km??'';
+  document.getElementById('pi-cfg-puntuacion').value=c.puntuacion??'';
+  document.getElementById('pi-cfg-resenas').value=c.cantidad_resenas??'';
+  document.getElementById('pi-cfg-ocupacion').value=c.ocupacion_objetivo_pct??'';
+  document.getElementById('pi-cfg-bano').checked=!!c.bano_privado;
+  document.getElementById('pi-cfg-ac').checked=!!c.aire_acondicionado;
+  document.getElementById('pi-cfg-cocina').checked=!!c.cocina;
+  document.getElementById('pi-cfg-estacionamiento').checked=!!c.estacionamiento;
+  document.getElementById('pi-cfg-wifi').checked=!!c.wifi;
+  document.getElementById('pi-cfg-min-rentable').value=c.precio_minimo_rentable??'';
+  document.getElementById('pi-cfg-habitual').value=c.precio_habitual??'';
+  document.getElementById('pi-cfg-maximo').value=c.precio_maximo_recomendado??'';
+  document.getElementById('pi-cfg-costo-variable').value=c.costo_variable_por_noche??'';
+  document.getElementById('pi-cfg-comision').value=c.comision_plataforma_pct??'';
+  document.getElementById('pi-cfg-limpieza').value=c.gastos_limpieza??'';
+}
+
+async function savePricingPropertyConfig(){
+  const propId=document.getElementById('pi-property').value;
+  if(!propId){showToast('Elegí un alojamiento primero','error');return;}
+  if(!can('configurar_precio_minimo')){showToast('No tenés permiso para configurar el precio mínimo','error');return;}
+  const minRentable=numOrNull(document.getElementById('pi-cfg-min-rentable').value);
+  if(minRentable===null){showToast('El precio mínimo rentable es obligatorio','error');return;}
+  const payload={
+    tenant_id: currentUser.tenantId,
+    property_id: propId,
+    tipo: document.getElementById('pi-cfg-tipo').value,
+    capacidad: intOrNull(document.getElementById('pi-cfg-capacidad').value),
+    distancia_centro_km: numOrNull(document.getElementById('pi-cfg-distancia').value),
+    puntuacion: numOrNull(document.getElementById('pi-cfg-puntuacion').value),
+    cantidad_resenas: intOrNull(document.getElementById('pi-cfg-resenas').value),
+    ocupacion_objetivo_pct: numOrNull(document.getElementById('pi-cfg-ocupacion').value),
+    bano_privado: document.getElementById('pi-cfg-bano').checked,
+    aire_acondicionado: document.getElementById('pi-cfg-ac').checked,
+    cocina: document.getElementById('pi-cfg-cocina').checked,
+    estacionamiento: document.getElementById('pi-cfg-estacionamiento').checked,
+    wifi: document.getElementById('pi-cfg-wifi').checked,
+    precio_minimo_rentable: minRentable,
+    precio_habitual: numOrNull(document.getElementById('pi-cfg-habitual').value),
+    precio_maximo_recomendado: numOrNull(document.getElementById('pi-cfg-maximo').value),
+    costo_variable_por_noche: numOrNull(document.getElementById('pi-cfg-costo-variable').value),
+    comision_plataforma_pct: numOrNull(document.getElementById('pi-cfg-comision').value),
+    gastos_limpieza: numOrNull(document.getElementById('pi-cfg-limpieza').value),
+    updated_at: new Date().toISOString(),
+    updated_by: currentUser.id
+  };
+  const {error}=await supabaseClient.from('pricing_property_config').upsert(payload,{onConflict:'tenant_id,property_id'});
+  const statusEl=document.getElementById('pi-cfg-status');
+  if(error){statusEl.textContent='';showToast('No se pudo guardar: '+error.message,'error');return;}
+  pricingPropertyConfigs[propId]=payload;
+  statusEl.textContent='Guardado ✓';
+  showToast('Configuración de precios guardada');
+}
+
+async function loadMarketDataSources(){
+  const {data,error}=await supabaseClient.from('market_data_sources').select('*').order('key');
+  if(error){console.error('No se pudieron cargar las fuentes:',error.message);return;}
+  marketDataSources=data||[];
+}
+function renderPricingSources(){
+  const box=document.getElementById('pi-sources-list');
+  if(!box)return;
+  box.innerHTML=marketDataSources.map(s=>`
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--border)">
+      <span class="badge ${s.available?'badge-green':'badge-gray'}" style="flex-shrink:0;margin-top:2px">${s.available?'Conectada':'No conectada'}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:13px">${esc(s.label)}</div>
+        <div style="font-size:11px;color:var(--text2)">${esc(s.description||'')}</div>
+        ${!s.available?'<div style="font-size:11px;color:var(--amber);margin-top:2px">Esta fuente todavía no está conectada. Puedes ingresar datos manualmente o importar un archivo.</div>':''}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadCompetitorSets(){
+  const {data,error}=await supabaseClient.from('competitor_sets').select('*').order('created_at',{ascending:false});
+  if(error){console.error('No se pudieron cargar los grupos:',error.message);return;}
+  competitorSets=data||[];
+}
+function renderCompetitorSetSelect(){
+  const sel=document.getElementById('pi-set-select');
+  if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— Elegir —</option>'+competitorSets.map(s=>`<option value="${s.id}">${esc(s.nombre)}${s.zona?' ('+esc(s.zona)+')':''}</option>`).join('');
+  if(cur)sel.value=cur;
+}
+async function createCompetitorSet(){
+  if(!can('crear_analisis_precios')){showToast('No tenés permiso para crear un grupo de competidores','error');return;}
+  const name=document.getElementById('pi-set-new-name').value.trim();
+  if(!name){showToast('Poné un nombre para el grupo','error');return;}
+  const propId=document.getElementById('pi-property').value||null;
+  const zona=document.getElementById('pi-zona').value.trim()||null;
+  const {data,error}=await supabaseClient.from('competitor_sets').insert({tenant_id:currentUser.tenantId,property_id:propId,nombre:name,zona,created_by:currentUser.id}).select().single();
+  if(error){showToast('No se pudo crear el grupo: '+error.message,'error');return;}
+  document.getElementById('pi-set-new-name').value='';
+  await loadCompetitorSets();
+  renderCompetitorSetSelect();
+  document.getElementById('pi-set-select').value=data.id;
+  await onCompetitorSetChange();
+  showToast('Grupo de competidores creado');
+}
+async function onCompetitorSetChange(){
+  currentCompetitorSetId=document.getElementById('pi-set-select').value||null;
+  const card=document.getElementById('pi-competitors-card');
+  if(card)card.style.display=currentCompetitorSetId?'':'none';
+  if(!currentCompetitorSetId){competitors=[];renderCompetitorsTable();return;}
+  await loadCompetitors();
+  renderCompetitorsTable();
+}
+async function loadCompetitors(){
+  if(!currentCompetitorSetId){competitors=[];return;}
+  const {data,error}=await supabaseClient.from('competitor_properties').select('*').eq('set_id',currentCompetitorSetId).order('created_at',{ascending:false});
+  if(error){showToast('No se pudieron cargar los competidores: '+error.message,'error');return;}
+  competitors=data||[];
+  recomputeAllSimilarity();
+}
+
+function currentPropertyConfig(){
+  const propId=document.getElementById('pi-property')?.value;
+  return propId ? (pricingPropertyConfigs[propId]||{}) : {};
+}
+
+// Puntuación de similitud (0-100), transparente: se explica qué se
+// comparó. Si no hay datos propios cargados para comparar, no inventa
+// un puntaje — lo deja sin calcular.
+function computeSimilarity(competitor){
+  const cfg=currentPropertyConfig();
+  let score=0, max=0; const reasons=[];
+  if(cfg.tipo && competitor.tipo_alojamiento){ max+=20; if(cfg.tipo===competitor.tipo_alojamiento){score+=20;reasons.push('tipo de alojamiento');} }
+  if(cfg.capacidad!=null && competitor.capacidad!=null){
+    max+=15; const diff=Math.abs(cfg.capacidad-competitor.capacidad);
+    if(diff<=1){score+=15;reasons.push('capacidad');} else if(diff<=2){score+=8;reasons.push('capacidad similar');}
+  }
+  if(cfg.bano_privado!=null && competitor.bano_privado!=null){ max+=10; if(cfg.bano_privado===competitor.bano_privado){score+=10;reasons.push('baño privado');} }
+  if(cfg.aire_acondicionado!=null && competitor.aire_acondicionado!=null){ max+=10; if(cfg.aire_acondicionado===competitor.aire_acondicionado){score+=10;reasons.push('aire acondicionado');} }
+  if(cfg.cocina!=null && competitor.cocina!=null){ max+=5; if(cfg.cocina===competitor.cocina){score+=5;reasons.push('cocina');} }
+  if(cfg.estacionamiento!=null && competitor.estacionamiento!=null){ max+=5; if(cfg.estacionamiento===competitor.estacionamiento){score+=5;reasons.push('estacionamiento');} }
+  if(cfg.distancia_centro_km!=null && competitor.distancia_km!=null){
+    max+=15; const diff=Math.abs(cfg.distancia_centro_km-competitor.distancia_km);
+    if(diff<=1){score+=15;reasons.push('ubicación');} else if(diff<=3){score+=10;reasons.push('ubicación cercana');} else if(diff<=6){score+=5;}
+  }
+  let diffPuntuacion=null;
+  if(cfg.puntuacion!=null && competitor.puntuacion!=null){
+    max+=15; diffPuntuacion=competitor.puntuacion-cfg.puntuacion; const diff=Math.abs(diffPuntuacion);
+    if(diff<=0.3){score+=15;reasons.push('puntuación similar');} else if(diff<=0.8){score+=8;}
+  }
+  max+=5;
+  if(competitor.cancelacion_gratuita)score+=2.5;
+  if(competitor.desayuno)score+=2.5;
+  if(competitor.cancelacion_gratuita||competitor.desayuno) reasons.push('servicios incluidos');
+  if(max===0) return {score:null, text:'Sin datos suficientes del alojamiento propio (pestaña Configuración) para comparar.'};
+  const pct=Math.round((score/max)*100);
+  let text=`Similitud: ${pct}/100. `;
+  text += reasons.length ? ('Es comparable por '+reasons.slice(0,4).join(', ')+'.') : 'No comparte suficientes características verificadas.';
+  if(diffPuntuacion!=null && Math.abs(diffPuntuacion)>=0.1) text+=` Tiene una puntuación ${diffPuntuacion>0?'+':''}${diffPuntuacion.toFixed(1)} respecto a la tuya.`;
+  return {score:pct, text};
+}
+function recomputeAllSimilarity(){
+  competitors.forEach(c=>{ const r=computeSimilarity(c); c._similarity=r.score; c._similarityText=r.text; });
+}
+
+function pricePerNight(c){
+  const noches = c.noches || (c.checkin && c.checkout ? Math.round((new Date(c.checkout)-new Date(c.checkin))/86400000) : null);
+  const total = c.precio_final ?? c.precio_total;
+  if(total==null || !noches || noches<=0) return null;
+  return total/noches;
+}
+
+function renderCompetitorsTable(){
+  const tbody=document.getElementById('pi-competitors-tbody');
+  const countEl=document.getElementById('pi-competitors-count');
+  if(!tbody)return;
+  if(countEl)countEl.textContent=competitors.length?`(${competitors.length})`:'';
+  if(!competitors.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text2);padding:1.5rem">Sin competidores todavía. Agregá uno o importá un CSV.</td></tr>'; return; }
+  tbody.innerHTML=competitors.map(c=>{
+    const perNight=pricePerNight(c);
+    const simBadge = c._similarity==null ? '<span class="badge badge-gray">—</span>'
+      : `<span class="badge ${c._similarity>=65?'badge-green':'badge-amber'}" title="${esc(c._similarityText||'')}">${c._similarity}/100</span>`;
+    return `<tr>
+      <td><input type="checkbox" ${c.incluido_en_analisis?'checked':''} onchange="toggleCompetitorIncluded('${c.id}',this.checked)" title="Incluir en el análisis"></td>
+      <td>${esc(c.nombre)}</td>
+      <td>${esc(c.plataforma||'—')}</td>
+      <td>${perNight!=null?fmt(perNight)+' '+esc(c.moneda||''):'—'}</td>
+      <td>${esc(({si:'Sí',no:'No',desconocido:'Desconocido',no_aparecio:'No apareció',fuera_de_filtros:'Fuera de filtros'})[c.disponible]||'—')}</td>
+      <td>${simBadge}</td>
+      <td style="display:flex;gap:4px">
+        <button class="btn btn-xs" onclick="openEditCompetitorModal('${c.id}')"><i class="ti ti-edit"></i></button>
+        <button class="btn btn-xs btn-danger" onclick="deleteCompetitor('${c.id}')"><i class="ti ti-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function toggleCompetitorIncluded(id,checked){
+  if(!can('modificar_competidores_precios')){showToast('No tenés permiso para modificar competidores','error');renderCompetitorsTable();return;}
+  const {error}=await supabaseClient.from('competitor_properties').update({incluido_en_analisis:checked}).eq('id',id);
+  if(error){showToast('No se pudo actualizar: '+error.message,'error');return;}
+  const c=competitors.find(x=>x.id===id); if(c)c.incluido_en_analisis=checked;
+}
+
+function openNewCompetitorModal(){
+  if(!currentCompetitorSetId){showToast('Elegí o creá un grupo de competidores primero','error');return;}
+  ['comp-id'].forEach(id=>document.getElementById(id).value='');
+  ['comp-nombre','comp-plataforma','comp-zona','comp-checkin','comp-checkout','comp-capacidad','comp-precio-total','comp-precio-final','comp-cargos','comp-distancia','comp-puntuacion','comp-resenas','comp-enlace'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('comp-tipo').value='apartamento';
+  document.getElementById('comp-moneda').value='UYU';
+  document.getElementById('comp-impuestos').value='desconocido';
+  document.getElementById('comp-disponible').value='desconocido';
+  ['comp-bano','comp-ac','comp-cocina','comp-estacionamiento','comp-cancelacion','comp-desayuno'].forEach(id=>document.getElementById(id).checked=false);
+  document.getElementById('modal-competitor').querySelector('.modal-title').textContent='Nuevo competidor';
+  openModal('modal-competitor');
+}
+function openEditCompetitorModal(id){
+  const c=competitors.find(x=>x.id===id); if(!c)return;
+  document.getElementById('comp-id').value=c.id;
+  document.getElementById('comp-nombre').value=c.nombre||'';
+  document.getElementById('comp-plataforma').value=c.plataforma||'';
+  document.getElementById('comp-zona').value=c.zona||'';
+  document.getElementById('comp-tipo').value=c.tipo_alojamiento||'apartamento';
+  document.getElementById('comp-checkin').value=c.checkin||'';
+  document.getElementById('comp-checkout').value=c.checkout||'';
+  document.getElementById('comp-capacidad').value=c.capacidad??'';
+  document.getElementById('comp-precio-total').value=c.precio_total??'';
+  document.getElementById('comp-moneda').value=c.moneda||'UYU';
+  document.getElementById('comp-precio-final').value=c.precio_final??'';
+  document.getElementById('comp-impuestos').value=c.impuestos_incluidos||'desconocido';
+  document.getElementById('comp-cargos').value=c.cargos_adicionales??'';
+  document.getElementById('comp-disponible').value=c.disponible||'desconocido';
+  document.getElementById('comp-distancia').value=c.distancia_km??'';
+  document.getElementById('comp-puntuacion').value=c.puntuacion??'';
+  document.getElementById('comp-resenas').value=c.cantidad_resenas??'';
+  document.getElementById('comp-bano').checked=!!c.bano_privado;
+  document.getElementById('comp-ac').checked=!!c.aire_acondicionado;
+  document.getElementById('comp-cocina').checked=!!c.cocina;
+  document.getElementById('comp-estacionamiento').checked=!!c.estacionamiento;
+  document.getElementById('comp-cancelacion').checked=!!c.cancelacion_gratuita;
+  document.getElementById('comp-desayuno').checked=!!c.desayuno;
+  document.getElementById('comp-enlace').value=c.enlace||'';
+  document.getElementById('modal-competitor').querySelector('.modal-title').textContent='Editar competidor';
+  openModal('modal-competitor');
+}
+async function saveCompetitor(){
+  const id=document.getElementById('comp-id').value;
+  const perm = id ? 'modificar_competidores_precios' : 'crear_analisis_precios';
+  if(!can(perm)){showToast('No tenés permiso para esto','error');return;}
+  const nombre=document.getElementById('comp-nombre').value.trim();
+  const precioTotal=numOrNull(document.getElementById('comp-precio-total').value);
+  if(!nombre){showToast('El nombre es obligatorio','error');return;}
+  if(precioTotal===null){showToast('El precio total es obligatorio','error');return;}
+  const checkin=document.getElementById('comp-checkin').value||null;
+  const checkout=document.getElementById('comp-checkout').value||null;
+  const noches = checkin&&checkout ? Math.round((new Date(checkout)-new Date(checkin))/86400000) : null;
+  const payload={
+    tenant_id: currentUser.tenantId,
+    set_id: currentCompetitorSetId,
+    nombre, plataforma: document.getElementById('comp-plataforma').value.trim()||null,
+    zona: document.getElementById('comp-zona').value.trim()||null,
+    tipo_alojamiento: document.getElementById('comp-tipo').value,
+    checkin, checkout, noches: noches&&noches>0?noches:null,
+    capacidad: intOrNull(document.getElementById('comp-capacidad').value),
+    precio_total: precioTotal,
+    moneda: document.getElementById('comp-moneda').value,
+    precio_final: numOrNull(document.getElementById('comp-precio-final').value),
+    impuestos_incluidos: document.getElementById('comp-impuestos').value,
+    cargos_adicionales: numOrNull(document.getElementById('comp-cargos').value),
+    disponible: document.getElementById('comp-disponible').value,
+    distancia_km: numOrNull(document.getElementById('comp-distancia').value),
+    puntuacion: numOrNull(document.getElementById('comp-puntuacion').value),
+    cantidad_resenas: intOrNull(document.getElementById('comp-resenas').value),
+    bano_privado: document.getElementById('comp-bano').checked,
+    aire_acondicionado: document.getElementById('comp-ac').checked,
+    cocina: document.getElementById('comp-cocina').checked,
+    estacionamiento: document.getElementById('comp-estacionamiento').checked,
+    cancelacion_gratuita: document.getElementById('comp-cancelacion').checked,
+    desayuno: document.getElementById('comp-desayuno').checked,
+    enlace: document.getElementById('comp-enlace').value.trim()||null,
+    source_key: 'manual'
+  };
+  let error;
+  if(id){ ({error}=await supabaseClient.from('competitor_properties').update(payload).eq('id',id)); }
+  else { payload.created_by=currentUser.id; ({error}=await supabaseClient.from('competitor_properties').insert(payload)); }
+  if(error){showToast('No se pudo guardar: '+error.message,'error');return;}
+  closeModal('modal-competitor');
+  await loadCompetitors();
+  renderCompetitorsTable();
+  showToast(id?'Competidor actualizado':'Competidor agregado');
+}
+async function deleteCompetitor(id){
+  if(!can('modificar_competidores_precios')){showToast('No tenés permiso para esto','error');return;}
+  if(!confirm('¿Eliminar este competidor?'))return;
+  const {error}=await supabaseClient.from('competitor_properties').delete().eq('id',id);
+  if(error){showToast('No se pudo eliminar: '+error.message,'error');return;}
+  await loadCompetitors();
+  renderCompetitorsTable();
+  showToast('Competidor eliminado');
+}
+
+// ---- Importar CSV ----
+const COMPETITOR_CSV_FIELDS=['nombre','plataforma','zona','checkin','checkout','noches','capacidad','tipo','precio_total','moneda','impuestos_incluidos','cargos_adicionales','precio_final','disponible','distancia_km','puntuacion','resenas','bano_privado','aire_acondicionado','cocina','estacionamiento','cancelacion_gratuita','desayuno','enlace'];
+function parseCsvLine(line){
+  const out=[];let cur='',inQuotes=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(inQuotes){
+      if(ch==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else inQuotes=false; }
+      else cur+=ch;
+    }else{
+      if(ch==='"')inQuotes=true;
+      else if(ch===','){out.push(cur);cur='';}
+      else cur+=ch;
+    }
+  }
+  out.push(cur);
+  return out.map(s=>s.trim());
+}
+function csvBoolean(v){
+  if(v==null)return null;
+  const s=String(v).trim().toLowerCase();
+  if(['si','sí','true','1','yes'].includes(s))return true;
+  if(['no','false','0'].includes(s))return false;
+  return null;
+}
+async function onCompetitorCsvSelected(input){
+  if(!can('importar_datos_precios')){showToast('No tenés permiso para importar datos','error');input.value='';return;}
+  if(!currentCompetitorSetId){showToast('Elegí o creá un grupo de competidores primero','error');input.value='';return;}
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const text=e.target.result;
+      const lines=text.split(/\r?\n/).filter(l=>l.trim().length);
+      if(lines.length<2){showToast('El archivo no tiene filas de datos','error');input.value='';return;}
+      const headers=parseCsvLine(lines[0]).map(h=>h.toLowerCase().trim());
+      const rows=[];
+      for(let i=1;i<lines.length;i++){
+        const cols=parseCsvLine(lines[i]);
+        const row={};
+        headers.forEach((h,idx)=>{row[h]=cols[idx]!==undefined?cols[idx]:'';});
+        if(!row.nombre)continue;
+        const checkin=row.checkin||null, checkout=row.checkout||null;
+        const noches=row.noches?parseInt(row.noches,10):(checkin&&checkout?Math.round((new Date(checkout)-new Date(checkin))/86400000):null);
+        rows.push({
+          tenant_id: currentUser.tenantId, set_id: currentCompetitorSetId, source_key:'csv',
+          nombre: row.nombre, plataforma: row.plataforma||null, zona: row.zona||null,
+          tipo_alojamiento: row.tipo||null, checkin, checkout, noches: noches&&noches>0?noches:null,
+          capacidad: row.capacidad?parseInt(row.capacidad,10):null,
+          precio_total: row.precio_total?parseFloat(row.precio_total):null,
+          moneda: row.moneda||'UYU',
+          impuestos_incluidos: ['si','no'].includes((row.impuestos_incluidos||'').toLowerCase())?row.impuestos_incluidos.toLowerCase():'desconocido',
+          cargos_adicionales: row.cargos_adicionales?parseFloat(row.cargos_adicionales):null,
+          precio_final: row.precio_final?parseFloat(row.precio_final):null,
+          disponible: ['si','no','no_aparecio','fuera_de_filtros'].includes((row.disponible||'').toLowerCase())?row.disponible.toLowerCase():'desconocido',
+          distancia_km: row.distancia_km?parseFloat(row.distancia_km):null,
+          puntuacion: row.puntuacion?parseFloat(row.puntuacion):null,
+          cantidad_resenas: row.resenas?parseInt(row.resenas,10):null,
+          bano_privado: csvBoolean(row.bano_privado),
+          aire_acondicionado: csvBoolean(row.aire_acondicionado),
+          cocina: csvBoolean(row.cocina),
+          estacionamiento: csvBoolean(row.estacionamiento),
+          cancelacion_gratuita: csvBoolean(row.cancelacion_gratuita),
+          desayuno: csvBoolean(row.desayuno),
+          enlace: row.enlace||null,
+          created_by: currentUser.id
+        });
+      }
+      if(!rows.length){showToast('No se encontraron filas válidas (falta la columna "nombre")','error');input.value='';return;}
+      let ok=0,fail=0;
+      for(const row of rows){
+        const {error}=await supabaseClient.from('competitor_properties').insert(row);
+        if(error)fail++;else ok++;
+      }
+      await loadCompetitors();
+      renderCompetitorsTable();
+      input.value='';
+      showToast(fail?`Importados ${ok}, fallaron ${fail}`:`Importados ${ok} competidores`, fail?'error':'ok');
+    }catch(err){
+      showToast('Error al leer el archivo: '+err.message,'error');
+      input.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ---- Estadística ----
+function percentileOf(sortedArr,p){
+  if(!sortedArr.length)return null;
+  if(sortedArr.length===1)return sortedArr[0];
+  const idx=(p/100)*(sortedArr.length-1);
+  const lo=Math.floor(idx), hi=Math.ceil(idx);
+  if(lo===hi)return sortedArr[lo];
+  return sortedArr[lo]+(sortedArr[hi]-sortedArr[lo])*(idx-lo);
+}
+function computeMarketStats(prices){
+  const sorted=[...prices].sort((a,b)=>a-b);
+  const n=sorted.length;
+  if(n===0) return null;
+  const p25=percentileOf(sorted,25), p75=percentileOf(sorted,75);
+  const iqr=p75-p25;
+  const lowFence=p25-1.5*iqr, highFence=p75+1.5*iqr;
+  const useOutlierFilter = n>=4 && iqr>0;
+  const included=[], excluded=[];
+  sorted.forEach(v=>{
+    if(useOutlierFilter && (v<lowFence || v>highFence)) excluded.push(v);
+    else included.push(v);
+  });
+  const finalArr = included.length ? included : sorted;
+  const mean = finalArr.reduce((a,b)=>a+b,0)/finalArr.length;
+  const variance = finalArr.reduce((a,b)=>a+Math.pow(b-mean,2),0)/finalArr.length;
+  const stdev = Math.sqrt(variance);
+  return {
+    sampleCount: n, validCount: finalArr.length, excludedCount: excluded.length, excludedValues: excluded,
+    min: finalArr[0], p10: percentileOf(finalArr,10), p25: percentileOf(finalArr,25), median: percentileOf(finalArr,50),
+    avg: mean, p75: percentileOf(finalArr,75), p90: percentileOf(finalArr,90), max: finalArr[finalArr.length-1],
+    dispersion: mean>0 ? stdev/mean : 0
+  };
+}
+
+function computeConfidence(stats, validEntries, checkinDate){
+  if(!stats || stats.validCount<3) return {level:'insuficiente', reasons:'Menos de 3 competidores comparables con datos de precio.'};
+  const reasons=[];
+  let level = stats.validCount>=12 ? 'alta' : stats.validCount>=6 ? 'media' : 'baja';
+  const unknownTax = validEntries.filter(e=>e.item.impuestos_incluidos==='desconocido').length;
+  if(unknownTax/validEntries.length > 0.4){ reasons.push('más del 40% sin dato de impuestos'); level=downgrade(level); }
+  const now=Date.now();
+  const stale = validEntries.filter(e=>e.item.observado_en && (now-new Date(e.item.observado_en).getTime())>48*3600*1000).length;
+  if(stale/validEntries.length > 0.5){ reasons.push('más de la mitad de los datos con más de 48hs'); level=downgrade(level); }
+  if(stats.dispersion>0.45){ reasons.push('dispersión de precios muy alta'); level=downgrade(level); }
+  const lowSimilarity = validEntries.filter(e=>(e.item._similarity??100)<65).length;
+  if(lowSimilarity>0){ reasons.push(lowSimilarity+' competidor(es) con similitud debajo de 65 igual incluidos'); }
+  return {level, reasons: reasons.length?reasons.join('; '):'Muestra suficiente y datos consistentes.'};
+}
+function downgrade(level){ return level==='alta'?'media':level==='media'?'baja':'baja'; }
+
+async function runPricingAnalysis(){
+  if(!can('crear_analisis_precios')){showToast('No tenés permiso para crear análisis de precios','error');return;}
+  const propId=document.getElementById('pi-property').value;
+  const checkin=document.getElementById('pi-checkin').value;
+  const checkout=document.getElementById('pi-checkout').value;
+  if(!propId){showToast('Elegí un alojamiento propio','error');return;}
+  if(!checkin||!checkout||checkin>=checkout){showToast('Revisá las fechas de check-in y check-out','error');return;}
+  if(!currentCompetitorSetId){showToast('Elegí un grupo de competidores en la pestaña Competidores','error');return;}
+
+  const cfg=pricingPropertyConfigs[propId]||{};
+  recomputeAllSimilarity();
+
+  const validEntries=competitors
+    .filter(c=>c.incluido_en_analisis)
+    .filter(c=>c.disponible!=='no' && c.disponible!=='fuera_de_filtros')
+    .filter(c=>c._similarity==null || c._similarity>=65)
+    .map(c=>({price:pricePerNight(c), item:c}))
+    .filter(e=>e.price!=null && e.price>0);
+
+  const resultBox=document.getElementById('pi-resultado-content');
+
+  if(validEntries.length===0){
+    resultBox.innerHTML='<div class="card" style="border-left:3px solid var(--red)"><p style="margin:0;font-size:13px">No existen suficientes datos fiables para generar una recomendación. Agrega más competidores o actualiza la información.</p></div>';
+    return;
+  }
+
+  const stats=computeMarketStats(validEntries.map(e=>e.price));
+  const availKnown=validEntries.filter(e=>e.item.disponible==='si'||e.item.disponible==='no');
+  const availPct = availKnown.length ? Math.round(100*availKnown.filter(e=>e.item.disponible==='si').length/availKnown.length) : null;
+  const confidenceInfo=computeConfidence(stats, validEntries, checkin);
+
+  const estrategia=document.getElementById('pi-estrategia').value;
+  const precioActual=numOrNull(document.getElementById('pi-precio-actual').value);
+  const diasAnticipacion=Math.round((new Date(checkin)-new Date())/86400000);
+
+  let base;
+  if(estrategia==='ganar_reservas') base=stats.p25;
+  else if(estrategia==='maximizar_ingresos'){
+    base=stats.p75;
+    if(diasAnticipacion<=3 && availPct!=null && availPct<40) base=Math.max(base,stats.p90);
+  } else if(estrategia==='personalizado'){
+    base=numOrNull(document.getElementById('pi-precio-personalizado').value);
+    if(base==null){showToast('Ingresá el precio que querés evaluar','error');return;}
+  } else base=stats.median;
+
+  const minRentable=cfg.precio_minimo_rentable;
+  const maxRecomendado=cfg.precio_maximo_recomendado;
+  let limitadoPorMinimo=false;
+  let recomendado=base;
+  if(minRentable!=null && recomendado<minRentable){ recomendado=minRentable; limitadoPorMinimo=true; }
+  if(maxRecomendado!=null && recomendado>maxRecomendado){ recomendado=maxRecomendado; }
+
+  const diffMonto = precioActual!=null ? recomendado-precioActual : null;
+  const diffPct = (precioActual!=null && precioActual>0) ? (diffMonto/precioActual*100) : null;
+
+  const motivos=[];
+  motivos.push(`${validEntries.length} de ${competitors.filter(c=>c.incluido_en_analisis).length} competidores incluidos son comparables (similitud ≥65) y tienen precio válido.`);
+  if(availPct!=null) motivos.push(`Disponibilidad estimada de la muestra analizada: ${availPct}% (${availKnown.length} con dato conocido).`);
+  motivos.push(`Faltan ${diasAnticipacion} día(s) para el check-in.`);
+  if(precioActual!=null){
+    const posicion = precioActual<stats.p25?'debajo del percentil 25':precioActual>stats.p75?'por encima del percentil 75':'dentro del rango medio';
+    motivos.push(`Tu precio actual está ${posicion} del mercado comparable.`);
+  }
+
+  const riesgos=[];
+  if(confidenceInfo.level==='baja'||confidenceInfo.level==='insuficiente') riesgos.push('Confianza '+confidenceInfo.level+': '+confidenceInfo.reasons);
+  if(limitadoPorMinimo) riesgos.push('El precio competitivo hubiera quedado debajo de tu mínimo rentable configurado ($'+fmt(minRentable)+') — no se recomienda bajar más.');
+  if(stats.excludedCount>0) riesgos.push(stats.excludedCount+' competidor(es) excluido(s) del cálculo por precio atípico (muy por encima o por debajo del resto).');
+
+  let accionSugerida='Mantener precio actual';
+  if(precioActual==null) accionSugerida='Definir precio inicial según la recomendación';
+  else if(diffPct!=null){
+    if(diffPct<=-5) accionSugerida='Bajar el precio';
+    else if(diffPct>=5) accionSugerida='Subir el precio';
+  }
+
+  // Persistir (búsqueda + snapshot + recomendación) — no solo mostrar en pantalla.
+  const {data:search,error:searchErr}=await supabaseClient.from('market_searches').insert({
+    tenant_id: currentUser.tenantId, property_id: propId, set_id: currentCompetitorSetId,
+    zona: document.getElementById('pi-zona').value.trim()||null, checkin, checkout,
+    adultos: intOrNull(document.getElementById('pi-adultos').value)||1,
+    ninos: intOrNull(document.getElementById('pi-ninos').value)||0,
+    habitaciones: intOrNull(document.getElementById('pi-habitaciones').value)||1,
+    moneda: document.getElementById('pi-moneda').value, estrategia, precio_actual: precioActual,
+    created_by: currentUser.id
+  }).select().single();
+  if(searchErr){showToast('No se pudo guardar la búsqueda: '+searchErr.message,'error');return;}
+
+  const {data:snapshot,error:snapErr}=await supabaseClient.from('market_snapshots').insert({
+    tenant_id: currentUser.tenantId, search_id: search.id,
+    sample_count: stats.sampleCount, valid_count: stats.validCount, excluded_count: stats.excludedCount,
+    min_price: stats.min, p10: stats.p10, p25: stats.p25, median_price: stats.median, avg_price: stats.avg,
+    p75: stats.p75, p90: stats.p90, max_price: stats.max, dispersion: stats.dispersion,
+    availability_estimate_pct: availPct, confidence: confidenceInfo.level, confidence_reasons: confidenceInfo.reasons
+  }).select().single();
+  if(snapErr){showToast('No se pudo guardar el resultado estadístico: '+snapErr.message,'error');return;}
+
+  const {data:rec,error:recErr}=await supabaseClient.from('price_recommendations').insert({
+    tenant_id: currentUser.tenantId, search_id: search.id, snapshot_id: snapshot.id,
+    precio_actual: precioActual, precio_recomendado: recomendado, diferencia_monto: diffMonto, diferencia_pct: diffPct,
+    rango_bajo: stats.p25, rango_alto: stats.p75, confidence: confidenceInfo.level,
+    motivos: motivos.join(' '), riesgos: riesgos.join(' '), accion_sugerida: accionSugerida, limitado_por_minimo: limitadoPorMinimo
+  }).select().single();
+  if(recErr){showToast('No se pudo guardar la recomendación: '+recErr.message,'error');return;}
+
+  renderPricingResult({stats, availPct, confidenceInfo, estrategia, precioActual, recomendado, diffMonto, diffPct, motivos, riesgos, accionSugerida, limitadoPorMinimo, minRentable, recId:rec.id, moneda:document.getElementById('pi-moneda').value});
+  showTab(document.querySelector('#page-pricing .tab:nth-child(3)'),'ptab-pricing-resultado');
+  showToast('Análisis generado');
+}
+
+function renderPricingResult(r){
+  const box=document.getElementById('pi-resultado-content');
+  const confColor = {alta:'green',media:'amber',baja:'red',insuficiente:'red'}[r.confidenceInfo.level]||'gray';
+  box.innerHTML=`
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-header"><div class="card-title">Recomendación</div><span class="badge badge-${confColor}">Confianza ${esc(r.confidenceInfo.level)}</span></div>
+      <div class="detail-grid">
+        <div class="detail-item"><label>Precio actual</label><span>${r.precioActual!=null?fmt(r.precioActual)+' '+esc(r.moneda):'—'}</span></div>
+        <div class="detail-item"><label>Precio recomendado</label><span style="font-weight:700;color:var(--accent)">${fmt(r.recomendado)} ${esc(r.moneda)}</span></div>
+        <div class="detail-item"><label>Diferencia</label><span>${r.diffMonto!=null?(r.diffMonto>=0?'+':'')+fmt(r.diffMonto)+' ('+r.diffPct.toFixed(1)+'%)':'—'}</span></div>
+        <div class="detail-item"><label>Rango competitivo</label><span>${fmt(r.stats.p25)}–${fmt(r.stats.p75)} ${esc(r.moneda)}</span></div>
+        <div class="detail-item"><label>Estrategia</label><span>${({ganar_reservas:'Ganar reservas',equilibrado:'Equilibrado',maximizar_ingresos:'Maximizar ingresos',personalizado:'Personalizado'})[r.estrategia]}</span></div>
+        <div class="detail-item"><label>Acción sugerida</label><span>${esc(r.accionSugerida)}</span></div>
+      </div>
+      ${r.limitadoPorMinimo?'<p style="font-size:12px;color:var(--amber);margin-top:.75rem"><i class="ti ti-alert-triangle"></i> El precio se ajustó a tu mínimo rentable configurado ('+fmt(r.minRentable)+' '+esc(r.moneda)+') — no se recomendó bajar más.</p>':''}
+      <div style="margin-top:1rem">
+        <div style="font-size:12px;font-weight:600;margin-bottom:4px">Motivos</div>
+        <p style="font-size:12px;color:var(--text2);margin:0">${esc(r.motivos.join(' '))}</p>
+      </div>
+      ${r.riesgos.length?`<div style="margin-top:.75rem"><div style="font-size:12px;font-weight:600;margin-bottom:4px;color:var(--red)">Riesgos</div><p style="font-size:12px;color:var(--text2);margin:0">${esc(r.riesgos.join(' '))}</p></div>`:''}
+      <div class="modal-footer" style="padding:1rem 0 0;border-top:0.5px solid var(--border);margin-top:1rem">
+        <button class="btn btn-sm" onclick="setRecommendationAction('${r.recId}','rechazada')">Rechazar</button>
+        <button class="btn btn-sm" onclick="setRecommendationAction('${r.recId}','recordar_mas_tarde')">Recordar más tarde</button>
+        <button class="btn btn-sm btn-primary" onclick="setRecommendationAction('${r.recId}','aceptada',${r.recomendado})">Aceptar recomendación</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">¿Cómo se calculó?</div></div>
+      <div class="detail-grid">
+        <div class="detail-item"><label>Muestras totales</label><span>${r.stats.sampleCount}</span></div>
+        <div class="detail-item"><label>Muestras válidas</label><span>${r.stats.validCount}</span></div>
+        <div class="detail-item"><label>Excluidas (atípicas)</label><span>${r.stats.excludedCount}</span></div>
+        <div class="detail-item"><label>Mínimo</label><span>${fmt(r.stats.min)}</span></div>
+        <div class="detail-item"><label>Percentil 10</label><span>${fmt(r.stats.p10)}</span></div>
+        <div class="detail-item"><label>Percentil 25</label><span>${fmt(r.stats.p25)}</span></div>
+        <div class="detail-item"><label>Mediana</label><span>${fmt(r.stats.median)}</span></div>
+        <div class="detail-item"><label>Promedio</label><span>${fmt(r.stats.avg)}</span></div>
+        <div class="detail-item"><label>Percentil 75</label><span>${fmt(r.stats.p75)}</span></div>
+        <div class="detail-item"><label>Percentil 90</label><span>${fmt(r.stats.p90)}</span></div>
+        <div class="detail-item"><label>Máximo</label><span>${fmt(r.stats.max)}</span></div>
+        <div class="detail-item"><label>Disponibilidad estimada de la muestra</label><span>${r.availPct!=null?r.availPct+'%':'Sin datos suficientes'}</span></div>
+      </div>
+      <p style="font-size:11px;color:var(--text2);margin-top:.75rem">Base de mercado según la estrategia elegida → ajustado al mínimo rentable y máximo recomendado configurados → resultado final. La confianza (${esc(r.confidenceInfo.level)}) considera cantidad de muestras, antigüedad de los datos, dispersión de precios y cuántos datos están incompletos: ${esc(r.confidenceInfo.reasons)}</p>
+    </div>
+  `;
+}
+
+async function setRecommendationAction(recId, accion, precioAplicado){
+  if(!can('aceptar_recomendaciones_precios')){showToast('No tenés permiso para esto','error');return;}
+  const payload={accion_usuario:accion, accion_usuario_en:new Date().toISOString(), accion_usuario_por:currentUser.id};
+  if(precioAplicado!=null) payload.precio_aplicado=precioAplicado;
+  const {error}=await supabaseClient.from('price_recommendations').update(payload).eq('id',recId);
+  if(error){showToast('No se pudo registrar la decisión: '+error.message,'error');return;}
+  showToast(accion==='aceptada'?'Recomendación aceptada (precio interno actualizado, no se publicó en ninguna plataforma externa)':'Decisión registrada');
 }
 
 function renderAjustesPage(){
