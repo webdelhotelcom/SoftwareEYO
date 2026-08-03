@@ -10,6 +10,7 @@ Esto **no reemplaza** la documentación operativa de `docs/` (cómo instalar, c�
 - [[Modulos]] — los 20 módulos de negocio y en qué migración SQL nació cada uno.
 - [[Seguridad]] — el modelo de permisos, RLS, XSS, headers — resumen de alto nivel (el detalle está en `docs/permisos.md`).
 - [[Historia-y-decisiones]] — línea de tiempo del proyecto y por qué se tomó cada decisión importante.
+- [[Personalizacion]] — nombre comercial, colores y logo por cuenta: decisión técnica, estructura de datos y seguridad.
 - [[Estado-actual]] — qué está terminado, qué está pendiente, a la fecha de esta nota.
 - [[Glosario]] — términos técnicos del proyecto explicados en una línea.
 

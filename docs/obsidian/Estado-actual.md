@@ -2,7 +2,7 @@
 
 Ver también: [[00-Indice]] · [[Historia-y-decisiones]]
 
-Foto al **2026-08-02**, después de la Fase 10 de la corrección de auditoría. Como cualquier nota de estado, esto se desactualiza — si estás leyendo esto mucho después, confiá más en `git log` y en los task lists activos que en esta lista.
+Foto al **2026-08-02**, después del cierre de la corrección de auditoría (12 fases) y de la ronda de correcciones visuales/funcionales que siguió (renombres, Personalización por cuenta). Como cualquier nota de estado, esto se desactualiza — si estás leyendo esto mucho después, confiá más en `git log` y en los task lists activos que en esta lista.
 
 ## Terminado y verificado en vivo
 
@@ -18,13 +18,16 @@ Foto al **2026-08-02**, después de la Fase 10 de la corrección de auditoría. 
 - Código muerto conocido eliminado (`save()`/`load()`/`saveAll()` sin llamadores).
 - Batería final de seguridad (2 tenants × 5 roles × XSS × límites de plan) — ver `docs/pruebas-aislamiento.md`.
 - Matriz de anchos de pantalla (375/768/1280px) sin desborde horizontal.
+- Informe final de cierre de auditoría (12 fases) — `docs/cierre-auditoria-2026-08-02.md`.
+- Nombre del software unificado a "Software EYO" y nombres de plan sin "Uruguay" (Plan Hotel, Plan Profesional), en el panel y en las páginas comerciales.
+- Bandera `is_founder` por tenant (no por email hardcodeado) para mostrar "Plan Hotel - Founder" en la cuenta fundadora.
+- Personalización por cuenta (nombre comercial, 2 colores, logo) — ver [[Personalizacion]].
 
 ## Pendiente, documentado explícitamente como tal (no asumido como hecho)
 
-- **Identidad visual propia** (Fase 4 del proyecto original) — aplicar la marca específica del usuario más allá de lo ya cargado. No se ha vuelto a retomar.
+- **Identidad visual propia de Software EYO** (Fase 4 del proyecto original de migración) — distinto de la Personalización por cliente ya implementada: esto era aplicar la marca propia del proyecto (no la de cada cliente) más allá de lo ya cargado. No se ha vuelto a retomar.
 - **Prueba en un dispositivo/navegador real** (iPhone con Safari, Android con Chrome) — todo lo probado hasta ahora fue con motor Chromium simulando anchos de pantalla, nunca un dispositivo físico. Ver `docs/dispositivos-navegadores.md`.
 - **Publicación de la página comercial** — el usuario decidió explícitamente no publicarla todavía ("Todavía no"), aunque ya pasó revisión y las correcciones de la Fase 7.
-- **Informe final de cierre de auditoría** — un documento único que consolide las 10 fases de corrección con el formato de tabla que se usó en el informe original de la auditoría (Punto/Estado/Evidencia/Archivo/Problema/Acción). Si estás leyendo esto y esa nota no existe todavía, es la última pieza que faltaba cerrar.
 
 ## Cómo confirmar que esta lista sigue siendo cierta
 
