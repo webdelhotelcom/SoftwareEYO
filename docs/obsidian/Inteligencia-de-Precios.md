@@ -92,9 +92,31 @@ Cada recomendación queda persistida (`market_searches` + `market_snapshots` + `
 
 Ninguno nuevo. Todo corre sobre el mismo proyecto Supabase (base de datos + RLS) y el mismo sitio Netlify que ya usaba el resto de Software EYO. El cálculo de similitud/estadística/recomendación corre en el navegador (JavaScript), no requiere ningún servicio de cómputo aparte.
 
+## Frecuencia por plan (cuota de investigaciones)
+
+Agregado el 2026-08-03 (migraciones `0027`-`0029`). El pedido original para esto era un bot que abriera Google Maps/Hotels, Booking y Airbnb con un navegador automatizado — se rechazó explícitamente: los tres prohíben en sus términos de servicio la extracción automatizada sin autorización, y además contradice la propia regla "no scraping" fijada para este módulo. Lo que se construyó en cambio es el **sistema de cupo**: cuántas investigaciones completas (ejecuciones del motor de recomendación) puede hacer cada tenant por mes según su plan, sin ninguna fuente automática de datos todavía detrás.
+
+| Plan | Cupo mensual | Calendario |
+|---|---|---|
+| Básico | 0 | — |
+| Profesional | 2 | 1er y 3er lunes |
+| Hotel | 4 | 1er a 4to lunes (nunca un 5to) |
+
+- `plan_config.pricing_market_scans_monthly` — el cupo por plan. El valor de Profesional (2) está cargado pero sin efecto real: el flag `pricing_intelligence_enabled` de ese plan sigue en `false`, así que todo lo de este sistema también le devuelve "plan no habilitado".
+- `tenant_market_scan_usage` — una fila por tenant y mes, con cuántas se usaron (automáticas y manuales por separado) y el límite vigente. `sync_market_scan_usage()` la crea/actualiza sin resetear los contadores cuando el plan cambia a mitad de mes — así una baja de plan respeta el límite nuevo de inmediato sin perder lo ya usado, y una suba habilita el saldo restante correspondiente.
+- `market_scan_log` — un registro por investigación (automática o manual), con un índice único (tenant + fecha + tipo + período) que impide duplicados.
+- `register_market_scan()` es la única puerta de entrada para registrar una investigación: valida plan, permiso, que sea lunes y que ese lunes esté habilitado para el plan (automáticas), y el límite mensual — todo en el servidor, no en el navegador.
+- El botón **"Ejecutar investigación ahora"** es manual, para administradores autorizados (permiso `ejecutar_investigacion_manual_precios`, separado de `crear_analisis_precios`), con confirmación explícita mostrando plan/usadas/restantes/última/próxima. No suma al cupo automático — se cuenta aparte (`manual_scans_used`).
+- No hay ninguna ejecución automática real todavía (no hay bot ni fuente conectada): el cupo de "automáticas" queda preparado para conectarse ahí el día que exista una fuente autorizada real (API oficial de Booking/Airbnb) o un job que recalcule sobre los datos ya cargados.
+
+**2 fallas reales encontradas y corregidas en la misma sesión, probando en vivo:**
+1. `get_market_scan_status()` no exigía `has_pricing_intelligence()`, solo el permiso — un tenant Plan Profesional podía leer su cupo aunque el plan no tuviera el módulo habilitado (no explotable desde la interfaz normal, pero sí llamando la función directo). Corregido en `0028`.
+2. **Crítica:** `sync_market_scan_usage()` (el helper interno que usan las dos funciones de arriba) no tenía ningún chequeo de autorización y Postgres le había dado permiso de ejecución público por defecto. Probado en vivo: un usuario de un tenant Plan Profesional llamó esa función directo pasando el `tenant_id` de OTRO tenant (Plan Hotel) y recibió su cupo completo (plan, límite, cuántas investigaciones usó, última fecha) — una fuga real entre clientes. Corregido en `0029` revocando el permiso de ejecución pública; las dos funciones que sí deben ser accesibles la siguen usando sin problema porque una función `security definer` que llama a otra internamente no vuelve a chequear el permiso del rol original.
+
 ## Limitaciones actuales
 
 - Sin calendario, simulador, alertas ni historial visual (Fase 2 en adelante).
 - La similitud y la estadística son reglas transparentes, no aprendizaje automático — a propósito, para que cada número se pueda explicar.
 - Sin conexión real a Booking/Airbnb — solo carga manual y CSV por ahora.
+- Sin ningún bot ni ejecución automática real de investigaciones — el sistema de cupo por plan está listo pero nada lo dispara solo todavía.
 - No hay todavía una segunda versión limitada para Plan Profesional (el flag ya está preparado para habilitarlo, pero el alcance reducido — "menos competidores, carga manual limitada" — no está implementado).
