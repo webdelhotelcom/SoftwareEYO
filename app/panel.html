@@ -1028,6 +1028,7 @@ tr:hover td{background:var(--bg2)}
     <div class="tab" onclick="showTab(this,'ptab-pricing-competidores')">Competidores</div>
     <div class="tab" onclick="showTab(this,'ptab-pricing-resultado')">Resultado</div>
     <div class="tab" onclick="showTab(this,'ptab-pricing-fuentes')">Fuentes de datos</div>
+    <div class="tab" onclick="showTab(this,'ptab-pricing-frecuencia')">Frecuencia</div>
   </div>
 
   <!-- CONFIGURACIÓN -->
@@ -1150,6 +1151,26 @@ tr:hover td{background:var(--bg2)}
       <div id="pi-sources-list"></div>
     </div>
   </div>
+
+  <!-- FRECUENCIA -->
+  <div id="ptab-pricing-frecuencia" style="display:none">
+    <div id="pi-frecuencia-content"><p style="color:var(--text2);font-size:13px">Cargando...</p></div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR INVESTIGACIÓN MANUAL -->
+<div class="modal-overlay" id="modal-manual-scan">
+<div class="modal">
+  <div class="modal-header"><div class="modal-title">Ejecutar investigación ahora</div><button class="btn btn-sm btn-icon" onclick="closeModal('modal-manual-scan')"><i class="ti ti-x"></i></button></div>
+  <div class="modal-body">
+    <div class="alert alert-amber" style="margin-bottom:1rem"><i class="ti ti-alert-triangle"></i><span>Esto va a iniciar una ejecución <b>extraordinaria</b>, separada de las investigaciones automáticas de tu plan. No aumenta tu límite mensual ni genera cargos — analiza los competidores y precios que ya tenés cargados para la fecha configurada en la pestaña Configuración.</span></div>
+    <div id="pi-manual-scan-info" style="font-size:12.5px;color:var(--text2)"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('modal-manual-scan')">Cancelar</button>
+    <button class="btn btn-primary" id="pi-manual-scan-confirm" onclick="executeManualScan()"><i class="ti ti-sparkles"></i> Confirmar e iniciar</button>
+  </div>
+</div>
 </div>
 
 <!-- MODAL NUEVO COMPETIDOR -->
@@ -5179,6 +5200,126 @@ async function renderPricingPage(){
   await loadCompetitorSets();
   renderCompetitorSetSelect();
   if(propSel && propSel.value) await loadPricingPropertyConfig(propSel.value);
+  await loadMarketScanStatus();
+}
+
+// ---- Frecuencia de investigaciones según el plan (migración 0027) ----
+// IMPORTANTE: no hay ningún bot que ejecute investigaciones automáticas
+// todavía (se decidió no construir scraping de Google/Booking/Airbnb por
+// violar sus términos de servicio). Este sistema gobierna el CUPO —
+// cuántas investigaciones completas puede hacer cada tenant por mes según
+// su plan — validado en el servidor (función register_market_scan, RLS).
+// El botón manual reutiliza el motor de recomendación ya existente sobre
+// los competidores cargados a mano/CSV.
+const MARKET_SCAN_CALENDAR_LABEL={
+  profesional:'Primer y tercer lunes de cada mes.',
+  hotel:'Primeros cuatro lunes de cada mes (nunca un quinto lunes).'
+};
+let marketScanStatus=null;
+let manualScanInFlight=false;
+
+async function loadMarketScanStatus(){
+  if(!can('ver_analisis_precios'))return;
+  const {data,error}=await supabaseClient.rpc('get_market_scan_status',{p_tenant_id:currentUser.tenantId});
+  if(error){
+    if(/no tiene habilitada/i.test(error.message)){
+      marketScanStatus={plan_code:'inicial',calendar_mondays:[]};
+      renderMarketScanStatus();
+      return;
+    }
+    document.getElementById('pi-frecuencia-content').innerHTML='<p style="color:var(--red);font-size:13px">No se pudo cargar el estado de cupo: '+esc(error.message)+'</p>';
+    return;
+  }
+  marketScanStatus=Array.isArray(data)?data[0]:data;
+  renderMarketScanStatus();
+}
+
+function renderMarketScanStatus(){
+  const box=document.getElementById('pi-frecuencia-content');
+  if(!box)return;
+  const s=marketScanStatus;
+  if(!s){box.innerHTML='<p style="color:var(--text2);font-size:13px">Sin datos todavía.</p>';return;}
+
+  if(s.plan_code==='inicial' || !s.calendar_mondays || s.calendar_mondays.length===0){
+    box.innerHTML=`
+      <div class="card">
+        <div class="alert alert-amber"><i class="ti ti-lock"></i><span>Esta función está disponible en los planes Profesional y Hotel.</span></div>
+        <table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-top:.5rem">
+          <thead><tr style="text-align:left;color:var(--text2)"><th style="padding:6px 0">Plan</th><th>Investigaciones/mes</th><th>Calendario</th></tr></thead>
+          <tbody>
+            <tr style="border-top:0.5px solid var(--border)"><td style="padding:6px 0">Profesional</td><td>2</td><td>1er y 3er lunes</td></tr>
+            <tr style="border-top:0.5px solid var(--border)"><td style="padding:6px 0">Hotel</td><td>4</td><td>1er a 4to lunes</td></tr>
+          </tbody>
+        </table>
+      </div>`;
+    return;
+  }
+
+  const planLabel = s.plan_code==='hotel' ? 'Plan Hotel: 4 investigaciones automáticas mensuales' : 'Plan Profesional: 2 investigaciones automáticas mensuales';
+  const remaining=Math.max(s.monthly_limit-s.automatic_scans_used,0);
+  const lastLabel = s.last_scan_at ? new Date(s.last_scan_at).toLocaleString('es-AR') : 'Nunca';
+  const nextLabel = s.next_scan_at ? fmtDate(s.next_scan_at) : 'No hay fechas habilitadas restantes este mes';
+  const canManual = can('ejecutar_investigacion_manual_precios');
+
+  box.innerHTML=`
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-header"><div class="card-title">${esc(planLabel)}</div></div>
+      <div class="form-row-3" style="text-align:center">
+        <div><div style="font-size:22px;font-weight:700">${s.automatic_scans_used}</div><div style="font-size:11px;color:var(--text2)">Utilizadas</div></div>
+        <div><div style="font-size:22px;font-weight:700">${remaining}</div><div style="font-size:11px;color:var(--text2)">Restantes</div></div>
+        <div><div style="font-size:22px;font-weight:700">${s.monthly_limit}</div><div style="font-size:11px;color:var(--text2)">Incluidas por mes</div></div>
+      </div>
+      <div class="account-menu-info" style="margin-top:1rem">
+        <div class="account-menu-info-row"><span>Última investigación</span><b>${esc(lastLabel)}</b></div>
+        <div class="account-menu-info-row"><span>Próxima automática habilitada</span><b>${esc(nextLabel)}</b></div>
+        <div class="account-menu-info-row"><span>Calendario</span><b>${esc(MARKET_SCAN_CALENDAR_LABEL[s.plan_code]||'—')}</b></div>
+        <div class="account-menu-info-row"><span>Manuales usadas este mes</span><b>${s.manual_scans_used}</b></div>
+      </div>
+      <div class="alert alert-blue" style="margin-top:1rem"><i class="ti ti-info-circle"></i><span>Todavía no hay una fuente de datos automática conectada (eso requiere una API oficial autorizada de Booking o Airbnb — ver la pestaña Fuentes de datos). Por ahora, las investigaciones se generan con los competidores que cargaste a mano o por CSV.</span></div>
+      ${canManual?`<div class="actions" style="margin-top:1rem"><button class="btn btn-primary" onclick="openManualScanModal()"><i class="ti ti-player-play"></i> Ejecutar investigación ahora</button></div>`:''}
+    </div>`;
+}
+
+function openManualScanModal(){
+  const s=marketScanStatus||{};
+  const remaining=Math.max((s.monthly_limit||0)-(s.automatic_scans_used||0),0);
+  document.getElementById('pi-manual-scan-info').innerHTML=`
+    <div class="account-menu-info">
+      <div class="account-menu-info-row"><span>Plan</span><b>${esc(s.plan_code||'—')}</b></div>
+      <div class="account-menu-info-row"><span>Investigaciones automáticas usadas</span><b>${s.automatic_scans_used??0} de ${s.monthly_limit??0}</b></div>
+      <div class="account-menu-info-row"><span>Restantes (automáticas)</span><b>${remaining}</b></div>
+      <div class="account-menu-info-row"><span>Última investigación</span><b>${s.last_scan_at?new Date(s.last_scan_at).toLocaleString('es-AR'):'Nunca'}</b></div>
+      <div class="account-menu-info-row"><span>Próxima automática</span><b>${s.next_scan_at?fmtDate(s.next_scan_at):'—'}</b></div>
+    </div>`;
+  openModal('modal-manual-scan');
+}
+
+async function executeManualScan(){
+  if(manualScanInFlight)return;
+  const propId=document.getElementById('pi-property').value;
+  const checkin=document.getElementById('pi-checkin').value;
+  const checkout=document.getElementById('pi-checkout').value;
+  if(!propId||!checkin||!checkout){showToast('Completá alojamiento y fechas en la pestaña Configuración','error');return;}
+  if(!currentCompetitorSetId){showToast('Elegí un grupo de competidores en la pestaña Competidores','error');return;}
+
+  manualScanInFlight=true;
+  const btn=document.getElementById('pi-manual-scan-confirm');
+  if(btn){btn.disabled=true;btn.style.opacity='.6';}
+  try{
+    const {error:regErr}=await supabaseClient.rpc('register_market_scan',{
+      p_tenant_id: currentUser.tenantId, p_scan_type:'manual',
+      p_period_start: checkin, p_period_end: checkout,
+      p_competitor_set_id: currentCompetitorSetId, p_search_id: null
+    });
+    if(regErr){showToast('No se pudo registrar la investigación: '+regErr.message,'error');return;}
+    closeModal('modal-manual-scan');
+    await runPricingAnalysis();
+    await loadMarketScanStatus();
+    showToast('Investigación manual registrada y análisis generado');
+  } finally {
+    manualScanInFlight=false;
+    if(btn){btn.disabled=false;btn.style.opacity='';}
+  }
 }
 
 async function onPricingPropertyChange(){
