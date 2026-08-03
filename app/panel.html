@@ -405,56 +405,8 @@ tr:hover td{background:var(--bg2)}
         <div class="user-name" id="sidebar-name">Administrador</div>
         <div class="user-role" id="sidebar-role">Admin</div>
       </div>
+      <button class="btn btn-sm btn-icon" onclick="showPage('ajustes')" title="Ajustes"><i class="ti ti-settings"></i></button>
       <button class="btn btn-sm btn-icon" onclick="doLogout()" title="Salir"><i class="ti ti-logout"></i></button>
-    </div>
-  </div>
-  <div style="padding:0 12px 12px">
-    <div style="border-top:0.5px solid var(--border);padding-top:10px;display:flex;flex-direction:column;gap:6px">
-      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">Alojamientos (Supabase)</div>
-      <button class="btn btn-sm btn-full" onclick="exportPropertiesBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar alojamientos</button>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar alojamientos<input type="file" id="import-properties-file" accept=".json" onchange="importPropertiesBackup(this)" style="display:none"></label>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0" title="Para traer los alojamientos de un backup exportado desde la demo vieja (localStorage)"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-file" accept=".json" onchange="importLegacyPropertiesFromDemo(this)" style="display:none"></label>
-      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Propietarios (Supabase)</div>
-      <button class="btn btn-sm btn-full" onclick="exportOwnersBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar propietarios</button>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar propietarios<input type="file" id="import-owners-file" accept=".json" onchange="importOwnersBackup(this)" style="display:none"></label>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0" title="Para traer los propietarios de un backup exportado desde la demo vieja (localStorage)"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-owners-file" accept=".json" onchange="importLegacyOwnersFromDemo(this)" style="display:none"></label>
-      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Reservas (Supabase)</div>
-      <button class="btn btn-sm btn-full" onclick="exportReservationsBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar reservas</button>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar reservas<input type="file" id="import-reservations-file" accept=".json" onchange="importReservationsBackup(this)" style="display:none"></label>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0" title="Para traer las reservas de un backup exportado desde la demo vieja (localStorage), emparejando por nombre de alojamiento"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-reservations-file" accept=".json" onchange="importLegacyReservationsFromDemo(this)" style="display:none"></label>
-      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Gastos (Supabase)</div>
-      <button class="btn btn-sm btn-full" onclick="exportExpensesBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar gastos</button>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar gastos<input type="file" id="import-expenses-file" accept=".json" onchange="importExpensesBackup(this)" style="display:none"></label>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0" title="Para traer los gastos de un backup exportado desde la demo vieja (localStorage), emparejando por nombre de alojamiento"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-expenses-file" accept=".json" onchange="importLegacyExpensesFromDemo(this)" style="display:none"></label>
-      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Huéspedes (Supabase)</div>
-      <button class="btn btn-sm btn-full" onclick="exportGuestsBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar huéspedes</button>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar huéspedes<input type="file" id="import-guests-file" accept=".json" onchange="importGuestsBackup(this)" style="display:none"></label>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0" title="Para traer los huéspedes de un backup exportado desde la demo vieja (localStorage)"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-guests-file" accept=".json" onchange="importLegacyGuestsFromDemo(this)" style="display:none"></label>
-      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Tareas (Supabase)</div>
-      <button class="btn btn-sm btn-full" onclick="exportTasksBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar tareas</button>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar tareas<input type="file" id="import-tasks-file" accept=".json" onchange="importTasksBackup(this)" style="display:none"></label>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0" title="Para traer las tareas de un backup exportado desde la demo vieja (localStorage)"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-tasks-file" accept=".json" onchange="importLegacyTasksFromDemo(this)" style="display:none"></label>
-      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Tipos de habitación (Supabase)</div>
-      <button class="btn btn-sm btn-full" onclick="exportRoomTypesBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar tipos</button>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar tipos<input type="file" id="import-roomtypes-file" accept=".json" onchange="importRoomTypesBackup(this)" style="display:none"></label>
-      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Habitaciones (Supabase)</div>
-      <button class="btn btn-sm btn-full" onclick="exportRoomsBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar habitaciones</button>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar habitaciones<input type="file" id="import-rooms-file" accept=".json" onchange="importRoomsBackup(this)" style="display:none"></label>
-      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Estadías (Supabase)</div>
-      <button class="btn btn-sm btn-full" onclick="exportStaysBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar estadías</button>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar estadías<input type="file" id="import-stays-file" accept=".json" onchange="importStaysBackup(this)" style="display:none"></label>
-      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Housekeeping (Supabase)</div>
-      <button class="btn btn-sm btn-full" onclick="exportHkTasksBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar limpieza</button>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar limpieza<input type="file" id="import-hktasks-file" accept=".json" onchange="importHkTasksBackup(this)" style="display:none"></label>
-      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Mantenimiento (Supabase)</div>
-      <button class="btn btn-sm btn-full" onclick="exportMaintTicketsBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar mantenimiento</button>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar mantenimiento<input type="file" id="import-mainttickets-file" accept=".json" onchange="importMaintTicketsBackup(this)" style="display:none"></label>
-      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Caja (Supabase)</div>
-      <button class="btn btn-sm btn-full" onclick="exportCashSessionsBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar caja</button>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar caja<input type="file" id="import-cashsessions-file" accept=".json" onchange="importCashSessionsBackup(this)" style="display:none"></label>
-      <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 2px">Pre-facturación (Supabase)</div>
-      <button class="btn btn-sm btn-full" onclick="exportFacturasBackup()" style="justify-content:flex-start;gap:6px;font-size:11px"><i class="ti ti-download" style="font-size:13px"></i>Exportar comprobantes</button>
-      <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;font-size:11px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar comprobantes<input type="file" id="import-facturas-file" accept=".json" onchange="importFacturasBackup(this)" style="display:none"></label>
     </div>
   </div>
 </aside>
@@ -949,6 +901,125 @@ tr:hover td{background:var(--bg2)}
   <div class="table-wrap">
     <table><thead><tr><th>Cuándo</th><th>Usuario</th><th>Qué pasó</th></tr></thead>
     <tbody id="audit-tbody"></tbody></table>
+  </div>
+</div>
+
+<!-- AJUSTES -->
+<div class="page" id="page-ajustes">
+  <div class="page-header">
+    <div><div class="page-title">Ajustes</div><div class="page-subtitle">Tu cuenta y tus copias de seguridad</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header"><div class="card-title"><i class="ti ti-building" style="font-size:14px;margin-right:4px"></i>Tu cuenta</div></div>
+    <div id="ajustes-cuenta-info" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;font-size:13px"></div>
+    <div style="margin-top:1rem;border-top:0.5px solid var(--border);padding-top:1rem">
+      <button class="btn" onclick="openChangeOwnPassword()"><i class="ti ti-key"></i><span>Cambiar mi contraseña</span></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="ti ti-database-export" style="font-size:14px;margin-right:4px"></i>Copias de seguridad por módulo</div></div>
+    <p style="font-size:11px;color:var(--text2);margin:0 0 1rem">Exportá un backup de cada módulo cuando quieras, o restaurá uno (se agrega como registros nuevos, no reemplaza lo que ya existe). "Migrar desde demo anterior" es solo para traer datos de la demo vieja en localStorage.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.75rem">
+      <div class="card" style="background:var(--bg);box-shadow:none">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Alojamientos</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-sm btn-full" onclick="exportPropertiesBackup()" style="justify-content:flex-start;gap:6px"><i class="ti ti-download" style="font-size:13px"></i>Exportar</button>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar<input type="file" id="import-properties-file" accept=".json" onchange="importPropertiesBackup(this)" style="display:none"></label>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0;font-size:11px" title="Para traer los alojamientos de un backup exportado desde la demo vieja (localStorage)"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-file" accept=".json" onchange="importLegacyPropertiesFromDemo(this)" style="display:none"></label>
+        </div>
+      </div>
+      <div class="card" style="background:var(--bg);box-shadow:none">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Propietarios</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-sm btn-full" onclick="exportOwnersBackup()" style="justify-content:flex-start;gap:6px"><i class="ti ti-download" style="font-size:13px"></i>Exportar</button>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar<input type="file" id="import-owners-file" accept=".json" onchange="importOwnersBackup(this)" style="display:none"></label>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0;font-size:11px" title="Para traer los propietarios de un backup exportado desde la demo vieja (localStorage)"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-owners-file" accept=".json" onchange="importLegacyOwnersFromDemo(this)" style="display:none"></label>
+        </div>
+      </div>
+      <div class="card" style="background:var(--bg);box-shadow:none">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Reservas</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-sm btn-full" onclick="exportReservationsBackup()" style="justify-content:flex-start;gap:6px"><i class="ti ti-download" style="font-size:13px"></i>Exportar</button>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar<input type="file" id="import-reservations-file" accept=".json" onchange="importReservationsBackup(this)" style="display:none"></label>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0;font-size:11px" title="Para traer las reservas de un backup exportado desde la demo vieja (localStorage), emparejando por nombre de alojamiento"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-reservations-file" accept=".json" onchange="importLegacyReservationsFromDemo(this)" style="display:none"></label>
+        </div>
+      </div>
+      <div class="card" style="background:var(--bg);box-shadow:none">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Gastos</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-sm btn-full" onclick="exportExpensesBackup()" style="justify-content:flex-start;gap:6px"><i class="ti ti-download" style="font-size:13px"></i>Exportar</button>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar<input type="file" id="import-expenses-file" accept=".json" onchange="importExpensesBackup(this)" style="display:none"></label>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0;font-size:11px" title="Para traer los gastos de un backup exportado desde la demo vieja (localStorage), emparejando por nombre de alojamiento"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-expenses-file" accept=".json" onchange="importLegacyExpensesFromDemo(this)" style="display:none"></label>
+        </div>
+      </div>
+      <div class="card" style="background:var(--bg);box-shadow:none">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Huéspedes</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-sm btn-full" onclick="exportGuestsBackup()" style="justify-content:flex-start;gap:6px"><i class="ti ti-download" style="font-size:13px"></i>Exportar</button>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar<input type="file" id="import-guests-file" accept=".json" onchange="importGuestsBackup(this)" style="display:none"></label>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0;font-size:11px" title="Para traer los huéspedes de un backup exportado desde la demo vieja (localStorage)"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-guests-file" accept=".json" onchange="importLegacyGuestsFromDemo(this)" style="display:none"></label>
+        </div>
+      </div>
+      <div class="card" style="background:var(--bg);box-shadow:none">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Tareas</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-sm btn-full" onclick="exportTasksBackup()" style="justify-content:flex-start;gap:6px"><i class="ti ti-download" style="font-size:13px"></i>Exportar</button>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar<input type="file" id="import-tasks-file" accept=".json" onchange="importTasksBackup(this)" style="display:none"></label>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0;font-size:11px" title="Para traer las tareas de un backup exportado desde la demo vieja (localStorage)"><i class="ti ti-database-import" style="font-size:13px"></i>Migrar desde demo anterior<input type="file" id="import-legacy-tasks-file" accept=".json" onchange="importLegacyTasksFromDemo(this)" style="display:none"></label>
+        </div>
+      </div>
+      <div class="card" style="background:var(--bg);box-shadow:none">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Tipos de habitación</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-sm btn-full" onclick="exportRoomTypesBackup()" style="justify-content:flex-start;gap:6px"><i class="ti ti-download" style="font-size:13px"></i>Exportar</button>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar<input type="file" id="import-roomtypes-file" accept=".json" onchange="importRoomTypesBackup(this)" style="display:none"></label>
+        </div>
+      </div>
+      <div class="card" style="background:var(--bg);box-shadow:none">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Habitaciones</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-sm btn-full" onclick="exportRoomsBackup()" style="justify-content:flex-start;gap:6px"><i class="ti ti-download" style="font-size:13px"></i>Exportar</button>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar<input type="file" id="import-rooms-file" accept=".json" onchange="importRoomsBackup(this)" style="display:none"></label>
+        </div>
+      </div>
+      <div class="card" style="background:var(--bg);box-shadow:none">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Estadías</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-sm btn-full" onclick="exportStaysBackup()" style="justify-content:flex-start;gap:6px"><i class="ti ti-download" style="font-size:13px"></i>Exportar</button>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar<input type="file" id="import-stays-file" accept=".json" onchange="importStaysBackup(this)" style="display:none"></label>
+        </div>
+      </div>
+      <div class="card" style="background:var(--bg);box-shadow:none">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Housekeeping</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-sm btn-full" onclick="exportHkTasksBackup()" style="justify-content:flex-start;gap:6px"><i class="ti ti-download" style="font-size:13px"></i>Exportar</button>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar<input type="file" id="import-hktasks-file" accept=".json" onchange="importHkTasksBackup(this)" style="display:none"></label>
+        </div>
+      </div>
+      <div class="card" style="background:var(--bg);box-shadow:none">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Mantenimiento</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-sm btn-full" onclick="exportMaintTicketsBackup()" style="justify-content:flex-start;gap:6px"><i class="ti ti-download" style="font-size:13px"></i>Exportar</button>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar<input type="file" id="import-mainttickets-file" accept=".json" onchange="importMaintTicketsBackup(this)" style="display:none"></label>
+        </div>
+      </div>
+      <div class="card" style="background:var(--bg);box-shadow:none">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Caja</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-sm btn-full" onclick="exportCashSessionsBackup()" style="justify-content:flex-start;gap:6px"><i class="ti ti-download" style="font-size:13px"></i>Exportar</button>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar<input type="file" id="import-cashsessions-file" accept=".json" onchange="importCashSessionsBackup(this)" style="display:none"></label>
+        </div>
+      </div>
+      <div class="card" style="background:var(--bg);box-shadow:none">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Pre-facturación</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-sm btn-full" onclick="exportFacturasBackup()" style="justify-content:flex-start;gap:6px"><i class="ti ti-download" style="font-size:13px"></i>Exportar</button>
+          <label class="btn btn-sm btn-full" style="justify-content:flex-start;gap:6px;cursor:pointer;margin:0"><i class="ti ti-upload" style="font-size:13px"></i>Importar<input type="file" id="import-facturas-file" accept=".json" onchange="importFacturasBackup(this)" style="display:none"></label>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1984,7 +2055,7 @@ function showPage(name){
   const pg=document.getElementById('page-'+name);
   if(pg)pg.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>{if(n.dataset.page===name)n.classList.add('active');});
-  const R={dashboard:updateDashboard,monthly:renderMonthly,calendar:renderCalendar,whatsapp:renderWhatsappPage,reservations:renderReservationsTable,properties:renderProperties,owners:renderOwners,guests:renderGuests,finances:renderFinances,expenses:renderExpensesPage,alerts:renderAlerts,messages:renderMessages,billing:renderBilling,reception:renderReception,roomtypes:renderRoomTypes,rooms:renderRooms,housekeeping:renderHousekeeping,maintenance:renderMaintenance,cashbox:renderCashbox,hotelreports:renderHotelReports,usuarios:renderUsersPage,auditoria:renderAuditPage};
+  const R={dashboard:updateDashboard,monthly:renderMonthly,calendar:renderCalendar,whatsapp:renderWhatsappPage,reservations:renderReservationsTable,properties:renderProperties,owners:renderOwners,guests:renderGuests,finances:renderFinances,expenses:renderExpensesPage,alerts:renderAlerts,messages:renderMessages,billing:renderBilling,reception:renderReception,roomtypes:renderRoomTypes,rooms:renderRooms,housekeeping:renderHousekeeping,maintenance:renderMaintenance,cashbox:renderCashbox,hotelreports:renderHotelReports,usuarios:renderUsersPage,auditoria:renderAuditPage,ajustes:renderAjustesPage};
   if(R[name])R[name]();
 }
 function showTab(el,tabId){
@@ -4608,7 +4679,7 @@ const PLAN_CONFIG = {
 };
 function planCfg(){ return PLAN_CONFIG[PLAN] || PLAN_CONFIG.hotel; }
 function maxAlojamientos(){ return tenantLimits.maxProperties; }
-function planAllows(page){ return planCfg().pages.includes(page) || String(page).indexOf('-detail')>-1; }
+function planAllows(page){ return page==='ajustes' || planCfg().pages.includes(page) || String(page).indexOf('-detail')>-1; }
 function applyPlan(){
   const info=planCfg();
   const ownerBtn=document.getElementById('btn-new-owner');if(ownerBtn)ownerBtn.style.display=can('crear_propietarios')?'':'none';
@@ -4650,6 +4721,27 @@ function updatePlanUsage(){
     btn.disabled=full; btn.style.opacity=full?'.5':''; btn.style.cursor=full?'not-allowed':'';
     btn.title = max==null ? 'Límite no configurado para este cliente' : (full?('Alcanzaste el límite de '+max+' alojamientos de tu plan'):'');
   }
+}
+
+function renderAjustesPage(){
+  const box=document.getElementById('ajustes-cuenta-info');
+  if(!box)return;
+  const planLabel=(PLAN&&PLAN_CONFIG[PLAN])?PLAN_CONFIG[PLAN].label:'—';
+  const propUsed=(typeof properties!=='undefined'&&Array.isArray(properties))?properties.length:0;
+  const propMax=tenantLimits.maxProperties;
+  const propTxt=propMax==null?(propUsed+' (límite sin configurar)'):(propUsed+' de '+propMax);
+  const rows=[
+    ['Cuenta', tenantRow?.name||'—'],
+    ['Plan', planLabel],
+    ['Tu usuario', currentUser?.email||'—'],
+    ['Tu rol', currentUser?.role||'—'],
+    ['Alojamientos usados', propTxt]
+  ];
+  if(can('administrar_usuarios') && Array.isArray(tenantUsers)){
+    const userMax=tenantLimits.maxUsers;
+    rows.push(['Usuarios', userMax==null?(tenantUsers.length+' (límite sin configurar)'):(tenantUsers.length+' de '+userMax)]);
+  }
+  box.innerHTML=rows.map(([label,val])=>`<div><div style="color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px">${esc(label)}</div><div style="font-weight:600">${esc(String(val))}</div></div>`).join('');
 }
 
 /* ==================== FACTURACIÓN DGI ==================== */
