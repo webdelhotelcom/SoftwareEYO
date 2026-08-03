@@ -2,7 +2,7 @@
 
 Ver también: [[00-Indice]] · [[Historia-y-decisiones]]
 
-Foto al **2026-08-02**, después del cierre de la corrección de auditoría (12 fases) y de la ronda de correcciones visuales/funcionales que siguió (renombres, Personalización por cuenta). Como cualquier nota de estado, esto se desactualiza — si estás leyendo esto mucho después, confiá más en `git log` y en los task lists activos que en esta lista.
+Foto al **2026-08-03**, después del cierre de la corrección de auditoría (12 fases), la ronda de correcciones visuales/funcionales que siguió (renombres, Personalización por cuenta), el rediseño del menú de cuenta, y la Fase 1 del módulo Inteligencia de Precios. Como cualquier nota de estado, esto se desactualiza — si estás leyendo esto mucho después, confiá más en `git log` y en los task lists activos que en esta lista.
 
 ## Terminado y verificado en vivo
 
@@ -22,12 +22,15 @@ Foto al **2026-08-02**, después del cierre de la corrección de auditoría (12 
 - Nombre del software unificado a "Software EYO" y nombres de plan sin "Uruguay" (Plan Hotel, Plan Profesional), en el panel y en las páginas comerciales.
 - Bandera `is_founder` por tenant (no por email hardcodeado) para mostrar "Plan Hotel - Founder" en la cuenta fundadora.
 - Personalización por cuenta (nombre comercial, 2 colores, logo) — ver [[Personalizacion]].
+- Menú de cuenta rediseñado: un único trigger fijo (avatar) arriba a la derecha en vez de correo/tuerca/cerrar sesión siempre visibles; en celular es una hoja inferior (bottom sheet) respetando `safe-area-inset` de notch/Dynamic Island; probado en 320/360/375/390/414/768/1024px y limpieza de datos al cerrar sesión.
+- Inteligencia de Precios, Fase 1 (beta, solo Plan Hotel) — comparación de mercado, similitud de competidores, motor de recomendación con explicación del cálculo. Ver [[Inteligencia-de-Precios]] para alcance, arquitectura y lo que falta.
 
 ## Pendiente, documentado explícitamente como tal (no asumido como hecho)
 
 - **Identidad visual propia de Software EYO** (Fase 4 del proyecto original de migración) — distinto de la Personalización por cliente ya implementada: esto era aplicar la marca propia del proyecto (no la de cada cliente) más allá de lo ya cargado. No se ha vuelto a retomar.
 - **Prueba en un dispositivo/navegador real** (iPhone con Safari, Android con Chrome) — todo lo probado hasta ahora fue con motor Chromium simulando anchos de pantalla, nunca un dispositivo físico. Ver `docs/dispositivos-navegadores.md`.
 - **Publicación de la página comercial** — el usuario decidió explícitamente no publicarla todavía ("Todavía no"), aunque ya pasó revisión y las correcciones de la Fase 7.
+- **Inteligencia de Precios, Fases 2+** (calendario de precios, simulador, alertas automáticas, historial/evolución con gráficos, aprendizaje con resultados propios) y la conexión oficial a Booking.com/Airbnb — explícitamente no iniciadas, a la espera de que el usuario las pida.
 
 ## Cómo confirmar que esta lista sigue siendo cierta
 

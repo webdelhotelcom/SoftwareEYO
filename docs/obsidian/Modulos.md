@@ -26,6 +26,7 @@ Los 20 módulos de negocio de `app/panel.html`, todos sobre Supabase (ninguno en
 | Resumen Mensual | *(sin migración propia)* | Ídem. |
 | WhatsApp / Mensajes | *(sin migración propia)* | Genera texto a partir de datos ya migrados; no persiste nada propio. |
 | Recepción | *(sin migración propia)* | Vista operativa sobre `stays`/`rooms`. |
+| Inteligencia de Precios (beta) | `0025_pricing_intelligence_phase1`, `0026_pricing_view_permission_fix` | Solo Plan Hotel, por feature flag. Fase 1 de un desarrollo por etapas — ver [[Inteligencia-de-Precios]]. |
 
 ## Correcciones posteriores (no son módulos nuevos)
 
