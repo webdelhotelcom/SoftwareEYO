@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Software EYO</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" onerror="var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';document.head.appendChild(s);"></script>
@@ -106,12 +106,93 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .nav-item.active{background:var(--bg3);color:var(--text);font-weight:500;border-left-color:var(--accent)}
 .nav-item i{font-size:16px;width:18px;flex-shrink:0}
 .nav-badge{margin-left:auto;background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:600}
-.sidebar-footer{padding:.75rem 1rem;border-top:0.5px solid var(--border);flex-shrink:0}
 .user-info{display:flex;align-items:center;gap:8px}
 .user-avatar{width:28px;height:28px;border-radius:50%;background:var(--bg3);border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--text2);flex-shrink:0}
 .user-name{font-size:12px;font-weight:500;color:var(--text)}
 .user-role{font-size:10px;color:var(--text3)}
 .main-content{flex:1;overflow-y:auto;background:var(--bg3);min-width:0}
+
+/* ═══════════════════════════════════════════════════════
+   MENÚ DE CUENTA — un solo punto de entrada (avatar arriba a
+   la derecha) en vez de correo/tuerca/salir siempre visibles.
+   Corrección de auditoría: antes vivían fijos en el pie de la
+   barra lateral, compitiendo por espacio con la navegación y
+   difíciles de alcanzar en celular sin desplazarse hasta el final.
+   ═══════════════════════════════════════════════════════ */
+.account-trigger{
+  position:fixed;
+  top:calc(12px + env(safe-area-inset-top));
+  right:calc(12px + env(safe-area-inset-right));
+  z-index:1001;
+  display:flex;align-items:center;gap:6px;
+  min-height:44px;padding:4px 10px 4px 4px;
+  background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);
+  box-shadow:0 2px 8px rgba(0,0,0,.12);
+  cursor:pointer;
+}
+.account-trigger .user-avatar{width:32px;height:32px;font-size:11px}
+.account-trigger-label{font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;max-width:170px;overflow:hidden;text-overflow:ellipsis}
+.account-trigger-chevron{font-size:14px;color:var(--text3)}
+
+.account-menu-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:1998}
+.account-menu-backdrop.open{display:block}
+
+.account-menu{
+  display:none;position:fixed;z-index:1999;
+  background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);
+  box-shadow:0 8px 30px rgba(0,0,0,.18);
+  top:calc(60px + env(safe-area-inset-top));
+  right:calc(12px + env(safe-area-inset-right));
+  width:280px;max-width:calc(100vw - 24px);
+  padding:8px;
+  max-height:calc(100vh - 80px);overflow-y:auto;
+  box-sizing:border-box;
+}
+.account-menu.open{display:block}
+.account-menu-close{display:none}
+.account-menu-sheet-handle{display:none}
+.account-menu-header{display:flex;align-items:center;gap:10px;padding:10px 8px}
+.account-menu-header .user-avatar{width:44px;height:44px;font-size:15px;flex-shrink:0}
+.account-menu-header #sidebar-role{font-size:13px;font-weight:600;color:var(--text)}
+.account-menu-header #sidebar-name{font-size:12px;color:var(--text2);word-break:break-all}
+.account-menu-info{padding:2px 8px 8px}
+.account-menu-info-row{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--text2);padding:3px 0}
+.account-menu-info-row b{color:var(--text);font-weight:600;text-align:right}
+.account-menu-divider{height:0.5px;background:var(--border);margin:6px 0}
+.account-menu-item{
+  display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;
+  min-height:44px;padding:11px 10px;
+  background:none;border:0;border-radius:var(--radius);
+  font-size:13px;color:var(--text);cursor:pointer;text-align:left;
+}
+.account-menu-item i{font-size:16px;width:18px;flex-shrink:0}
+.account-menu-item:hover{background:var(--bg2)}
+.account-menu-item-danger{color:var(--red)}
+.account-menu-item-danger:hover{background:var(--red-bg)}
+
+@media(max-width:768px){
+  .account-trigger-label,.account-trigger-chevron{display:none}
+  .account-trigger{padding:4px}
+  .account-menu{
+    top:auto;left:0;right:0;bottom:0;width:100%;max-width:100%;
+    border-radius:16px 16px 0 0;
+    transform:translateY(100%);
+    transition:transform .25s ease;
+    padding:8px 12px calc(16px + env(safe-area-inset-bottom));
+    max-height:82vh;
+  }
+  .account-menu.open{transform:translateY(0)}
+  .account-menu-close{
+    display:flex;align-items:center;justify-content:center;
+    position:absolute;top:6px;right:6px;
+    width:44px;height:44px;border-radius:50%;
+    background:var(--bg2);border:0;font-size:17px;color:var(--text2);
+  }
+  .account-menu-sheet-handle{
+    display:block;width:40px;height:4px;border-radius:2px;
+    background:var(--border2);margin:6px auto 8px;
+  }
+}
 .page{display:none;padding:1.5rem;max-width:1280px}
 .page.active{display:block}
 .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;gap:12px;flex-wrap:wrap}
@@ -368,6 +449,33 @@ tr:hover td{background:var(--bg2)}
   <i class="ti ti-menu-2"></i>
 </button>
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeMobileSidebar()"></div>
+
+<button class="account-trigger" id="accountTrigger" onclick="toggleAccountMenu()" aria-haspopup="true" aria-expanded="false" aria-label="Cuenta">
+  <span class="user-avatar" id="account-avatar">AD</span>
+  <span class="account-trigger-label" id="account-trigger-label"></span>
+  <i class="ti ti-chevron-down account-trigger-chevron"></i>
+</button>
+<div class="account-menu-backdrop" id="accountMenuBackdrop" onclick="closeAccountMenu()"></div>
+<div class="account-menu" id="accountMenu" role="menu" aria-label="Menú de cuenta">
+  <button class="account-menu-close" id="accountMenuClose" onclick="closeAccountMenu()" aria-label="Cerrar menú"><i class="ti ti-x"></i></button>
+  <div class="account-menu-sheet-handle"></div>
+  <div class="account-menu-header">
+    <div class="user-avatar" id="sidebar-avatar">AD</div>
+    <div style="flex:1;min-width:0">
+      <div class="user-role" id="sidebar-role">Admin</div>
+      <div class="user-name" id="sidebar-name">correo@ejemplo.com</div>
+    </div>
+  </div>
+  <div class="account-menu-info">
+    <div class="account-menu-info-row"><span>Plan</span><b id="account-menu-plan">—</b></div>
+    <div class="account-menu-info-row"><span>Rol</span><b id="account-menu-role">—</b></div>
+  </div>
+  <div class="account-menu-divider"></div>
+  <button class="account-menu-item" onclick="closeAccountMenu();showPage('ajustes')"><i class="ti ti-settings"></i><span>Ajustes</span></button>
+  <div class="account-menu-divider"></div>
+  <button class="account-menu-item account-menu-item-danger" onclick="closeAccountMenu();doLogout()"><i class="ti ti-logout"></i><span>Cerrar sesión</span></button>
+</div>
+
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <div class="sidebar-logo">
@@ -410,17 +518,6 @@ tr:hover td{background:var(--bg2)}
     <div class="nav-item" data-page="usuarios" onclick="showPage('usuarios')"><i class="ti ti-shield-lock"></i>Usuarios y permisos</div>
     <div class="nav-item" data-page="auditoria" onclick="showPage('auditoria')"><i class="ti ti-history"></i>Auditoría</div>
   </nav>
-  <div class="sidebar-footer">
-    <div class="user-info">
-      <div class="user-avatar" id="sidebar-avatar">AD</div>
-      <div style="flex:1;min-width:0">
-        <div class="user-name" id="sidebar-name">Administrador</div>
-        <div class="user-role" id="sidebar-role">Admin</div>
-      </div>
-      <button class="btn btn-sm btn-icon" onclick="showPage('ajustes')" title="Ajustes"><i class="ti ti-settings"></i></button>
-      <button class="btn btn-sm btn-icon" onclick="doLogout()" title="Salir"><i class="ti ti-logout"></i></button>
-    </div>
-  </div>
 </aside>
 
 <main class="main-content">
@@ -1997,6 +2094,10 @@ async function loadSessionUser(authUser){
   document.getElementById('sidebar-avatar').textContent=currentUser.initials;
   document.getElementById('sidebar-name').textContent=currentUser.email;
   document.getElementById('sidebar-role').textContent=currentUser.name;
+  document.getElementById('account-avatar').textContent=currentUser.initials;
+  document.getElementById('account-trigger-label').textContent=planDisplayLabel();
+  document.getElementById('account-menu-plan').textContent=planDisplayLabel();
+  document.getElementById('account-menu-role').textContent=currentUser.name;
   await loadPermissions();
   await loadPermissionsCatalog();
   populateSelects();
@@ -2059,6 +2160,8 @@ async function loadTenantLimits(tenantId,plan){
 }
 
 async function doLogout(){
+  closeAccountMenu();
+  closeMobileSidebar();
   if(activeUserWatchTimer){clearInterval(activeUserWatchTimer);activeUserWatchTimer=null;}
   if(supabaseClient)await supabaseClient.auth.signOut();
   document.getElementById('app').style.display='none';
@@ -2072,6 +2175,10 @@ async function doLogout(){
   document.documentElement.style.removeProperty('--sidebar-bg');
   const bizEl=document.getElementById('sidebar-business-name');if(bizEl)bizEl.style.display='none';
   document.querySelectorAll('.login-logo-icon,.sidebar-logo-icon').forEach(el=>{el.style.backgroundImage='none';const i=el.querySelector('i');if(i)i.style.display='';});
+  // limpia lo que quedó de la sesión anterior — nada del usuario que se fue
+  // debe seguir visible si otro usuario inicia sesión en el mismo navegador.
+  ['sidebar-avatar','account-avatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='';});
+  ['sidebar-name','sidebar-role','account-trigger-label','account-menu-plan','account-menu-role'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='';});
 }
 
 async function doForgotPassword(){
@@ -4608,6 +4715,51 @@ function closeMobileSidebar(){
   sb.classList.remove('mobile-open'); bd.classList.remove('active');
   document.body.style.overflow='';
 }
+
+// ==================== MENÚ DE CUENTA (avatar arriba a la derecha) ====================
+function toggleAccountMenu(){
+  const menu=document.getElementById('accountMenu');
+  if(!menu)return;
+  if(menu.classList.contains('open')) closeAccountMenu();
+  else openAccountMenu();
+}
+function openAccountMenu(){
+  document.getElementById('accountMenu').classList.add('open');
+  document.getElementById('accountMenuBackdrop').classList.add('open');
+  document.getElementById('accountTrigger').setAttribute('aria-expanded','true');
+  document.addEventListener('keydown', accountMenuEscHandler);
+}
+function closeAccountMenu(){
+  const menu=document.getElementById('accountMenu');
+  if(!menu)return;
+  menu.classList.remove('open');
+  menu.style.transform='';
+  document.getElementById('accountMenuBackdrop').classList.remove('open');
+  document.getElementById('accountTrigger').setAttribute('aria-expanded','false');
+  document.removeEventListener('keydown', accountMenuEscHandler);
+}
+function accountMenuEscHandler(e){ if(e.key==='Escape') closeAccountMenu(); }
+
+// Deslizar hacia abajo para cerrar, solo tiene efecto visual en el panel
+// inferior de celular (en escritorio el menú no se mueve con touch).
+(function initAccountMenuSwipe(){
+  const menu=document.getElementById('accountMenu');
+  if(!menu)return;
+  let startY=null;
+  menu.addEventListener('touchstart',e=>{ startY=e.touches[0].clientY; },{passive:true});
+  menu.addEventListener('touchmove',e=>{
+    if(startY===null||window.innerWidth>768)return;
+    const dy=e.touches[0].clientY-startY;
+    if(dy>0) menu.style.transform=`translateY(${dy}px)`;
+  },{passive:true});
+  menu.addEventListener('touchend',e=>{
+    if(startY===null||window.innerWidth>768){startY=null;return;}
+    const dy=e.changedTouches[0].clientY-startY;
+    menu.style.transform='';
+    if(dy>80) closeAccountMenu();
+    startY=null;
+  });
+})();
 
 
 // ═══════════════════════════════════════════════════════
