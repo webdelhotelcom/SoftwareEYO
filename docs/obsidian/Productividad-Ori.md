@@ -40,7 +40,14 @@ Un "sistema operativo personal" para administrar el tiempo: **Planificar → Eje
 - Verificado en vivo de punta a punta con un usuario de prueba (creado y borrado por API, igual que en Fase 1): crear categoría, agregar subcategoría, crear proyecto vinculado, archivar — y confirmado que el borrado en cascada del usuario dejó las tablas en 0 filas (las foreign keys están bien puestas).
 - **Bug real encontrado y corregido:** dos formularios de edición (categoría y proyecto) llamaban directamente al dispatcher de `useActionState` como si fuera la server action cruda, intentando leer un valor de retorno que ese dispatcher no expone así. El síntoma: después de guardar una edición exitosa, el formulario nunca volvía a cerrarse solo.
 
-Siguiente paso: Actividades (CRUD + los 7 estados + campos completos del prompt maestro) — la base para que el dashboard y el calendario dejen de mostrar datos de demostración.
+### Actividades (completado)
+- CRUD real: `/actividades` (lista completa, crear/editar/eliminar/cambiar estado) y `/registrar` (ahora funcional — inicio rápido desde el botón "+", antes placeholder).
+- Formulario compartido con categoría → subcategoría en cascada (la subcategoría solo aparece si la categoría elegida tiene alguna) y proyecto opcional.
+- Los 7 estados del prompt maestro (planificada, en progreso, pausada, completada, parcialmente completada, cancelada, no realizada), cambiables desde un selector en cada tarjeta, con color propio por estado.
+- `planned_end` se calcula en el servidor a partir de inicio + duración en minutos — nunca se le pide al usuario dos campos de fecha por separado.
+- Verificado en vivo de punta a punta: crear con categoría/subcategoría/proyecto vinculados, cambiar estado (persiste tras recargar), editar (confirmado que precarga todos los valores guardados, incluida la conversión de `datetime-local`), eliminar. Usuario y datos de prueba borrados al terminar, cascada confirmada en 0 filas.
+
+Siguiente paso: Calendario (vistas día/semana/mes sobre las actividades ya reales) — recién ahí el dashboard y el calendario van a dejar de mostrar el mockup de demostración.
 
 ### Decisiones ya tomadas
 
