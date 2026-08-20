@@ -10,18 +10,31 @@ Un "sistema operativo personal" para administrar el tiempo: **Planificar → Eje
 
 ## Estado (2026-08-20)
 
-**Fase 1 en curso — scaffold listo y verificado en vivo.** Repo local creado en `D:\Ori\productividad-ori` (Next.js App Router + TypeScript + Tailwind CSS v4 + `@supabase/ssr`), con:
+**Fase 1 completa — arquitectura, Supabase, Auth, esquema y RLS, todo verificado en vivo.** Repo local en `D:\Ori\productividad-ori` (Next.js App Router + TypeScript + Tailwind CSS v4 + `@supabase/ssr`), todavía sin remoto en GitHub (se decide junto con la cuenta de Netlify, ver "Infraestructura pendiente" más abajo). 3 commits locales.
 
+### Scaffold y diseño
 - Sistema de diseño (tokens de color claro/oscuro, tarjetas, barras de progreso) y layout responsive: sidebar en escritorio, barra inferior en celular con botón central "+".
 - Modo claro/oscuro con toggle persistente (`localStorage`) y sin parpadeo (script inline antes del primer paint) — se encontró y corrigió un error real de hidratación de React durante la verificación (el estado inicial del toggle no coincidía entre servidor y cliente cuando ya había un tema guardado).
-- Tipos TypeScript de las 15 entidades del prompt maestro (`src/types/database.ts`).
-- Cliente de Supabase preparado (`src/lib/supabase/`), pero **sin credenciales todavía** — la app detecta que no está configurado y muestra datos de demostración con un aviso visible, en vez de fallar.
-- Dashboard principal construido siguiendo el mockup exacto del prompt maestro (sección 101): actividad activa con cronómetro en vivo, próxima actividad, objetivo diario con barra de progreso, resumen del día por categoría, listado cronológico con estados.
-- Rutas placeholder para Calendario, Estadísticas, Objetivos, Gimnasio y Perfil (cada una indica en qué fase se construye).
-- Verificado en el navegador: carga sin errores de consola, responsive en 375px sin desborde horizontal, modo oscuro aplica bien, lint y `tsc --noEmit` limpios.
-- Primer commit hecho en el repo local (todavía sin remoto en GitHub — se decide junto con las cuentas de Supabase/Netlify, ver abajo).
+- Dashboard principal construido siguiendo el mockup exacto del prompt maestro (sección 101): actividad activa con cronómetro en vivo, próxima actividad, objetivo diario con barra de progreso, resumen del día por categoría, listado cronológico con estados. Todavía con datos de demostración (no conectado a datos reales) — eso es la próxima fase (Categorías/Proyectos → Actividades).
 
-Siguiente paso inmediato: crear el proyecto de Supabase (falta que el usuario lo haga y pase las credenciales) para arrancar el resto de la Fase 1 (Auth + esquema real + RLS).
+### Supabase — proyecto y esquema
+- **Proyecto nuevo creado:** `productividad-ori`, dentro de la misma cuenta/organización de Supabase que ya tiene Software EYO (`SoftwareEYO`), pero como proyecto separado — nunca se mezclan los datos personales con los de los clientes del hotel. Creado vía API con un token de gestión (`sbp_...`) que el usuario generó, en vez de hacerlo a mano por el dashboard.
+- **Esquema completo:** 15 tablas (`profiles`, `user_preferences`, `categories`, `subcategories`, `projects`, `activities`, `timer_sessions`, `goals`, `time_budgets`, `tasks`, `workouts`, `exercises`, `workout_exercises`, `exercise_sets`, `weekly_templates`), migraciones `0001`-`0007` en `supabase/migrations/`, corridas directo contra la base vía la Management API de Supabase (mismo token) — no hizo falta pegar nada a mano en el SQL Editor.
+- RLS activado y verificado (`rowsecurity = true`) en las 15 tablas, con políticas por `user_id`. Restricciones de integridad reales (no duraciones negativas, fin no puede ser antes que el inicio, rating de concentración/energía entre 1 y 10, etc.), índices en `user_id`/fechas/FKs, y una restricción única que impide dos sesiones de cronómetro activas para la misma actividad.
+- Trigger `handle_new_user()` sobre `auth.users`: crea automáticamente `profile` + `user_preferences` al registrarse — verificado en vivo (usuario de prueba creado por API, se generaron sus filas solas, después se borró todo).
+
+### Autenticación real
+- Registro, login, cerrar sesión, recuperar/actualizar contraseña — server actions de Next.js sobre Supabase Auth, sin credenciales hardcodeadas.
+- Layout reorganizado en dos grupos: `(app)` con el shell completo (sidebar/bottom nav), protegido server-side — sin sesión redirige a `/login`; y `(auth)` con un layout mínimo centrado para las pantallas de login/registro.
+- Middleware que refresca el token de sesión en cada request.
+- **Caso real encontrado y corregido:** el proyecto nuevo de Supabase exige confirmar el correo antes de habilitar sesión — `signUp()` no devuelve error en ese caso, solo no viene con sesión. La primera versión asumía que registro = sesión inmediata y rebotaba en silencio a `/login` sin explicación; se corrigió para mostrar "confirmá tu correo" cuando corresponde.
+- Verificado en vivo de punta a punta con un usuario de prueba (creado y confirmado por API para no depender del email real durante la prueba, borrado al terminar): registro, login, ruta protegida, perfil mostrando el correo real, logout.
+
+### Infraestructura pendiente (decisión del usuario, no asumida)
+- **Netlify:** el usuario pidió explícitamente una cuenta nueva y separada de `webdelhotelcom` (la que ya aloja el panel real de Software EYO) — motivo: si esta app personal agotara los créditos gratis compartidos, Netlify pausa TODOS los sitios de la cuenta, panel del hotel incluido. Todavía no se creó esa cuenta ni se publicó nada — se sigue trabajando en local con `npm run dev` hasta que el usuario la cree y pase un token.
+- **Costos:** confirmado con el usuario que ni Supabase (500 MB/5 GB/50k MAU gratis) ni Netlify (300 créditos/mes gratis, deploys a producción cuestan 15 créditos c/u, vistas previas gratis) deberían generar costo real para un solo usuario, siguiendo el mismo flujo de Deploy Preview → producción ya usado en Software EYO.
+
+Siguiente paso: Fase 2 del orden pedido — Categorías y Proyectos (CRUD real contra Supabase, reemplazando los datos de demostración).
 
 ### Decisiones ya tomadas
 
