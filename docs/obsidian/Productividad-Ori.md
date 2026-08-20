@@ -10,7 +10,7 @@ Un "sistema operativo personal" para administrar el tiempo: **Planificar → Eje
 
 ## Estado (2026-08-20)
 
-**MVP completo — las 12 fases del prompt maestro están terminadas y verificadas en vivo.** Todo lo funcional (Supabase/Auth, categorías/proyectos, actividades, calendario, cronómetro, dashboard, estadísticas, objetivos, gimnasio, responsive 320px+ y seguridad) fue construido y probado contra la base de datos real, cada fase con su propio usuario de prueba creado y borrado por API. Repo local en `D:\Ori\productividad-ori` (Next.js App Router + TypeScript + Tailwind CSS v4 + `@supabase/ssr`), todavía sin remoto en GitHub. 11 commits locales.
+**MVP + Fase 2 completos — no queda nada pendiente del prompt maestro.** Las 12 fases del MVP y las 12 funcionalidades de Fase 2 están construidas, verificadas en vivo con usuarios de prueba reales, y publicadas en producción: **https://productividad-ori.netlify.app**. Repo local en `D:\Ori\productividad-ori` (Next.js App Router + TypeScript + Tailwind CSS v4 + `@supabase/ssr`), todavía sin remoto en GitHub. 12 commits locales.
 
 ### Scaffold y diseño
 - Sistema de diseño (tokens de color claro/oscuro, tarjetas, barras de progreso) y layout responsive: sidebar en escritorio, barra inferior en celular con botón central "+".
@@ -147,9 +147,23 @@ Regla explícita del usuario: **cada fase se verifica (compila, sin errores de T
 
 Autenticación, dashboard, calendario semanal, crear/editar/eliminar actividades, categorías, proyectos, cronómetro (iniciar/pausar/finalizar), registro manual, planificado vs. real, estadísticas diarias y semanales, objetivos semanales, presupuesto de tiempo, gimnasio (entrenamientos/ejercicios/series) con estadísticas básicas, responsive móvil, modo oscuro, RLS y seguridad.
 
-### Fase 2 (después del MVP)
+### Fase 2 (completada, 2026-08-20)
 
-Tareas, recurrencias, copiar semana, plantillas semanales, rachas, comparación mensual, estadísticas anuales, insights automáticos (por reglas matemáticas, no IA), historial avanzado de gimnasio, récords personales, exportaciones (CSV/Excel/PDF), PWA avanzada.
+Las 12 funcionalidades pedidas para después del MVP, todas construidas y verificadas en vivo con un usuario de prueba real:
+
+- **Tareas** (`/tareas`): título, descripción, prioridad, fecha límite, categoría/proyecto opcionales, tres estados (pendiente/en curso/completada, con reapertura), y "convertir en actividad planificada" (crea la actividad real y la enlaza vía `tasks.activity_id`).
+- **Actividades recurrentes**: al crear una actividad, tildar "Repetir" habilita diaria / lunes a viernes / semanal / días específicos / mensual, con cantidad de repeticiones configurable. Cada ocurrencia es una fila real e independiente de `activities` (no un patrón calculado al vuelo), agrupadas por `recurrence_group_id`. Al eliminar una que pertenece a una serie, se puede elegir "solo esta" o "esta y todas las futuras".
+- **Copiar semana anterior**: en la vista semanal del calendario, clona lo *planificado* de la semana previa a la actual (nunca estados ni tiempos reales, para no arrastrar datos que no correspondan).
+- **Plantillas semanales**: guardar la semana actual como plantilla con nombre propio (`weekly_templates` + `weekly_template_items`: día de la semana + hora + duración por actividad), aplicarla a cualquier semana futura, eliminarla. Bug real evitado antes de escribir el código de aplicación: las semanas de esta app siempre arrancan en lunes, así que el `day_of_week` que devuelve JavaScript (0 = domingo) hay que convertirlo a "días desde el lunes" antes de sumarlo a la fecha de inicio — usarlo como offset directo habría corrido todo un día.
+- **Rachas**: días consecutivos con al menos una actividad completada, mostrando racha actual y mejor racha histórica en Estadísticas (`utils/streak.ts`).
+- **Comparación mensual** y **estadísticas anuales**: ya existían desde el MVP (el selector de período `Este mes`/`Año` ya calculaba automáticamente la comparación contra el período anterior) — confirmadas funcionando, no hizo falta código nuevo.
+- **Insights automáticos**: frases generadas con reglas simples sobre datos ya calculados en la página (racha, cambio de tiempo vs. período anterior, categoría dominante, % de cumplimiento, día más productivo) — nunca con IA, tal como pide el prompt maestro.
+- **Historial avanzado de gimnasio**: gráfico de progreso de peso por ejercicio a lo largo del tiempo, en la página de historial de cada ejercicio.
+- **Récords personales** (`/gimnasio/records`): página nueva que agrega la mejor marca y el mayor volumen de TODOS los ejercicios a la vez, no de a uno.
+- **Exportaciones CSV/Excel/PDF**: en Actividades y Estadísticas. Librería `xlsx` instalada desde el tarball oficial de SheetJS (`cdn.sheetjs.com`) en vez del paquete de npm, porque la versión publicada en el registro de npm tiene una vulnerabilidad alta sin parche disponible — decisión de seguridad, no un detalle menor.
+- **PWA avanzada**: íconos reales (192px/512px/maskable — el manifest tenía el array de íconos vacío desde Fase 1) generados con un encoder de PNG escrito en Python puro (sin librerías, ya que no había Pillow disponible), service worker con red-primero para navegación (mostrando `offline.html` en vez del error feo del navegador cuando no hay conexión) y cache-primero para assets estáticos, botón "Instalar app" en Perfil vía `beforeinstallprompt`.
+
+Publicado en producción: https://productividad-ori.netlify.app
 
 ## Prompt maestro completo (fuente original, 2026-08-20)
 
@@ -311,4 +325,4 @@ El usuario debe poder abrir la app y responder de un vistazo: qué tiene que hac
 
 ## Próximo paso
 
-Confirmar el plan de fases (Fase 1: arquitectura + Supabase + Auth + esquema + RLS) con el usuario antes de escribir código, y pedirle que cree el proyecto de Supabase (cualquier cuenta, a definir después) para tener credenciales de desarrollo.
+No hay nada pendiente del prompt maestro — MVP y Fase 2 completos, publicado en producción. Lo único que queda abierto es lo que el usuario pida a futuro (mejoras puntuales, alguna idea nueva) o, opcionalmente, subir el repo a GitHub (hasta ahora solo vive en local).
