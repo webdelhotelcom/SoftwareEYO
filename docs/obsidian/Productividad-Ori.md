@@ -95,7 +95,7 @@ Un "sistema operativo personal" para administrar el tiempo: **Planificar → Eje
 - Seguridad revisada explícitamente: RLS activo con política por `user_id` confirmado en las 15 tablas; ninguna acción de servidor confía en un `user_id` mandado por el cliente (siempre usa el de la sesión real); sin vectores de XSS (el único `dangerouslySetInnerHTML` de toda la app es el script de tema, con contenido fijo, no datos de usuario); validación de límites ya reforzada a nivel de base de datos desde el diseño original (montos y duraciones no negativos, fechas coherentes).
 - Ciclo completo del cronómetro probado en vivo de punta a punta: iniciar → pausar (tiempo acumulado correcto) → reanudar (sigue sumando sin resetear) → finalizar (duración final correcta) — sin errores de consola en ningún paso.
 
-**Con esto se completan las 12 fases del prompt maestro, y la app ya está publicada en https://productividad-ori.netlify.app.** Fase 2 (tareas, recurrencias, copiar semana, plantillas, rachas, exportaciones, PWA avanzada) queda para cuando el usuario la pida — no se avanza sobre eso todavía.
+**Con esto se completan las 12 fases del MVP del prompt maestro, y la app ya está publicada en https://productividad-ori.netlify.app.** Fase 2 se completó después en la misma sesión — ver la sección dedicada más abajo.
 
 ### Decisiones ya tomadas
 
@@ -164,6 +164,15 @@ Las 12 funcionalidades pedidas para después del MVP, todas construidas y verifi
 - **PWA avanzada**: íconos reales (192px/512px/maskable — el manifest tenía el array de íconos vacío desde Fase 1) generados con un encoder de PNG escrito en Python puro (sin librerías, ya que no había Pillow disponible), service worker con red-primero para navegación (mostrando `offline.html` en vez del error feo del navegador cuando no hay conexión) y cache-primero para assets estáticos, botón "Instalar app" en Perfil vía `beforeinstallprompt`.
 
 Publicado en producción: https://productividad-ori.netlify.app
+
+### Notas del día (agregado después de Fase 2, 2026-08-20)
+
+Pedido del usuario después de ver la app terminada: quería algo tipo "notas" para anotar pendientes del día, más libre que Tareas (que exige prioridad/estado) y sin necesidad de horario como una Actividad. Se definió con el usuario (opción elegida entre 3) que fueran **notas por día**, no una lista general tipo Keep.
+
+- Tabla nueva `daily_notes` (`user_id` + `note_date` único, `content` de texto libre), RLS estándar.
+- Vive en la vista **Día** del calendario, debajo de la grilla de horarios — un cuadro de texto que se guarda solo al salir del campo (blur) si el contenido cambió, con indicador "Guardando…"/"Guardado".
+- Cada día es independiente: se usa `key={noteDate}` en el componente para que React lo remonte entero al cambiar de fecha, en vez de arrastrar por error lo que había quedado escrito para otro día.
+- Verificado en vivo: escribir, guardar, recargar (persiste), cambiar de día (queda vacío, no se mezcla). Un supuesto bug apareció durante la prueba (el guardado no disparaba) pero resultó ser el entorno de prueba automatizado sin foco real de documento, no la app — confirmado disparando el evento `focusout` a mano, sin tocar código.
 
 ## Prompt maestro completo (fuente original, 2026-08-20)
 
