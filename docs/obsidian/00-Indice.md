@@ -17,6 +17,7 @@ Esto **no reemplaza** la documentación operativa de `docs/` (cómo instalar, c�
 - [[Centro-de-Configuracion]] — Fase 3: Ajustes reorganizado en 10 categorías (maestro-detalle), modo oscuro/claro/sistema por usuario, Usuarios y Auditoría reparentadas adentro, Idioma (Beta), Centro de Ayuda con 25 artículos, legales. En Deploy Preview, pendiente de aprobación en producción.
 - [[Finalizacion-Automatica-Reservas]] — `pg_cron` diario que pasa a "Finalizada" toda reserva vencida (excepto canceladas), sin intervención manual — ya activo en producción.
 - [[Web-EYO-Sitio-Personal]] — proyecto aparte (no es Software EYO): el sitio personal de Orieles (`D:\Ori\webeyo`). Migrado a una cuenta de GitHub nueva por problema de permisos con la original; contenido, fotos y arreglo responsive actualizados 2026-08-20.
+- [[Productividad-Ori]] — séptimo producto EYO, de uso personal (no comercial): app de calendario/productividad/cronómetro/gimnasio/estadísticas. Prompt maestro completo guardado, en fase de diseño de arquitectura al 2026-08-20 — todavía no hay código.
 - [[Estado-actual]] — qué está terminado, qué está pendiente, a la fecha de esta nota.
 - [[Glosario]] — términos técnicos del proyecto explicados en una línea.
 
