@@ -34,7 +34,13 @@ Un "sistema operativo personal" para administrar el tiempo: **Planificar → Eje
 - **Netlify:** el usuario pidió explícitamente una cuenta nueva y separada de `webdelhotelcom` (la que ya aloja el panel real de Software EYO) — motivo: si esta app personal agotara los créditos gratis compartidos, Netlify pausa TODOS los sitios de la cuenta, panel del hotel incluido. Todavía no se creó esa cuenta ni se publicó nada — se sigue trabajando en local con `npm run dev` hasta que el usuario la cree y pase un token.
 - **Costos:** confirmado con el usuario que ni Supabase (500 MB/5 GB/50k MAU gratis) ni Netlify (300 créditos/mes gratis, deploys a producción cuestan 15 créditos c/u, vistas previas gratis) deberían generar costo real para un solo usuario, siguiendo el mismo flujo de Deploy Preview → producción ya usado en Software EYO.
 
-Siguiente paso: Fase 2 del orden pedido — Categorías y Proyectos (CRUD real contra Supabase, reemplazando los datos de demostración).
+### Categorías, subcategorías y proyectos (completado)
+- CRUD real contra Supabase (ya no son datos de demostración): categorías (nombre, color de una paleta fija, marca "productiva"), subcategorías anidadas dentro de cada categoría, y proyectos (nombre, categoría opcional, descripción, archivar/restaurar sin perder el historial).
+- Nuevas pantallas `/categorias` y `/proyectos`, accesibles desde la sidebar en escritorio y desde Perfil en celular (la barra inferior no tenía espacio libre para dos ítems más).
+- Verificado en vivo de punta a punta con un usuario de prueba (creado y borrado por API, igual que en Fase 1): crear categoría, agregar subcategoría, crear proyecto vinculado, archivar — y confirmado que el borrado en cascada del usuario dejó las tablas en 0 filas (las foreign keys están bien puestas).
+- **Bug real encontrado y corregido:** dos formularios de edición (categoría y proyecto) llamaban directamente al dispatcher de `useActionState` como si fuera la server action cruda, intentando leer un valor de retorno que ese dispatcher no expone así. El síntoma: después de guardar una edición exitosa, el formulario nunca volvía a cerrarse solo.
+
+Siguiente paso: Actividades (CRUD + los 7 estados + campos completos del prompt maestro) — la base para que el dashboard y el calendario dejen de mostrar datos de demostración.
 
 ### Decisiones ya tomadas
 
