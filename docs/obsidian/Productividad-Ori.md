@@ -10,7 +10,7 @@ Un "sistema operativo personal" para administrar el tiempo: **Planificar → Eje
 
 ## Estado (2026-08-20)
 
-**MVP casi completo — falta solo la fase final de responsive/seguridad (Fase 12).** Todas las fases funcionales del prompt maestro (Supabase/Auth, categorías/proyectos, actividades, calendario, cronómetro, dashboard, estadísticas, objetivos, gimnasio) están construidas y verificadas en vivo contra la base de datos real, cada una con su propio usuario de prueba creado y borrado por API. Repo local en `D:\Ori\productividad-ori` (Next.js App Router + TypeScript + Tailwind CSS v4 + `@supabase/ssr`), todavía sin remoto en GitHub. 10 commits locales.
+**MVP completo — las 12 fases del prompt maestro están terminadas y verificadas en vivo.** Todo lo funcional (Supabase/Auth, categorías/proyectos, actividades, calendario, cronómetro, dashboard, estadísticas, objetivos, gimnasio, responsive 320px+ y seguridad) fue construido y probado contra la base de datos real, cada fase con su propio usuario de prueba creado y borrado por API. Repo local en `D:\Ori\productividad-ori` (Next.js App Router + TypeScript + Tailwind CSS v4 + `@supabase/ssr`), todavía sin remoto en GitHub. 11 commits locales.
 
 ### Scaffold y diseño
 - Sistema de diseño (tokens de color claro/oscuro, tarjetas, barras de progreso) y layout responsive: sidebar en escritorio, barra inferior en celular con botón central "+".
@@ -81,7 +81,18 @@ Un "sistema operativo personal" para administrar el tiempo: **Planificar → Eje
 - Verificado en vivo de punta a punta con el ejemplo exacto del prompt maestro: 60kg×10 + 65kg×8 + 65kg×7 = 1.575 kg de volumen, coincide exacto.
 - **Bug real encontrado y corregido:** el historial por ejercicio ordenaba las series solo por fecha del entrenamiento; con varias series del mismo entrenamiento (fecha idéntica), "Último" mostraba una serie al azar en vez de la última de verdad. Se agregó `set_number` como criterio de desempate dentro del mismo entrenamiento.
 
-Siguiente paso: Responsive final (320px en adelante, modo oscuro pulido) y seguridad (revisión de RLS, XSS, validación) — la última fase antes del MVP completo.
+### Responsive final + seguridad (completado — MVP terminado)
+- Barrido completo a 320px (el ancho mínimo pedido) en las 14 pantallas de la app, en claro y oscuro, con un usuario de prueba real (no datos de demostración).
+- **Tres bugs reales de desborde horizontal encontrados y corregidos**, los tres con el mismo patrón de fondo (contenido que no encoge/envuelve dentro de una fila flex) pero en componentes distintos:
+  1. Los controles del cronómetro sobre una actividad en curso (franja de tiempo + botones Pausar/Finalizar) no entraban en una fila a 320px — ahora envuelve a una segunda línea si hace falta (`flex-wrap`).
+  2. En Categorías, el nombre + insignia "Productiva" + contador de subcategorías no cedía espacio a los botones Editar/Eliminar (faltaba `min-w-0`) y los empujaba fuera de la tarjeta — el nombre ahora trunca y el resto puede pasar a una segunda línea.
+  3. La barra inferior de navegación (BottomNav) tenía más ancho natural del que entra en 320px entre sus 5 accesos y el botón central — se le bajó el ancho por ítem en vez de depender de que el texto encogiera solo.
+  4. Guardia defensiva agregada en `globals.css` (`overflow-x: hidden` en `html`/`body`) para que ningún elemento de posición fija pueda producir scroll horizontal fantasma a futuro — no afecta el scroll horizontal intencional de la grilla semanal del calendario, que ya tiene su propio contenedor `overflow-x-auto` independiente.
+- **Bug de hidratación real encontrado y corregido** (no es de responsive, salió durante estas mismas pruebas): `LiveElapsed` calculaba el tiempo transcurrido con `Date.now()` ya en el primer render — ese primer render corre tanto en el servidor como en el cliente, en momentos distintos, así que el texto no coincidía entre los dos (error de hidratación de React, reproducible en cualquier actividad o entrenamiento con el cronómetro activo). Se corrigió arrancando en `null` (mismo valor en servidor y cliente) y sincronizando el valor real recién después de montar en el navegador.
+- Seguridad revisada explícitamente: RLS activo con política por `user_id` confirmado en las 15 tablas; ninguna acción de servidor confía en un `user_id` mandado por el cliente (siempre usa el de la sesión real); sin vectores de XSS (el único `dangerouslySetInnerHTML` de toda la app es el script de tema, con contenido fijo, no datos de usuario); validación de límites ya reforzada a nivel de base de datos desde el diseño original (montos y duraciones no negativos, fechas coherentes).
+- Ciclo completo del cronómetro probado en vivo de punta a punta: iniciar → pausar (tiempo acumulado correcto) → reanudar (sigue sumando sin resetear) → finalizar (duración final correcta) — sin errores de consola en ningún paso.
+
+**Con esto se completan las 12 fases del prompt maestro.** Fase 2 (tareas, recurrencias, copiar semana, plantillas, rachas, exportaciones, PWA avanzada) queda para cuando el usuario la pida — no se avanza sobre eso todavía. Pendiente, deliberadamente diferido por decisión del usuario: crear la cuenta nueva de Netlify y publicar la app en internet.
 
 ### Decisiones ya tomadas
 
