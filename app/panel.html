@@ -10152,7 +10152,7 @@ async function saveNewUser(){
   if(profErr){showToast(t('usuarios.error_asignar_usuario','El usuario se creó pero no se pudo asignar a tu cuenta')+': '+profErr.message,'error');return;}
   await loadUsers();renderUsersTable();
   closeModal('modal-new-user');
-  showToast(t('usuarios.usuario_creado','Usuario creado — pasale el email y la contraseña provisoria por fuera del sistema'));
+  showToast(t('usuarios.usuario_creado','Usuario creado — le enviamos un correo de bienvenida para confirmar su cuenta. Si necesita entrar antes de que lo confirme, pasale la contraseña provisoria por fuera del sistema.'));
 }
 function openEditUser(id){
   const u=tenantUsers.find(x=>x.id===id);if(!u)return;
