@@ -10,7 +10,7 @@ Un "sistema operativo personal" para administrar el tiempo: **Planificar → Eje
 
 ## Estado (2026-08-20)
 
-**Fase 1 completa — arquitectura, Supabase, Auth, esquema y RLS, todo verificado en vivo.** Repo local en `D:\Ori\productividad-ori` (Next.js App Router + TypeScript + Tailwind CSS v4 + `@supabase/ssr`), todavía sin remoto en GitHub (se decide junto con la cuenta de Netlify, ver "Infraestructura pendiente" más abajo). 3 commits locales.
+**MVP casi completo — falta solo la fase final de responsive/seguridad (Fase 12).** Todas las fases funcionales del prompt maestro (Supabase/Auth, categorías/proyectos, actividades, calendario, cronómetro, dashboard, estadísticas, objetivos, gimnasio) están construidas y verificadas en vivo contra la base de datos real, cada una con su propio usuario de prueba creado y borrado por API. Repo local en `D:\Ori\productividad-ori` (Next.js App Router + TypeScript + Tailwind CSS v4 + `@supabase/ssr`), todavía sin remoto en GitHub. 10 commits locales.
 
 ### Scaffold y diseño
 - Sistema de diseño (tokens de color claro/oscuro, tarjetas, barras de progreso) y layout responsive: sidebar en escritorio, barra inferior en celular con botón central "+".
@@ -47,13 +47,48 @@ Un "sistema operativo personal" para administrar el tiempo: **Planificar → Eje
 - `planned_end` se calcula en el servidor a partir de inicio + duración en minutos — nunca se le pide al usuario dos campos de fecha por separado.
 - Verificado en vivo de punta a punta: crear con categoría/subcategoría/proyecto vinculados, cambiar estado (persiste tras recargar), editar (confirmado que precarga todos los valores guardados, incluida la conversión de `datetime-local`), eliminar. Usuario y datos de prueba borrados al terminar, cascada confirmada en 0 filas.
 
-Siguiente paso: Calendario (vistas día/semana/mes sobre las actividades ya reales) — recién ahí el dashboard y el calendario van a dejar de mostrar el mockup de demostración.
+### Calendario (completado)
+- Vistas día/semana/mes sobre actividades reales, con selector de vista y navegación de período. La semana es la vista por defecto, como pidió el prompt maestro.
+- Cada actividad se dibuja como bloque en la franja horaria correspondiente (`ActivityBlock`), con color por categoría y estado.
+- Verificado en vivo: actividades sembradas en distintos días/horarios aparecen en el día, la semana y el mes correctos; responsive a 375px sin desborde (se encontró y corrigió el mismo patrón de bug que en Web EYO: un ancestro flex sin `min-w-0` dejaba que el `overflow-x-auto` interno empujara la página entera).
+
+### Cronómetro (completado)
+- Implementado el principio central del prompt maestro: nunca se acumula tiempo en estado de JavaScript. Cada actividad guarda sesiones (`timer_sessions`) con `started_at`/`ended_at` reales; el tiempo transcurrido se calcula siempre como `ahora − started_at` (mientras corre) más la suma de sesiones ya cerradas.
+- Iniciar / pausar / reanudar / finalizar, con la restricción de "una sola actividad activa a la vez" reforzada tanto en la base de datos (índice único parcial `timer_sessions_one_active_per_activity`) como en la aplicación (aviso claro si ya hay otra corriendo).
+- Pausar/reanudar modela cada tramo activo como una fila propia (no una sola fila con múltiples ciclos de pausa), por cómo está armado el índice único de la base.
+- Verificado en vivo, incluidos los casos límite pedidos en las pruebas obligatorias del prompt maestro: iniciar → cerrar pestaña → volver a abrir (el tiempo sigue corriendo, calculado desde el timestamp real); iniciar → pausar → cerrar → volver a abrir (queda pausado, con el tiempo acumulado correcto); iniciar → trabajar → finalizar (duración final correcta).
+- **Dos bugs reales encontrados y corregidos:** (1) al pausar, el tiempo acumulado se mostraba en 00:00:00 porque la consulta excluía por error la sesión recién cerrada; (2) al reanudar, el intento de insertar una nueva sesión "corriendo" chocaba en silencio con la restricción única mientras la sesión pausada anterior seguía abierta — se corrigió cerrando la sesión pausada antes de abrir la nueva, y se agregó aviso visible de error (antes se perdía sin mostrar nada).
+
+### Dashboard principal (completado)
+- Reemplazado el mockup de demostración por datos reales: actividad activa con cronómetro en vivo, próxima actividad, objetivo diario con progreso real, resumen del día por categoría, listado cronológico con estados.
+- **Bug real encontrado y corregido:** el cálculo de tiempo por actividad llamaba `Date.now()` directo dentro de funciones `reduce`/`map` ejecutadas en el render de un componente de servidor, lo que el linter de React marca como impureza; se corrigió capturando el timestamp una sola vez al principio del componente y reutilizándolo.
+- Verificado en vivo contra datos sembrados a mano, cifra por cifra.
+
+### Estadísticas y gráficos (completado)
+- Filtros de período (día/semana/mes), comparación planificado vs. real, gráfico de barras "Horas por día" (Recharts, con las series de tiempo por categoría) themeado con las variables de color de la app en vez de clases de Tailwind (porque Recharts pinta SVG con estilos inline).
+- Verificado en vivo contra datos sembrados con horarios reales en huso horario de Montevideo (`AT TIME ZONE 'America/Montevideo'` al sembrar por SQL, para no confundir un desfase de zona horaria del dato de prueba con un bug real de la app).
+
+### Objetivos y presupuesto de tiempo (completado)
+- Objetivos semanales por categoría/proyecto y presupuesto de tiempo, con barra de progreso calculada contra el tiempo real ya registrado (no contra lo planificado).
+- **Bug real encontrado y corregido:** los formularios de edición llamaban directamente al dispatcher de `useActionState` intentando leer su valor de retorno, lo cual no funciona así — mismo patrón de bug ya visto y corregido en Categorías/Proyectos; se movió la llamada real a la acción (y el cierre del formulario al tener éxito) adentro de la función reductora que se le pasa a `useActionState`.
+
+### Módulo de gimnasio (completado)
+- Entrenamientos con cronómetro propio (mismo principio de timestamps reales que el cronómetro de actividades): crear, finalizar (calcula duración real), eliminar.
+- Agregar ejercicios existentes al entrenamiento o crear uno nuevo al vuelo (nombre + grupo muscular), y registrar series (peso × repeticiones) con volumen calculado por serie y total por ejercicio.
+- Historial por ejercicio (`/gimnasio/ejercicios/[id]`): último set, mejor marca (mayor peso), mayor volumen en un mismo entrenamiento, y tabla completa fecha/peso/reps/volumen.
+- Estadísticas de "esta semana" en la pantalla principal de Gimnasio: cantidad de entrenamientos, tiempo total y promedio, cantidad de ejercicios distintos, series por grupo muscular.
+- Enlaces agregados al hub de Perfil en celular (Objetivos y Gimnasio no entraban en los 5 espacios de la barra inferior).
+- Verificado en vivo de punta a punta con el ejemplo exacto del prompt maestro: 60kg×10 + 65kg×8 + 65kg×7 = 1.575 kg de volumen, coincide exacto.
+- **Bug real encontrado y corregido:** el historial por ejercicio ordenaba las series solo por fecha del entrenamiento; con varias series del mismo entrenamiento (fecha idéntica), "Último" mostraba una serie al azar en vez de la última de verdad. Se agregó `set_number` como criterio de desempate dentro del mismo entrenamiento.
+
+Siguiente paso: Responsive final (320px en adelante, modo oscuro pulido) y seguridad (revisión de RLS, XSS, validación) — la última fase antes del MVP completo.
 
 ### Decisiones ya tomadas
 
 - **Nombre:** Productividad Ori.
 - **Uso:** personal, no para clientes ni venta — pero **sí se sube a internet** (no se queda solo local), con backup en la nube. El usuario dudó primero entre no publicarla ("es solo para mí") y publicarla privadamente; la decisión final fue subirla igual.
-- **Cuentas de Supabase/Netlify:** **todavía no decidido.** El usuario quiere primero ver la app funcionando (`mostrámela por web`) antes de decidir si usa las mismas cuentas ya existentes (`webdelhotelcom` en GitHub/Netlify) o cuentas nuevas separadas. No asumir ninguna de las dos hasta que lo confirme.
+- **Supabase:** proyecto nuevo (`productividad-ori`) dentro de la misma cuenta/organización que ya tiene Software EYO, pero separado — nunca se mezclan los datos personales con los del hotel. Ya creado y en uso.
+- **Netlify:** cuenta nueva y separada de `webdelhotelcom` (la que aloja el panel real de Software EYO) — decisión explícita del usuario para que esta app personal nunca pueda, agotando créditos gratis compartidos, pausar el sitio del hotel. Todavía no creada; mientras tanto se trabaja en local con `npm run dev`.
 - **Repositorio:** separado del de Software EYO (`D:\Ori\EYO`) — carpeta y repo propios. Por defecto, privado (es una app personal), a confirmar cuando se suba de verdad.
 - **Documentación:** en `docs/obsidian` del repo de Software EYO (esta misma carpeta), no en la bóveda real de Obsidian (`D:\Ori\Obsidian`) — decisión explícita del usuario al preguntarle, pese a que esa bóveda real tiene un sistema de organización más completo por producto. Ver la nota de abajo.
 
