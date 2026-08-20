@@ -2,6 +2,8 @@
 
 **Panel en vivo:** https://dashing-conkies-92cb00.netlify.app (hosting gratis en Netlify, conectado al proyecto real de Supabase, plan Free).
 
+**Página comercial en vivo:** https://software-eyo.netlify.app (`index.html` + `software.html`, sitio Netlify aparte del panel — mismo repositorio, otro proyecto de hosting, para no arriesgar el panel real con cada cambio de contenido).
+
 Sistema real multi-cliente (multi-tenant) de gestión de alojamientos y hotelería: cada cliente (tenant) tiene sus propios datos, separados por `tenant_id` y protegidos por Row Level Security (RLS) de PostgreSQL — nunca solo por el navegador. Reemplaza a la demo original en localStorage.
 
 ## Estructura del repositorio
@@ -27,13 +29,15 @@ EYO/
     obsidian/               → base de conocimiento del proyecto (arquitectura, historia, decisiones) — abrí esta carpeta como vault en Obsidian, o empezá por docs/obsidian/00-Indice.md.
   .env.example            → referencia de las variables necesarias (ver docs/supabase-setup.md).
 
-  # Demo y sitio comercial originales — HISTÓRICOS, no se editan más.
-  # Quedan como referencia hasta que se decida retirarlos del todo.
+  index.html               → página comercial (landing), publicada en https://software-eyo.netlify.app
+  software.html            → página comercial (funciones y precios), publicada en https://software-eyo.netlify.app/software.html
+  assets/images/           → imágenes de la página comercial (og-cover.jpg, etc.)
+
+  # Demo original — HISTÓRICA, no se edita más.
+  # Queda como referencia hasta que se decida retirarla del todo.
   Panel-EYO-Plan-Hotel (7).html
   Panel-EYO-Plan-Profesional (4).html
   Panel-EYO-Plan-Inicial (5).html
-  index (21).html
-  software (8).html
   LEEME (2).md            → instrucciones de la demo vieja (localStorage). Ver el aviso al principio de ese archivo.
 ```
 
