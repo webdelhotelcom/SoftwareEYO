@@ -165,14 +165,16 @@ Las 12 funcionalidades pedidas para después del MVP, todas construidas y verifi
 
 Publicado en producción: https://productividad-ori.netlify.app
 
-### Notas del día (agregado después de Fase 2, 2026-08-20)
+### "Agregar tarea al día" en el Calendario (agregado después de Fase 2, 2026-08-20)
 
-Pedido del usuario después de ver la app terminada: quería algo tipo "notas" para anotar pendientes del día, más libre que Tareas (que exige prioridad/estado) y sin necesidad de horario como una Actividad. Se definió con el usuario (opción elegida entre 3) que fueran **notas por día**, no una lista general tipo Keep.
+Pedido del usuario después de ver la app terminada: quería algo tipo "notas" para anotar pendientes del día. Primera versión implementada: notas de texto libre por día (tabla `daily_notes`). **El usuario la probó y la rechazó explícitamente** — no quería escribir un párrafo suelto, quería apretar un botón y cargar una tarea con horario (de tal hora a tal hora). Se sacó `daily_notes` por completo (tabla incluida, migración `0010`) y se reemplazó por esto:
 
-- Tabla nueva `daily_notes` (`user_id` + `note_date` único, `content` de texto libre), RLS estándar.
-- Vive en la vista **Día** del calendario, debajo de la grilla de horarios — un cuadro de texto que se guarda solo al salir del campo (blur) si el contenido cambió, con indicador "Guardando…"/"Guardado".
-- Cada día es independiente: se usa `key={noteDate}` en el componente para que React lo remonte entero al cambiar de fecha, en vez de arrastrar por error lo que había quedado escrito para otro día.
-- Verificado en vivo: escribir, guardar, recargar (persiste), cambiar de día (queda vacío, no se mezcla). Un supuesto bug apareció durante la prueba (el guardado no disparaba) pero resultó ser el entorno de prueba automatizado sin foco real de documento, no la app — confirmado disparando el evento `focusout` a mano, sin tocar código.
+- **`QuickAddActivity`**, en la vista **Día** del calendario, debajo de la grilla de horarios: botón "Agregar tarea al día" que despliega un formulario mínimo (título + desde + hasta, sin categoría/proyecto/notas — a propósito, para que sea rápido).
+- Al confirmar, crea una **Actividad real** (no una entidad nueva) con `planned_start`/`planned_end`/`planned_duration_seconds` calculados de las dos horas — aparece en la grilla del día como cualquier otra actividad. Reutiliza toda la infraestructura ya existente (estados, edición, cronómetro) en vez de duplicar lógica.
+- Validación: hora de fin tiene que ser posterior a la de inicio, con mensaje claro si no.
+- Verificado en vivo: crear una tarea con horario (aparece en el horario correcto, duración exacta), intento de horario inválido rechazado sin crear nada, 320px sin desborde con el mensaje de error visible.
+
+**Lección para recordar:** cuando un pedido usa una palabra ambigua como "notas", conviene confirmar con opciones concretas antes de construir — acá se ofrecieron 3 opciones y se eligió "notas por día", pero el usuario en realidad quería algo estructurado (horario + tarea), no texto libre. La palabra "nota" no alcanzaba para inferir eso; hizo falta la corrección explícita después de ver la primera versión funcionando.
 
 ## Prompt maestro completo (fuente original, 2026-08-20)
 
