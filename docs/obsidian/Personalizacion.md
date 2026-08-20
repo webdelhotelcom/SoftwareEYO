@@ -1,8 +1,10 @@
 # Personalización por cuenta
 
-Ver también: [[00-Indice]] · [[Arquitectura]] · [[Seguridad]] · [[Estado-actual]]
+Ver también: [[00-Indice]] · [[Arquitectura]] · [[Seguridad]] · [[Estado-actual]] · [[Centro-de-Configuracion]]
 
 Agregado el 2026-08-02: cada cliente puede personalizar el nombre comercial, dos colores y un logo propio, sin tocar código. Esta nota documenta la decisión técnica, la estructura de datos, el almacenamiento y la seguridad — el detalle de uso normal (cómo cambiarlo desde el panel) no hace falta documentarlo acá, es autoexplicativo en la página de Ajustes.
+
+> **Actualización 2026-08-18 (Fase 3 — ver [[Centro-de-Configuracion]]):** los selectores de **color** (principal y de menú lateral) se **retiraron de la interfaz** — Ajustes → General quedó solo con nombre comercial y logo. El motivo: el nuevo sistema de modo oscuro/claro/sistema (por usuario) necesitaba que el acento de marca y el fondo de la app no compitieran por la misma variable CSS sin control. `sidebar_color` dejó de aplicarse por completo (el menú lateral siempre sigue el fondo del tema activo). Un `primary_color` guardado de una configuración vieja **sigue aplicándose como acento** si pasa un chequeo de contraste contra sus usos reales (texto de botón, link, badge) para el tema activo — si no pasa, se usa el acento por defecto del tema en su lugar, sin tocar el valor guardado en Supabase. El resto de esta nota (estructura de datos, storage del logo, RLS) sigue vigente tal cual — la tabla `tenant_settings` no cambió de forma, `primary_color`/`sidebar_color` solo dejaron de ser editables desde la UI.
 
 ## Decisión técnica
 

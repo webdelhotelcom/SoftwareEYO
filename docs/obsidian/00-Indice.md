@@ -10,8 +10,13 @@ Esto **no reemplaza** la documentación operativa de `docs/` (cómo instalar, c�
 - [[Modulos]] — los 20 módulos de negocio y en qué migración SQL nació cada uno.
 - [[Seguridad]] — el modelo de permisos, RLS, XSS, headers — resumen de alto nivel (el detalle está en `docs/permisos.md`).
 - [[Historia-y-decisiones]] — línea de tiempo del proyecto y por qué se tomó cada decisión importante.
-- [[Personalizacion]] — nombre comercial, colores y logo por cuenta: decisión técnica, estructura de datos y seguridad.
+- [[Personalizacion]] — nombre comercial, colores y logo por cuenta: decisión técnica, estructura de datos y seguridad. **Los colores se retiraron en Fase 3** — ver [[Centro-de-Configuracion]].
 - [[Inteligencia-de-Precios]] — módulo beta (solo Plan Hotel): comparación de precios de mercado, similitud de competidores, motor de recomendación.
+- [[Modo-Propietario-Conexion-Reservas]] — plan técnico aprobado (v5), renombrar modos, simplificar Modo Propietario, conectar Reservas con Recepción/Habitaciones/Limpieza/Mantenimiento/Caja, con Modo Administrador intacto.
+- [[Login-Externo-Google-Microsoft]] — "Continuar con Google/Microsoft" vía Supabase Auth: código listo pero **pausado y oculto**, trancado en la configuración de Google Cloud Console/Microsoft Entra ID.
+- [[Centro-de-Configuracion]] — Fase 3: Ajustes reorganizado en 10 categorías (maestro-detalle), modo oscuro/claro/sistema por usuario, Usuarios y Auditoría reparentadas adentro, Idioma (Beta), Centro de Ayuda con 25 artículos, legales. En Deploy Preview, pendiente de aprobación en producción.
+- [[Finalizacion-Automatica-Reservas]] — `pg_cron` diario que pasa a "Finalizada" toda reserva vencida (excepto canceladas), sin intervención manual — ya activo en producción.
+- [[Web-EYO-Sitio-Personal]] — proyecto aparte (no es Software EYO): el sitio personal de Orieles (`D:\Ori\webeyo`). Migrado a una cuenta de GitHub nueva por problema de permisos con la original; contenido, fotos y arreglo responsive actualizados 2026-08-20.
 - [[Estado-actual]] — qué está terminado, qué está pendiente, a la fecha de esta nota.
 - [[Glosario]] — términos técnicos del proyecto explicados en una línea.
 
