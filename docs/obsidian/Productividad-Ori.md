@@ -10,7 +10,18 @@ Un "sistema operativo personal" para administrar el tiempo: **Planificar → Eje
 
 ## Estado (2026-08-20)
 
-**Pendiente de empezar.** Se guardó el prompt maestro completo del usuario (más abajo) y se está armando el plan de desarrollo por fases antes de escribir código, siguiendo la instrucción explícita del usuario de no generar todo el proyecto de una vez.
+**Fase 1 en curso — scaffold listo y verificado en vivo.** Repo local creado en `D:\Ori\productividad-ori` (Next.js App Router + TypeScript + Tailwind CSS v4 + `@supabase/ssr`), con:
+
+- Sistema de diseño (tokens de color claro/oscuro, tarjetas, barras de progreso) y layout responsive: sidebar en escritorio, barra inferior en celular con botón central "+".
+- Modo claro/oscuro con toggle persistente (`localStorage`) y sin parpadeo (script inline antes del primer paint) — se encontró y corrigió un error real de hidratación de React durante la verificación (el estado inicial del toggle no coincidía entre servidor y cliente cuando ya había un tema guardado).
+- Tipos TypeScript de las 15 entidades del prompt maestro (`src/types/database.ts`).
+- Cliente de Supabase preparado (`src/lib/supabase/`), pero **sin credenciales todavía** — la app detecta que no está configurado y muestra datos de demostración con un aviso visible, en vez de fallar.
+- Dashboard principal construido siguiendo el mockup exacto del prompt maestro (sección 101): actividad activa con cronómetro en vivo, próxima actividad, objetivo diario con barra de progreso, resumen del día por categoría, listado cronológico con estados.
+- Rutas placeholder para Calendario, Estadísticas, Objetivos, Gimnasio y Perfil (cada una indica en qué fase se construye).
+- Verificado en el navegador: carga sin errores de consola, responsive en 375px sin desborde horizontal, modo oscuro aplica bien, lint y `tsc --noEmit` limpios.
+- Primer commit hecho en el repo local (todavía sin remoto en GitHub — se decide junto con las cuentas de Supabase/Netlify, ver abajo).
+
+Siguiente paso inmediato: crear el proyecto de Supabase (falta que el usuario lo haga y pase las credenciales) para arrancar el resto de la Fase 1 (Auth + esquema real + RLS).
 
 ### Decisiones ya tomadas
 
