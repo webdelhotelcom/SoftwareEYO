@@ -208,6 +208,9 @@ main{padding-top:var(--header-h);}
   background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
   padding:24px;box-shadow:var(--shadow);
 }
+.custom-dev-callout{margin-top:28px;text-align:center;}
+.custom-dev-callout h3{margin-top:0;}
+.custom-dev-callout p{max-width:56em;margin-left:auto;margin-right:auto;}
 .card-dark{
   background:var(--navy-surface);border:1px solid var(--border-dark);border-radius:var(--radius-lg);
   padding:24px;color:var(--text-light);
@@ -302,6 +305,28 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--danger
 .video-facade .play svg{width:28px;height:28px;margin-left:4px;}
 .video-facade .vf-label{font-size:1rem;font-weight:600;color:#fff;}
 .video-facade .vf-sub{font-size:.86rem;color:var(--text-light-secondary);}
+
+/* Biblioteca de videos (grilla) */
+.video-lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:24px;}
+.video-lib-card{
+  position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;box-shadow:var(--shadow-sm);min-height:150px;display:flex;flex-direction:column;
+}
+.video-lib-card h4{margin:8px 0 4px;font-size:.95rem;color:var(--navy);}
+.video-lib-card p{margin:0;font-size:.82rem;color:var(--text-secondary);line-height:1.45;}
+.video-lib-play{
+  width:44px;height:44px;border-radius:50%;background:var(--orange);color:#0A1826;border:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:transform .2s ease;flex-shrink:0;
+}
+.video-lib-play:hover{transform:scale(1.08);}
+.video-lib-play svg{width:18px;height:18px;margin-left:2px;}
+.video-lib-card.pending{background:var(--background);}
+.video-lib-soon{
+  display:flex;align-items:center;gap:8px;font-size:.78rem;font-weight:600;color:var(--text-secondary);
+  opacity:.7;
+}
+.video-lib-soon span{background:var(--border);padding:3px 9px;border-radius:20px;}
+.video-lib-iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:8px;}
 
 /* ---------- 7. BLOQUES ESPECÍFICOS --------------------------------------- */
 /* HERO */
@@ -698,34 +723,28 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   <section class="section-soft" id="video-completo">
     <div class="wrap">
       <div class="sec-head center">
-        <p class="eyebrow">Demostración completa</p>
-        <h2>Recorrido del sistema</h2>
-        <p>Un recorrido de 3 a 5 minutos por cada módulo del software.</p>
+        <p class="eyebrow">Demostración</p>
+        <h2>Mirá Software EYO en 30 segundos</h2>
+        <p>Lo que ves es una demostración real. Tu software puede quedar más simple, más completo o funcionar distinto.</p>
       </div>
 
       <!-- PARA CARGAR EL VIDEO: ver instrucciones en index.html (mismo método) -->
-      <div class="video-frame" data-video-yt="PEGAR_ID_YOUTUBE" data-video-name="Demostración completa">
-        <button class="video-facade" type="button" aria-label="Reproducir la demostración completa del software">
+      <div class="video-frame" data-video-yt="PEGAR_ID_YOUTUBE" data-video-name="Demostración 30 segundos">
+        <button class="video-facade" type="button" aria-label="Reproducir la demostración de 30 segundos">
           <span class="play" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </span>
-          <span class="vf-label">Demostración completa</span>
-          <span class="vf-sub">Recorrido por todos los módulos</span>
+          <span class="vf-label">Demostración de 30 segundos</span>
+          <span class="vf-sub">Un pantallazo rápido del panel</span>
         </button>
       </div>
 
-      <h3 class="mt-32">Capítulos del video</h3>
-      <div class="grid grid-3 mt-24">
-        <div class="card-light"><ol style="padding-left:18px;list-style:decimal;color:var(--text-secondary);font-size:.92rem;line-height:2">
-          <li>Panel principal</li><li>Calendario</li><li>Reservas</li><li>Huéspedes</li>
-        </ol></div>
-        <div class="card-light"><ol start="5" style="padding-left:18px;list-style:decimal;color:var(--text-secondary);font-size:.92rem;line-height:2">
-          <li>Señas y saldos</li><li>Ingresos y gastos</li><li>Propietarios</li>
-        </ol></div>
-        <div class="card-light"><ol start="8" style="padding-left:18px;list-style:decimal;color:var(--text-secondary);font-size:.92rem;line-height:2">
-          <li>Reportes</li><li>Usuarios</li><li>Vista móvil</li>
-        </ol></div>
+      <div class="sec-head center mt-32">
+        <p class="eyebrow">Biblioteca</p>
+        <h2>Conocé cada parte del software</h2>
+        <p>Un video corto por módulo. Los que todavía no están grabados se muestran como "Próximamente" — no son funciones inexistentes, es contenido en camino.</p>
       </div>
+      <div class="video-lib-grid" id="video-library-grid"></div>
     </div>
   </section>
 
@@ -946,6 +965,45 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
           </ul>
         </article>
 
+        <article class="func-cat">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>Hotelería (Plan Hotel)</h3>
+          <ul>
+            <li><b>Recepción.</b> Check-in y check-out del día en un vistazo.</li>
+            <li><b>Habitaciones y tipos.</b> Estado de cada una: libre, ocupada, en limpieza.</li>
+            <li><b>Housekeeping.</b> Tareas de limpieza asignadas por habitación.</li>
+            <li><b>Mantenimiento.</b> Tickets de arreglos con seguimiento.</li>
+            <li><b>Caja y turnos.</b> Apertura, cierre y arqueo, con operadores identificados por PIN.</li>
+            <li><b>Reportes hoteleros.</b> Indicadores propios de la operación hotelera.</li>
+          </ul>
+        </article>
+
+        <article class="func-cat">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11z"/></svg>Seguridad y datos</h3>
+          <ul>
+            <li><b>Auditoría.</b> Quién creó, editó o borró cada registro, y cuándo.</li>
+            <li><b>Copias de seguridad.</b> Backup completo y también por módulo, cuando lo necesitás.</li>
+            <li><b>Aislamiento por cuenta.</b> Los datos de tu cuenta nunca se mezclan con los de otro cliente.</li>
+            <li><b>Migración.</b> Ayuda para pasar tus datos existentes al sistema.</li>
+          </ul>
+        </article>
+
+        <article class="func-cat">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.5 6.5L21 9l-5 4.5 1.5 7L12 17l-5.5 3.5L8 13.5 3 9l6.5-.5z"/></svg>Personalización</h3>
+          <ul>
+            <li><b>Marca y colores propios.</b> El panel se ve con tu identidad.</li>
+            <li><b>Campos a medida.</b> Información específica de tu operación.</li>
+            <li><b>Módulos configurables.</b> Se activa lo que usás; lo que no necesitás, se puede sacar.</li>
+          </ul>
+        </article>
+
+        <article class="func-cat">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Pre-facturación y mercado</h3>
+          <ul>
+            <li><b>Pre-facturación.</b> Comprobante interno antes de la salida del huésped (no reemplaza la facturación electrónica DGI).</li>
+            <li><b>Mercado EYO.</b> Compara tus precios contra el mercado de tu zona (beta, Plan Hotel).</li>
+          </ul>
+        </article>
+
       </div>
     </div>
   </section>
@@ -955,34 +1013,28 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
     <div class="wrap">
       <div class="sec-head">
         <p class="eyebrow">Personalización</p>
-        <h2>Adaptado a la forma de trabajar de tu alojamiento</h2>
-        <p>La configuración se define con vos antes de comenzar, según el plan contratado.</p>
+        <h2>Tu operación, tu software</h2>
+        <p style="color:var(--text-light-secondary)">No tenés que adaptar tu negocio al software. Adaptamos el software a tu negocio. Partimos de la plataforma que ves en esta demostración — real, ya desarrollada y probada — y la configuramos según cómo trabajás vos, no al revés.</p>
       </div>
 
       <div class="grid grid-3">
         <div class="card-dark">
-          <h3>Identidad y estructura</h3>
-          <ul class="mt-0" style="color:var(--text-light-secondary);font-size:.92rem;line-height:2">
-            <li>Marca y colores</li><li>Propiedades</li><li>Habitaciones</li>
-          </ul>
+          <h3>¿Te sobra algo?</h3>
+          <p style="color:var(--text-light-secondary);font-size:.92rem">Si no necesitás Propietarios, por ejemplo, ese módulo se puede sacar. No pagás ni ves lo que no usás.</p>
         </div>
         <div class="card-dark">
-          <h3>Datos y accesos</h3>
-          <ul style="color:var(--text-light-secondary);font-size:.92rem;line-height:2">
-            <li>Campos de información</li><li>Usuarios</li><li>Permisos</li>
-          </ul>
+          <h3>¿Te falta algo?</h3>
+          <p style="color:var(--text-light-secondary);font-size:.92rem">Si necesitás información especial, se agregan campos propios. Si tenés distintos tipos de usuario, se crean permisos a medida.</p>
         </div>
         <div class="card-dark">
-          <h3>Trabajo diario</h3>
-          <ul style="color:var(--text-light-secondary);font-size:.92rem;line-height:2">
-            <li>Reportes</li><li>Tipos de cobro</li><li>Información específica</li>
-          </ul>
+          <h3>¿Tenés un caso particular?</h3>
+          <p style="color:var(--text-light-secondary);font-size:.92rem">Por ejemplo: un alojamiento con restaurante puede cotizar una función que conecte el consumo del restaurante con la cuenta del huésped. Si tu caso no está en la demostración, se analiza y se presupuesta — no se inventa que ya existe.</p>
         </div>
       </div>
 
       <p class="mt-32" style="color:var(--text-light-secondary)">
-        Software EYO parte de una plataforma ya desarrollada. Las funciones especiales, nuevas integraciones o
-        desarrollos fuera del alcance del plan se cotizan por separado.
+        Software EYO parte de una plataforma ya desarrollada, no de un desarrollo desde cero. Las funciones especiales, nuevas integraciones o
+        desarrollos fuera del alcance del plan se analizan y se cotizan por separado — ver <a href="#comparacion" style="color:var(--orange)">Desarrollo Personalizado</a>.
       </p>
     </div>
   </section>
@@ -1001,6 +1053,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
         <button class="plan-tab" type="button" role="tab" aria-selected="true" data-plan="inicial">Inicial</button>
         <button class="plan-tab" type="button" role="tab" aria-selected="false" data-plan="profesional">Profesional</button>
         <button class="plan-tab" type="button" role="tab" aria-selected="false" data-plan="hotel">Hotel</button>
+        <button class="plan-tab" type="button" role="tab" aria-selected="false" data-plan="personalizado">A medida</button>
       </div>
 
       <!-- Paneles (se muestran en celular) -->
@@ -1015,7 +1068,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
           <ul>
             <li>Hasta 5 alojamientos</li><li>Un usuario</li><li>Calendario y reservas</li><li>Huéspedes</li>
             <li>Señas y saldos</li><li>Ingresos y gastos</li><li>Configuración inicial</li><li>Capacitación</li>
-            <li>Corrección de errores durante 30 días</li>
+            <li>Garantía técnica de hasta 2 años</li>
             <li class="li-extra">Página web y Perfil de Empresa en Google: disponibles como adicional</li>
           </ul>
           <button class="btn btn-secondary-light btn-block" type="button" data-wa="inicial">Consultar Plan Inicial</button>
@@ -1027,15 +1080,15 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
           <span class="badge badge-orange plan-badge">Más elegido</span>
           <h3>Plan Profesional</h3>
           <div class="price">
-            <span class="usd" data-usd="300"></span>
-            <span class="uyu" data-uyu="300"></span>
+            <span class="usd" data-usd="500"></span>
+            <span class="uyu" data-uyu="500"></span>
           </div>
           <ul>
             <li>Hasta 15 alojamientos</li><li>Varios usuarios</li><li>Roles y permisos</li><li>Gestión de propietarios</li>
             <li>Comisiones y depósitos</li><li>Finanzas avanzadas</li><li>Reportes</li>
             <li class="li-included">Página web profesional <b>incluida</b></li><li class="li-included">Perfil de Empresa en Google <b>incluido</b></li>
             <li>Personalización básica</li>
-            <li>Configuración y capacitación</li><li>Corrección de errores durante 60 días</li>
+            <li>Configuración y capacitación</li><li>Garantía técnica de hasta 2 años</li>
           </ul>
           <button class="btn btn-primary btn-block" type="button" data-wa="profesional">Consultar Plan Profesional</button>
         </div>
@@ -1045,19 +1098,40 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
         <div class="plan">
           <h3>Plan Hotel</h3>
           <div class="price">
-            <span class="usd">Desde <span data-usd="500" data-prefix="no">500</span> USD</span>
-            <span class="uyu">Desde <span data-uyu="500" data-prefix="no"></span> UYU</span>
+            <span class="usd">Desde <span data-usd="750" data-prefix="no">750</span> USD</span>
+            <span class="uyu">Desde <span data-uyu="750" data-prefix="no"></span> UYU</span>
             <span class="note">Cotización según cantidad de habitaciones, usuarios, funciones e integraciones.</span>
           </div>
           <ul>
             <li class="li-included">Incluye <b>todo el Plan Profesional</b></li>
-            <li>Gestión de habitaciones</li><li>Múltiples usuarios</li><li>Roles y permisos</li><li>Operación de recepción</li>
-            <li>Finanzas</li><li>Limpieza</li><li>Reportes</li>
+            <li>Recepción (check-in / check-out)</li><li>Habitaciones y tipos de habitación</li><li>Limpieza / housekeeping</li><li>Mantenimiento</li>
+            <li>Caja y turnos, operadores con PIN</li><li>Reportes hoteleros</li><li>Auditoría</li>
             <li class="li-included">Página web del hotel <b>incluida</b></li><li class="li-included">Perfil de Empresa en Google <b>incluido</b></li>
             <li>Configuración personalizada</li>
-            <li>Capacitación</li><li>Corrección de errores durante 90 días</li>
+            <li>Capacitación</li><li>Garantía técnica de hasta 2 años</li>
           </ul>
           <button class="btn btn-secondary-light btn-block" type="button" data-wa="hotel">Solicitar cotización Hotel</button>
+        </div>
+      </div>
+
+      <div class="plan-panel" data-plan="personalizado">
+        <div class="plan">
+          <h3>Desarrollo Personalizado</h3>
+          <p class="plan-for">Para proyectos que necesitan muchas funciones, automatizaciones, integraciones o flujos especiales fuera de lo que muestra la demostración.</p>
+          <div class="price">
+            <span class="usd">Desde <span data-usd="1000" data-prefix="no">1.000</span> USD</span>
+            <span class="uyu">Desde <span data-uyu="1000" data-prefix="no"></span> UYU</span>
+            <span class="note">El precio final se define después de analizar el alcance. No se cotiza solo por cantidad de funciones.</span>
+          </div>
+          <ul>
+            <li>Análisis de tu operación completo</li>
+            <li>Módulos, campos y reportes a medida</li>
+            <li>Integraciones especiales</li>
+            <li>Automatizaciones propias</li>
+            <li>Todo lo del Plan Hotel como base</li>
+            <li>Garantía técnica de hasta 2 años</li>
+          </ul>
+          <button class="btn btn-secondary-light btn-block" type="button" data-wa="personalizado">Consultar desarrollo personalizado</button>
         </div>
       </div>
 
@@ -1069,7 +1143,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
             <tr><th scope="col">Incluye</th><th scope="col">Inicial</th><th scope="col">Profesional</th><th scope="col">Hotel</th></tr>
           </thead>
           <tbody>
-            <tr><th scope="row">Precio (pago único)</th><td><span data-usd="150"></span></td><td><span data-usd="300"></span></td><td>Desde <span data-usd="500" data-prefix="no">500</span> USD</td></tr>
+            <tr><th scope="row">Precio (pago único)</th><td><span data-usd="150"></span></td><td><span data-usd="500"></span></td><td>Desde <span data-usd="750" data-prefix="no">750</span> USD</td></tr>
             <tr><th scope="row">Alojamientos o habitaciones</th><td>Hasta 5</td><td>Hasta 15</td><td>Según cotización</td></tr>
             <tr><th scope="row">Usuarios</th><td>1</td><td>Varios</td><td>Múltiples</td></tr>
             <tr><th scope="row">Calendario y disponibilidad</th><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
@@ -1093,10 +1167,21 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
             <tr><th scope="row">Mantenimiento</th><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
             <tr><th scope="row">Reportes hoteleros (ADR, RevPAR)</th><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
             <tr><th scope="row">Pre-facturación (comprobante interno)</th><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+            <tr><th scope="row">Operadores con PIN</th><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+            <tr><th scope="row">Auditoría (historial de cambios)</th><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+            <tr><th scope="row">Copias de seguridad (completas y por módulo)</th><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+            <tr><th scope="row">Mercado EYO (comparación de precios)</th><td class="no">—</td><td class="no">—</td><td>Según cotización</td></tr>
+            <tr><th scope="row">Apariencia y marca propia</th><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td></tr>
             <tr><th scope="row">Personalización</th><td>Configuración inicial</td><td>Básica</td><td>Personalizada</td></tr>
-            <tr><th scope="row">Corrección de errores</th><td>30 días</td><td>60 días</td><td>90 días</td></tr>
+            <tr><th scope="row">Garantía técnica</th><td>Hasta 2 años</td><td>Hasta 2 años</td><td>Hasta 2 años</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="card-light custom-dev-callout">
+        <h3>¿Necesitás algo que no está en esta tabla?</h3>
+        <p class="muted">El precio no depende solo de cuántas funciones tenga tu plan — una función simple y una integración compleja no representan el mismo trabajo. Si tu operación necesita muchos módulos, automatizaciones o integraciones especiales, existe el <b>Desarrollo Personalizado</b>, desde <span data-usd="1000" data-prefix="no">1.000</span> USD, con el alcance definido después de analizar tu caso.</p>
+        <button class="btn btn-secondary-light" type="button" data-wa="personalizado">Consultar desarrollo personalizado</button>
       </div>
 
       <div class="clarifications">
@@ -1130,7 +1215,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
         <div class="flow-item"><div class="f-dot">4</div><h3>Pruebas</h3><p>Verificamos el funcionamiento antes de la entrega.</p></div>
         <div class="flow-item"><div class="f-dot">5</div><h3>Capacitación</h3><p>Te mostramos cómo usar cada módulo que vas a necesitar.</p></div>
         <div class="flow-item"><div class="f-dot">6</div><h3>Entrega</h3><p>Recibís el software funcionando y abonás el 50% restante.</p></div>
-        <div class="flow-item"><div class="f-dot">7</div><h3>Período de corrección de errores</h3><p>30, 60 o 90 días según el plan contratado.</p></div>
+        <div class="flow-item"><div class="f-dot">7</div><h3>Garantía técnica</h3><p>Hasta 2 años sobre errores de las funciones entregadas.</p></div>
       </div>
 
       <p class="muted mt-24">El plazo se define según el plan y el nivel de personalización. Lo acordamos por escrito antes de comenzar.</p>
@@ -1142,14 +1227,18 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
     <div class="wrap">
       <div class="sec-head">
         <p class="eyebrow">Transparencia</p>
-        <h2>Soporte, hosting y mantenimiento</h2>
-        <p>Son cosas distintas y conviene tenerlas claras antes de contratar.</p>
+        <h2>Licencia, hosting y costos recurrentes</h2>
+        <p>No existe una mensualidad obligatoria por la licencia de Software EYO. Si una configuración necesita infraestructura, dominio, hosting, servicios externos o consumo adicional con costo recurrente, se informa antes de comenzar — nunca después. Son conceptos distintos y conviene tenerlos claros antes de contratar.</p>
       </div>
 
-      <div class="grid grid-2">
+      <div class="grid grid-3">
         <div class="concept included">
-          <h3>Corrección de errores</h3>
-          <p>Si una función incluida y entregada no trabaja como se acordó, la corregimos. Incluida durante el período de tu plan (30, 60 o 90 días).</p>
+          <h3>Licencia</h3>
+          <p>Pago único por el software configurado según tu plan. No es una suscripción ni tiene mensualidad obligatoria.</p>
+        </div>
+        <div class="concept included">
+          <h3>Garantía técnica</h3>
+          <p>Si una función incluida y entregada no trabaja como se acordó, la corregimos sin costo — hasta 2 años. No cubre funciones nuevas, modificaciones pedidas después, integraciones, rediseños ni cambios de alcance.</p>
         </div>
         <div class="concept">
           <h3>Soporte</h3>
@@ -1157,19 +1246,23 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
         </div>
         <div class="concept extra">
           <h3>Hosting</h3>
-          <p>El servidor necesario para acceder desde internet. Es un servicio externo con costo propio, que te informamos antes de contratar.</p>
+          <p>El servidor necesario para acceder desde internet. Es un servicio externo, con costo propio si corresponde, que te informamos antes de contratar.</p>
+        </div>
+        <div class="concept extra">
+          <h3>Dominio</h3>
+          <p>Si tu configuración incluye una dirección web propia, el dominio es un servicio externo con costo anual, a tu nombre.</p>
         </div>
         <div class="concept extra">
           <h3>Mantenimiento</h3>
-          <p>Actualizaciones, revisiones y tareas técnicas posteriores. Se cotiza aparte cuando corresponda.</p>
+          <p>Actualizaciones, revisiones y tareas técnicas posteriores a la entrega. Se cotiza aparte cuando corresponda.</p>
         </div>
         <div class="concept extra">
           <h3>Nuevas funciones</h3>
           <p>Cambios o desarrollos solicitados después de la entrega. Se analizan y presupuestan por separado.</p>
         </div>
-        <div class="concept">
-          <h3>Costos recurrentes</h3>
-          <p>Si tu configuración necesita algún servicio con costo mensual, te lo informamos antes de comenzar, no después.</p>
+        <div class="concept extra">
+          <h3>Servicios externos</h3>
+          <p>Cualquier proveedor de terceros que tu configuración necesite (pasarela de pago, SMS, almacenamiento adicional, etc.) puede tener su propio costo, informado antes de contratarlo.</p>
         </div>
       </div>
     </div>
@@ -1205,7 +1298,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
       </div>
 
       <div class="grid grid-3">
-        <div class="card-light"><h3>Página web</h3><p class="muted"><b>Incluida desde el Plan Profesional.</b> En el Plan Inicial se contrata como adicional: una web para tu alojamiento con tus fotos, tu información y botón de WhatsApp. El dominio y el hosting son servicios externos con costo propio.</p></div>
+        <div class="card-light"><h3>Página web</h3><p class="muted"><b>Incluida desde el Plan Profesional.</b> En el Plan Inicial se contrata como adicional: una web para tu alojamiento con tus fotos, tu información y botón de WhatsApp. Como servicio independiente, una web completa y personalizada se cotiza aproximadamente desde <span data-usd="400" data-prefix="no">400</span> USD según el alcance. El dominio y el hosting son servicios externos con costo propio, sin garantía de gratuidad permanente.</p></div>
         <div class="card-light"><h3>Mejora y optimización digital de fotografías</h3><p class="muted">Trabajamos el encuadre, la luz, el color y la nitidez de las fotos de tu alojamiento. No incluye una sesión con fotógrafo profesional. <a class="btn-link" href="#fotos-ejemplo">Ver un ejemplo →</a></p></div>
         <div class="card-light"><h3>Perfil de Empresa en Google</h3><p class="muted"><b>Incluido desde el Plan Profesional.</b> En el Plan Inicial se contrata como adicional. Creación u optimización del perfil, sujeto al proceso de verificación de Google: no se garantiza una posición determinada en los resultados.</p></div>
         <div class="card-light"><h3>Presencia digital</h3><p class="muted">Orden y coherencia entre tu web, tus fotos y tus datos de contacto.</p></div>
@@ -1256,6 +1349,14 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
           <button class="accordion-btn" type="button" aria-expanded="false">¿Cómo se calculan los valores en UYU? <span class="acc-ico" aria-hidden="true">+</span></button>
           <div class="accordion-panel"><p>Los precios se definen en USD. Los valores en UYU son de referencia y se calculan con un tipo de cambio de USD 1 = UYU <span data-rate>41</span>. No se actualizan automáticamente con la cotización del día.</p></div>
         </div>
+        <div class="accordion-item">
+          <button class="accordion-btn" type="button" aria-expanded="false">¿Tengo que pagar una mensualidad? <span class="acc-ico" aria-hidden="true">+</span></button>
+          <div class="accordion-panel"><p>No existe una mensualidad obligatoria por la licencia de Software EYO: es un pago único. Si tu configuración necesita infraestructura, dominio, hosting, servicios externos o algún consumo adicional con costo recurrente, te lo informamos antes de comenzar, no después.</p></div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-btn" type="button" aria-expanded="false">¿Cómo se calcula el precio de mi plan? <span class="acc-ico" aria-hidden="true">+</span></button>
+          <div class="accordion-panel"><p>No es solo por cantidad de alojamientos. El precio depende de la complejidad real de tu operación: cuántos módulos necesitás, qué tan personalizados son los campos y reportes, si hay automatizaciones o integraciones especiales, y cuántos usuarios con permisos distintos va a tener el sistema. Por eso el presupuesto se ajusta después de conversar sobre tu caso, no antes.</p></div>
+        </div>
       </div>
 
       <h3 class="mt-32">Instalación y uso</h3>
@@ -1284,26 +1385,42 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
           <button class="accordion-btn" type="button" aria-expanded="false">¿Puedo pedir funciones nuevas más adelante? <span class="acc-ico" aria-hidden="true">+</span></button>
           <div class="accordion-panel"><p>Sí. Se analizan y se cotizan por separado, indicando el costo y el plazo antes de comenzar.</p></div>
         </div>
+        <div class="accordion-item">
+          <button class="accordion-btn" type="button" aria-expanded="false">¿Todos los clientes tienen exactamente las mismas funciones? <span class="acc-ico" aria-hidden="true">+</span></button>
+          <div class="accordion-panel"><p>No. Lo que ves en esta página es la demostración de la plataforma base. Cada cliente puede tener menos funciones (si algo no le sirve, se saca), más funciones, o módulos y campos distintos según su operación real. La demo muestra lo que la plataforma es capaz de hacer hoy, no un paquete cerrado igual para todos.</p></div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-btn" type="button" aria-expanded="false">¿Puedo pedir una función que no está en esta demo? <span class="acc-ico" aria-hidden="true">+</span></button>
+          <div class="accordion-panel"><p>Sí. Cualquier función que no exista todavía en la plataforma se analiza y se cotiza como Desarrollo Personalizado — se evalúa si es viable, qué implica construirla y con qué plazo y costo, antes de confirmar nada.</p></div>
+        </div>
       </div>
 
       <h3 class="mt-32">Soporte y datos</h3>
       <div class="accordion">
         <div class="accordion-item">
-          <button class="accordion-btn" type="button" aria-expanded="false">¿El soporte está incluido para siempre? <span class="acc-ico" aria-hidden="true">+</span></button>
-          <div class="accordion-panel"><p>No. Lo que está incluido es la corrección de errores durante el período de tu plan. El soporte continuo y el mantenimiento posterior se acuerdan por separado.</p></div>
+          <button class="accordion-btn" type="button" aria-expanded="false">¿Qué incluye la garantía de 2 años? <span class="acc-ico" aria-hidden="true">+</span></button>
+          <div class="accordion-panel"><p>Cubre errores de programación donde una función entregada no funciona como fue acordada — la corregimos sin costo hasta por 2 años. No es "soporte ilimitado": no cubre funciones nuevas, modificaciones pedidas después de la entrega, integraciones nuevas, rediseños, cambios de alcance respecto de lo acordado, ni costos generados por servicios externos. Las funciones nuevas se analizan y cotizan aparte, cuando corresponda.</p></div>
         </div>
         <div class="accordion-item">
           <button class="accordion-btn" type="button" aria-expanded="false">¿Quién puede ver la información? <span class="acc-ico" aria-hidden="true">+</span></button>
           <div class="accordion-panel"><p>Cada usuario ingresa con su acceso y ve solo lo que permite su rol. La información de tu operación es tuya.</p></div>
         </div>
         <div class="accordion-item">
+          <button class="accordion-btn" type="button" aria-expanded="false">¿A quién le pertenecen mis datos? <span class="acc-ico" aria-hidden="true">+</span></button>
+          <div class="accordion-panel"><p>A vos. Los datos que cargás (reservas, huéspedes, propietarios, gastos, etc.) son tuyos. EYO los aloja y los protege, pero no los usa con fines propios ni los comparte con otras cuentas. Cada cliente tiene su información completamente separada de la de cualquier otro.</p></div>
+        </div>
+        <div class="accordion-item">
           <button class="accordion-btn" type="button" aria-expanded="false">¿Puedo exportar mis datos? <span class="acc-ico" aria-hidden="true">+</span></button>
-          <div class="accordion-panel"><p>Sí. El sistema permite exportar información y generar copias de seguridad.</p></div>
+          <div class="accordion-panel"><p>Sí. El sistema permite exportar información y generar copias de seguridad en cualquier momento.</p></div>
         </div>
       </div>
 
       <h3 class="mt-32">Servicios adicionales</h3>
       <div class="accordion">
+        <div class="accordion-item">
+          <button class="accordion-btn" type="button" aria-expanded="false">¿La página web y el dominio están incluidos? <span class="acc-ico" aria-hidden="true">+</span></button>
+          <div class="accordion-panel"><p>La página web propia está incluida desde el Plan Profesional; en el Plan Inicial se contrata como adicional (desde <span data-usd="400"></span>). El dominio es siempre un servicio externo, a nombre del cliente, con su propio costo si corresponde.</p></div>
+        </div>
         <div class="accordion-item">
           <button class="accordion-btn" type="button" aria-expanded="false">¿Hacen la página web del alojamiento? <span class="acc-ico" aria-hidden="true">+</span></button>
           <div class="accordion-panel"><p>Sí, como servicio adicional al software. Se cotiza aparte junto con el dominio y el hosting que necesite.</p></div>
@@ -1414,10 +1531,38 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   /* Mensajes precargados de WhatsApp */
   const WA_MESSAGES = {
     demo: 'Hola, estuve viendo Software EYO y me gustaría solicitar una demostración para mi alojamiento.',
-    inicial: 'Hola, me interesa el Plan Inicial de Software EYO por USD 150 de lanzamiento. Me gustaría solicitar una demostración.',
-    profesional: 'Hola, me interesa el Plan Profesional de Software EYO por USD 300. Me gustaría conocer cómo puede adaptarse a mi alojamiento.',
-    hotel: 'Hola, quiero solicitar una cotización del Plan Hotel de Software EYO.'
+    inicial: 'Hola, me interesa el Plan Inicial de Software EYO por USD 175. Me gustaría solicitar una demostración.',
+    profesional: 'Hola, me interesa el Plan Profesional de Software EYO por USD 500. Me gustaría conocer cómo puede adaptarse a mi alojamiento.',
+    hotel: 'Hola, quiero solicitar una cotización del Plan Hotel de Software EYO.',
+    personalizado: 'Hola, quiero consultar por un Desarrollo Personalizado de Software EYO para mi operación.'
   };
+
+  /* =======================================================================
+     BIBLIOTECA DE VIDEOS (YouTube) — ver instrucciones en index.html
+     ======================================================================= */
+  const VIDEOS = [
+    { title: 'Vista general', desc: 'Un recorrido por todo el panel.', yt: '' },
+    { title: 'Dashboard', desc: 'El resumen del día en una pantalla.', yt: '' },
+    { title: 'Calendario', desc: 'Ocupación de todos tus alojamientos.', yt: '' },
+    { title: 'Reservas', desc: 'Alta, seña, saldo y estado de cada reserva.', yt: '' },
+    { title: 'Huéspedes', desc: 'Datos y contacto de cada huésped.', yt: '' },
+    { title: 'WhatsApp', desc: 'Mensajes listos para copiar y enviar.', yt: '' },
+    { title: 'Finanzas', desc: 'Ingresos, gastos y resultado del mes.', yt: '' },
+    { title: 'Propietarios', desc: 'Comisiones y liquidaciones por propietario.', yt: '' },
+    { title: 'Reportes', desc: 'Reportes listos para descargar.', yt: '' },
+    { title: 'Recepción', desc: 'Check-in y check-out del día.', yt: '' },
+    { title: 'Habitaciones', desc: 'Estado y tipo de cada habitación.', yt: '' },
+    { title: 'Limpieza', desc: 'Tareas de housekeeping por habitación.', yt: '' },
+    { title: 'Mantenimiento', desc: 'Tickets y seguimiento de arreglos.', yt: '' },
+    { title: 'Caja y turnos', desc: 'Apertura, cierre y arqueo de caja.', yt: '' },
+    { title: 'PIN de operadores', desc: 'Acceso rápido para el equipo, sin login completo.', yt: '' },
+    { title: 'Usuarios y permisos', desc: 'Quién puede ver y hacer qué.', yt: '' },
+    { title: 'Auditoría', desc: 'Quién cambió qué y cuándo.', yt: '' },
+    { title: 'Backups', desc: 'Copias de seguridad completas y por módulo.', yt: '' },
+    { title: 'Personalización', desc: 'Marca, colores y configuración propia.', yt: '' },
+    { title: 'Mercado EYO', desc: 'Comparación de precios frente al mercado.', yt: '' },
+    { title: 'Pre-facturación', desc: 'Comprobante interno antes del check-out.', yt: '' }
+  ];
 
   /* =======================================================================
      2) ANALÍTICA (opcional)
@@ -1624,6 +1769,45 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   }
 
   /* =======================================================================
+     BIBLIOTECA DE VIDEOS: arma la grilla a partir del array VIDEOS.
+     ======================================================================= */
+  function renderVideoLibrary() {
+    const grid = document.getElementById('video-library-grid');
+    if (!grid || typeof VIDEOS === 'undefined') return;
+
+    grid.innerHTML = '';
+    VIDEOS.forEach(function (v) {
+      const card = document.createElement('div');
+      card.className = 'video-lib-card' + (v.yt ? '' : ' pending');
+
+      if (v.yt) {
+        card.innerHTML =
+          '<button class="video-lib-play" type="button" aria-label="Reproducir: ' + v.title + '">' +
+            '<span class="play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>' +
+          '</button>' +
+          '<h4>' + v.title + '</h4><p>' + v.desc + '</p>';
+
+        card.querySelector('.video-lib-play').addEventListener('click', function () {
+          track('video_play', { video: v.title });
+          const iframe = document.createElement('iframe');
+          iframe.src = 'https://www.youtube-nocookie.com/embed/' + v.yt + '?autoplay=1&rel=0';
+          iframe.title = v.title;
+          iframe.allow = 'accelerometer; autoplay; encrypted-media; picture-in-picture';
+          iframe.allowFullscreen = true;
+          iframe.className = 'video-lib-iframe';
+          card.innerHTML = '';
+          card.appendChild(iframe);
+        });
+      } else {
+        card.innerHTML =
+          '<div class="video-lib-soon" aria-hidden="true">🎬<span>Próximamente</span></div>' +
+          '<h4>' + v.title + '</h4><p>' + v.desc + '</p>';
+      }
+      grid.appendChild(card);
+    });
+  }
+
+  /* =======================================================================
      9) FORMULARIO DE CONTACTO -> WhatsApp
      Campos: nombre, whatsapp, tipo de alojamiento, cantidad, mensaje (opcional)
      ======================================================================= */
@@ -1746,6 +1930,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
     initAccordions();
     initPlanTabs();
     initVideos();
+    renderVideoLibrary();
     initForm();
     initMisc();
   }
