@@ -578,6 +578,9 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
 .prop-location-group{margin-top:34px;}
 .prop-location-title{font-family:'Fraunces',serif;font-size:1.05rem;color:var(--navy);margin:0 0 14px;}
 .prop-photo-grid{gap:14px;}
+.prop-photo-grid-sm{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;}
+.prop-photo-grid-sm .prop-photo-card figcaption{padding:6px 8px;font-size:.72rem;}
+.prop-photo-grid-sm .prop-photo-card figcaption small{font-size:.65rem;}
 .prop-photo-card{margin:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);}
 .prop-photo-card img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;display:block;}
 .prop-photo-card figcaption{padding:9px 12px;font-size:.85rem;color:var(--text-secondary);}
@@ -759,7 +762,6 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
           <figure class="prop-photo-card"><img src="assets/images/alojamientos/chuy-grande.jpg" alt="Apart Grande, Chuy" loading="lazy" width="400" height="300"><figcaption>Apart Grande</figcaption></figure>
           <figure class="prop-photo-card"><img src="assets/images/alojamientos/chuy-zulmira.jpg" alt="Apart Zulmira, Chuy" loading="lazy" width="400" height="300"><figcaption>Apart Zulmira</figcaption></figure>
           <figure class="prop-photo-card"><img src="assets/images/alojamientos/chuy-nueva.jpg" alt="Apart Nueva, Chuy" loading="lazy" width="400" height="300"><figcaption>Apart Nueva</figcaption></figure>
-          <figure class="prop-photo-card"><img src="assets/images/alojamientos/chuy-maciega.jpg" alt="Casa Maciega, Chuy" loading="lazy" width="400" height="300"><figcaption>Casa Maciega</figcaption></figure>
           <figure class="prop-photo-card prop-photo-pending"><span aria-hidden="true">📷</span><figcaption>Emiliano<br><small>Foto próximamente</small></figcaption></figure>
         </div>
       </div>
@@ -768,14 +770,18 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
         <h3 class="prop-location-title">Punta del Diablo</h3>
         <div class="grid grid-4 prop-photo-grid">
           <figure class="prop-photo-card"><img src="assets/images/alojamientos/puntadeldiablo-gloria.jpg" alt="Casa Gloria, Punta del Diablo" loading="lazy" width="400" height="300"><figcaption>Casa Gloria</figcaption></figure>
+          <figure class="prop-photo-card"><img src="assets/images/alojamientos/puntadeldiablo-maciega.jpg" alt="Casa Maciega, Punta del Diablo" loading="lazy" width="400" height="300"><figcaption>Casa Maciega</figcaption></figure>
           <figure class="prop-photo-card prop-photo-pending"><span aria-hidden="true">📷</span><figcaption>Casa Propia<br><small>Foto próximamente</small></figcaption></figure>
         </div>
       </div>
 
       <div class="prop-location-group">
         <h3 class="prop-location-title">También parte de la experiencia operativa</h3>
-        <div class="grid grid-4 prop-photo-grid">
+        <div class="grid grid-4 prop-photo-grid prop-photo-grid-sm">
           <figure class="prop-photo-card"><img src="assets/images/almacen-eyo.jpg" alt="Almacén EYO" loading="lazy" width="400" height="300"><figcaption>Almacén EYO<br><small>No se cuenta como alojamiento</small></figcaption></figure>
+          <figure class="prop-photo-card"><img src="assets/images/almacen-eyo-2.jpg" alt="Almacén EYO, estantería" loading="lazy" width="400" height="300"><figcaption>Almacén EYO</figcaption></figure>
+          <figure class="prop-photo-card"><img src="assets/images/almacen-eyo-3.jpg" alt="Almacén EYO, productos" loading="lazy" width="400" height="300"><figcaption>Almacén EYO</figcaption></figure>
+          <figure class="prop-photo-card"><img src="assets/images/almacen-eyo-4.jpg" alt="Almacén EYO, entrada" loading="lazy" width="400" height="300"><figcaption>Almacén EYO</figcaption></figure>
         </div>
       </div>
 
