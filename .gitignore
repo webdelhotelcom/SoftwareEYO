@@ -6,6 +6,9 @@ app/config.js
 # Herramienta local de Claude Code
 .claude/
 
+# Estado local del CLI de Netlify (deploys manuales de software-eyo.netlify.app)
+.netlify/
+
 # Archivos temporales del sistema
 Thumbs.db
 .DS_Store
