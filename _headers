@@ -1,0 +1,20 @@
+# Headers de seguridad de la WEB COMERCIAL (software-eyo.netlify.app).
+# Netlify solo lee el archivo _headers que está en la RAÍZ del directorio
+# publicado — por eso este vive acá y no dentro de una subcarpeta.
+# El panel (dashing-conkies-92cb00.netlify.app) es otro sitio de Netlify y
+# usa su propio archivo: app/_headers, que allá queda en la raíz del deploy.
+#
+# CSP ajustado a lo que la web comercial realmente usa:
+#   - todo el CSS/JS es inline (una sola página por archivo) -> 'unsafe-inline'
+#   - tipografías de Google -> fonts.googleapis.com + fonts.gstatic.com
+#   - imágenes embebidas en base64 -> data:
+#   - videos de la biblioteca -> iframes de youtube-nocookie.com
+#   - no hay scripts externos ni llamadas fetch a terceros
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self'; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
