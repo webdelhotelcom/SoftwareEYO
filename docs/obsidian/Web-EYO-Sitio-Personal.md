@@ -8,7 +8,7 @@ Ver también: [[00-Indice]] · [[Estado-actual]] · [[Historia-y-decisiones]]
 
 Repo local: `D:\Ori\webeyo`. Dos páginas HTML de una sola pieza (sin build step, fotos embebidas en base64 dentro del HTML):
 - **`index.html`** — sitio personal: "Sobre mí", historia, formación, y una sección "Logros" con la trayectoria de los alojamientos que gestiona (tarjetas + modales con fotos), incluyendo el relato de los 3 alojamientos de Elsa Fernández (Medio/Grande/Nueva) y otros clientes (Dac, Zulmira, Maciega, Gloria, Casa Propia).
-- **`hostal.html`** — página de reservas del hostal, con un array JS `HABITACIONES` que referencia fotos como archivos sueltos (`fotos/img-XXX.jpg`), a diferencia de `index.html` que las incrusta en base64. **Tarea distinta y separada, no tocada en esta ronda** — quedó a medio hacer de una sesión anterior (reemplazo de fotos de Grande, ver `git status` en el repo) y sigue en pausa.
+- **`hostal.html`** — página de reservas del hostal (EYO HOSTAL, Chuy), con un array JS `HABITACIONES` que referencia fotos como archivos sueltos (`fotos/img-XXX.jpg`, `fotos/grande-XX.jpg`, etc.), a diferencia de `index.html` que las incrusta en base64. Ver la sección "El repo de GitHub Pages raíz" más abajo — esta página se publica en un repo distinto al de `index.html`.
 
 ## El problema de acceso a GitHub (2026-08-20)
 
@@ -44,6 +44,19 @@ git push eyosoftware main
    - **Error cometido y corregido en esta misma ronda:** el primer intento reemplazó TODO el montage original por solo estas 7 fotos nuevas, perdiendo las 52 fotos originales — el usuario lo notó y se corrigió restaurando las fotos originales (ya estaban guardadas localmente en el directorio de scratch de la sesión) y agregando las nuevas al lado, no en su lugar. Quedó también una etiqueta HTML rota (`<div class="` faltante) de ese primer intento, reparada en el mismo arreglo.
 6. **Responsive en celular** — el problema real no era el tamaño de fuente: la tira de fotos circulares "Mi historia en fotos" (con scroll horizontal propio, `overflow-x:auto`) no tenía `min-width:0`, así que forzaba todo el bloque `.about-content` (grid item) a 795px de ancho aunque el viewport fuera de 375px — desbordamiento horizontal real medido y confirmado con JS (`document.body.scrollWidth`), no solo visual. Se arregló con `min-width:0` en la cadena de contenedores (`.about-content`, `.about-life-gallery`, `.about-life-strip`), más un `overflow-wrap:break-word` global de seguridad y un breakpoint extra a 420px para los títulos más grandes.
 7. **Texto corregido**: "cada alojamiento... representa aproximadamente el 50% del costo **de** un mes de mi carrera universitaria" (antes decía "costo anual de un mes", mezclaba dos ideas).
+
+## El repo de GitHub Pages raíz — `hostal.html`, distinto de `EYOSoftware` (2026-08-21)
+
+**Confusión real que costó una vuelta:** `https://webdelhotelcom.github.io/` (la raíz, sin `/EYOSoftware`) **no** sirve el sitio personal — sirve `hostal.html`, publicado desde un repo *aparte*, `github.com/webdelhotelcom/webdelhotelcom.github.io` (nombre exacto exigido por GitHub Pages para un "user site"). Este repo:
+- **No estaba clonado localmente** al empezar esta tarea — se clonó al vuelo en el scratchpad de la sesión, se editó ahí, y se hizo push directo (no pasa por `D:\Ori\webeyo`, aunque su contenido se origina de `hostal.html` de ese repo).
+- Tiene su propio historial corto y desconectado (2-3 commits, se creó originalmente por "Add files via upload" desde la web de GitHub) — **se desincroniza en silencio de `hostal.html` local si no se lo empuja a mano**. Confirmado el 2026-08-21: tenía fotos de Grande/Medio de una versión de `hostal.html` de varios días atrás (`img-019..032.jpg`), mientras que el `hostal.html` local ya había cambiado a otro esquema de nombres (`grande-01..15.jpg`) — nadie había vuelto a publicar el cambio.
+- **Sin credenciales guardadas para este repo tampoco** — mismo patrón que `EYOSoftware`: se le pidió al usuario un Personal Access Token (`ghp_...`, scope `repo`, generado desde `github.com/settings/tokens/new`), usado solo inline en la URL del `git push`, nunca persistido.
+
+**Trabajo hecho el 2026-08-21** (sobre `hostal.html` local Y sobre el repo `webdelhotelcom.github.io` — los dos, para que dejen de estar desincronizados en Grande/Medio):
+1. **Apart Grande**: reemplazadas las 15 fotos (`grande-01.jpg`...`grande-15.jpg`, incluye el repo `webdelhotelcom.github.io`, donde antes eran solo 8 con nombres `img-019..026.jpg`) con fotos nuevas de `D:\Ori\Grande`.
+2. **Apart Medio**: reemplazadas, pasando de 6 fotos (`img-027..032.jpg`) a 7 (`medio-01.jpg`...`medio-07.jpg`), con fotos nuevas de `D:\Ori\Medio`.
+3. Verificado con un servidor estático local (`python -m http.server`) antes de publicar, y con `fetch(url,{method:'HEAD'})` sobre las 22 URLs reales después de publicar — las 22 responden 200, cero 404.
+4. **Corrección posterior del usuario (mismo día):** Casa Maciega es de **Punta del Diablo**, no de Chuy — reversa una investigación de una sesión anterior que había concluido lo contrario a partir del campo `direccion` en la base de Supabase de Software EYO ("EYO HOSTAL", igual al resto de las habitaciones de Chuy). Ese campo de la base no reflejaba la ubicación de venta/experiencia real; se aplicó la corrección explícita del usuario sin volver a cuestionarla. Esta corrección se hizo en la página comercial de Software EYO (`index.html`, sección "experiencia"), no en `hostal.html` — ese archivo no menciona a Maciega por ubicación de esta forma.
 
 ## Cómo verificar que esta nota sigue vigente
 
