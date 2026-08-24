@@ -354,6 +354,28 @@ tr:hover td{background:var(--bg2)}
   .ajustes-shell.section-open .ajustes-content{display:block}
   .ajustes-shell.section-open .ajustes-back-btn{display:flex}
 }
+/* Finanzas personales (beta) — mismo maestro-detalle que Ajustes, con
+   clases propias (finper-*) para que los dos módulos puedan evolucionar
+   por separado sin acoplarse. */
+.finper-shell{display:grid;grid-template-columns:220px 1fr;gap:1.5rem;align-items:start}
+.finper-categories{display:flex;flex-direction:column;gap:2px;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:.5rem;position:sticky;top:1rem}
+.finper-cat-btn{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--radius);border:none;background:transparent;color:var(--text2);font-size:13px;cursor:pointer;text-align:left;width:100%}
+.finper-cat-btn:hover{background:var(--bg2)}
+.finper-cat-btn.active{background:var(--bg2);color:var(--text);font-weight:500}
+.finper-cat-btn i{font-size:15px;width:16px;flex-shrink:0}
+.finper-content{min-width:0}
+.finper-back-btn{display:none;align-items:center;gap:6px;background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;padding:0 0 1rem;margin:0}
+.finper-section{display:none}
+.finper-section.current{display:block}
+.finper-placeholder{color:var(--text2);font-size:13px}
+@media(max-width:768px){
+  .finper-shell{display:block}
+  .finper-categories{position:static}
+  .finper-content{display:none}
+  .finper-shell.section-open .finper-categories{display:none}
+  .finper-shell.section-open .finper-content{display:block}
+  .finper-shell.section-open .finper-back-btn{display:flex}
+}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;padding:1rem}
 .modal-overlay.open{display:flex}
 .modal{background:var(--bg);border-radius:var(--radius-lg);border:0.5px solid var(--border);width:100%;max-width:680px;max-height:92vh;overflow-y:auto}
@@ -698,6 +720,8 @@ tr:hover td{background:var(--bg2)}
     <div class="nav-section">Administración</div>
     <div class="nav-item" data-page="usuarios" onclick="showPage('usuarios')"><i class="ti ti-shield-lock"></i>Usuarios y permisos</div>
     <div class="nav-item" data-page="auditoria" onclick="showPage('auditoria')"><i class="ti ti-history"></i>Auditoría</div>
+    <div class="nav-section">Personal</div>
+    <div class="nav-item" id="navPersonalFinance" data-page="personalfinance" onclick="showPage('personalfinance')" style="display:none"><i class="ti ti-wallet"></i><span>Finanzas personales</span><span class="ajustes-cat-badge">Beta</span></div>
   </nav>
 </aside>
 
@@ -1526,6 +1550,72 @@ tr:hover td{background:var(--bg2)}
           <div class="card-header"><div class="card-title"><i class="ti ti-info-circle" style="font-size:14px;margin-right:4px"></i>Más información</div></div>
           <div id="ajustes-info-body"></div>
         </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FINANZAS PERSONALES (beta) -->
+<div class="page" id="page-personalfinance">
+  <div class="page-header">
+    <div><div class="page-title">Finanzas personales <span class="ajustes-cat-badge" style="margin-left:6px">Beta</span></div><div class="page-subtitle">Visible solo para tu cuenta — en construcción por fases</div></div>
+  </div>
+
+  <div class="finper-shell" id="finperShell">
+    <div class="finper-categories" id="finperCategories">
+      <button class="finper-cat-btn" data-section="resumen" onclick="showFinPerSection('resumen')"><i class="ti ti-layout-dashboard"></i><span>Resumen</span></button>
+      <button class="finper-cat-btn" data-section="compartida" onclick="showFinPerSection('compartida')"><i class="ti ti-users-group"></i><span>Cuenta Compartida</span></button>
+      <button class="finper-cat-btn" data-section="personalcta" onclick="showFinPerSection('personalcta')"><i class="ti ti-user"></i><span>Cuenta Personal</span></button>
+      <button class="finper-cat-btn" data-section="movimientos" onclick="showFinPerSection('movimientos')"><i class="ti ti-arrows-left-right"></i><span>Movimientos</span></button>
+      <button class="finper-cat-btn" data-section="tc" onclick="showFinPerSection('tc')"><i class="ti ti-credit-card"></i><span>Tarjeta/TC</span></button>
+      <button class="finper-cat-btn" data-section="ahorro" onclick="showFinPerSection('ahorro')"><i class="ti ti-piggy-bank"></i><span>Ahorro</span></button>
+      <button class="finper-cat-btn" data-section="presupuesto" onclick="showFinPerSection('presupuesto')"><i class="ti ti-report-money"></i><span>Presupuesto</span></button>
+      <button class="finper-cat-btn" data-section="estadisticas" onclick="showFinPerSection('estadisticas')"><i class="ti ti-chart-bar"></i><span>Estadísticas</span></button>
+      <button class="finper-cat-btn" data-section="consejero" onclick="showFinPerSection('consejero')"><i class="ti ti-message-circle"></i><span>Consejero CEO/CFO</span></button>
+      <button class="finper-cat-btn" data-section="importar" onclick="showFinPerSection('importar')"><i class="ti ti-file-import"></i><span>Importar datos</span></button>
+      <button class="finper-cat-btn" data-section="categorias" onclick="showFinPerSection('categorias')"><i class="ti ti-tags"></i><span>Categorías</span></button>
+      <button class="finper-cat-btn" data-section="configuracion" onclick="showFinPerSection('configuracion')"><i class="ti ti-settings"></i><span>Configuración</span></button>
+    </div>
+
+    <div class="finper-content" id="finperContent">
+      <button class="finper-back-btn" id="finperBackBtn" onclick="closeFinPerSection()"><i class="ti ti-arrow-left"></i> Finanzas personales</button>
+
+      <div class="finper-section" id="finperSectionResumen">
+        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-layout-dashboard" style="font-size:14px;margin-right:4px"></i>Resumen</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 4 (dashboard + ahorro + estadísticas).</p></div>
+      </div>
+      <div class="finper-section" id="finperSectionCompartida">
+        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-users-group" style="font-size:14px;margin-right:4px"></i>Cuenta Compartida</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 2, junto con la importación del historial de enero a agosto de 2026.</p></div>
+      </div>
+      <div class="finper-section" id="finperSectionPersonalcta">
+        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-user" style="font-size:14px;margin-right:4px"></i>Cuenta Personal</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 3, junto con la detección de transferencias internas.</p></div>
+      </div>
+      <div class="finper-section" id="finperSectionMovimientos">
+        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-arrows-left-right" style="font-size:14px;margin-right:4px"></i>Movimientos</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 2.</p></div>
+      </div>
+      <div class="finper-section" id="finperSectionTc">
+        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-credit-card" style="font-size:14px;margin-right:4px"></i>Tarjeta/TC</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 2.</p></div>
+      </div>
+      <div class="finper-section" id="finperSectionAhorro">
+        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-piggy-bank" style="font-size:14px;margin-right:4px"></i>Ahorro</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 4, con saldo inicial editable desde agosto de 2026.</p></div>
+      </div>
+      <div class="finper-section" id="finperSectionPresupuesto">
+        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-report-money" style="font-size:14px;margin-right:4px"></i>Presupuesto</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 5.</p></div>
+      </div>
+      <div class="finper-section" id="finperSectionEstadisticas">
+        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-chart-bar" style="font-size:14px;margin-right:4px"></i>Estadísticas</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 4.</p></div>
+      </div>
+      <div class="finper-section" id="finperSectionConsejero">
+        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-message-circle" style="font-size:14px;margin-right:4px"></i>Consejero CEO/CFO</div></div><p class="finper-placeholder">Esta sección se construye en las Fases 6 a 9 (requiere una función de servidor nueva — nunca una clave de IA en el panel).</p></div>
+      </div>
+      <div class="finper-section" id="finperSectionImportar">
+        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-file-import" style="font-size:14px;margin-right:4px"></i>Importar datos</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 2, con previsualización antes de confirmar cualquier importación.</p></div>
+      </div>
+      <div class="finper-section" id="finperSectionCategorias">
+        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-tags" style="font-size:14px;margin-right:4px"></i>Categorías</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 2.</p></div>
+      </div>
+      <div class="finper-section" id="finperSectionConfiguracion">
+        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-settings" style="font-size:14px;margin-right:4px"></i>Configuración</div></div><p class="finper-placeholder">Sin opciones todavía.</p></div>
       </div>
 
     </div>
@@ -3743,7 +3833,7 @@ async function loadSessionUser(authUser){
   await loadTenantSettings(tenant.id);
 
   const roleInfo=ROLE_LABELS[profile.role]||{name:profile.role,initials:profile.role.slice(0,2).toUpperCase()};
-  currentUser={id:authUser.id,email:authUser.email,role:profile.role,tenantId:tenant.id,tenantName:tenant.name,name:roleInfo.name,initials:roleInfo.initials};
+  currentUser={id:authUser.id,email:authUser.email,role:profile.role,tenantId:tenant.id,tenantName:tenant.name,name:roleInfo.name,initials:roleInfo.initials,personalFinanceBeta:!!profile.personal_finance_beta};
   localStorage.setItem('eyo_last_uid',currentUser.id); // SIEMPRE al loguear, no solo si cambia el tema — así el FOUC del próximo carga apunta a quien entró último, no a quien tocó el toggle por última vez
   applyTheme(); // corrige el tema si el uid real difiere del último visto en este navegador (equipo compartido)
   applyHtmlLangAttr(); // <html lang> real según el idioma guardado de este usuario
@@ -3763,6 +3853,8 @@ async function loadSessionUser(authUser){
   await loadPermissionsCatalog();
   populateSelects();
   applyPlan();
+  const navPersonalFinance=document.getElementById('navPersonalFinance');
+  if(navPersonalFinance)navPersonalFinance.style.display=currentUser.personalFinanceBeta?'':'none';
   await loadProperties();
   await loadOwners();
   await loadReservations();
@@ -3885,6 +3977,7 @@ if(supabaseClient){
 function showPage(name){
   if(typeof planAllows==='function' && !planAllows(name)) name='dashboard';
   if(PAGE_PERMISSION[name] && !can(PAGE_PERMISSION[name])) name='dashboard';
+  if(name==='personalfinance' && !currentUser?.personalFinanceBeta) name='dashboard';
   closeMobileSidebar();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -7251,11 +7344,14 @@ function planDisplayLabel(){
   return (tenantRow&&tenantRow.is_founder) ? (base+' - Founder') : base;
 }
 function maxAlojamientos(){ return tenantLimits.maxProperties; }
-function planAllows(page){ return page==='ajustes' || planCfg().pages.includes(page) || String(page).indexOf('-detail')>-1; }
+function planAllows(page){ return page==='ajustes' || page==='personalfinance' || planCfg().pages.includes(page) || String(page).indexOf('-detail')>-1; }
 function applyPlan(){
   const info=planCfg();
   const ownerBtn=document.getElementById('btn-new-owner');if(ownerBtn)ownerBtn.style.display=can('crear_propietarios')?'':'none';
-  document.querySelectorAll('.nav-item').forEach(n=>{const pg=n.dataset.page;if(!pg)return;n.style.display=info.pages.includes(pg)?'':'none';});
+  // "personalfinance" no depende del plan contratado — es un feature flag
+  // por usuario (currentUser.personalFinanceBeta), gestionado aparte en
+  // loadSessionUser(). Se excluye acá para que este barrido no lo pise.
+  document.querySelectorAll('.nav-item').forEach(n=>{const pg=n.dataset.page;if(!pg||pg==='personalfinance')return;n.style.display=info.pages.includes(pg)?'':'none';});
   Object.entries(PAGE_PERMISSION).forEach(([pg,perm])=>{
     if(can(perm))return;
     const n=document.querySelector(`.nav-item[data-page="${pg}"]`);
@@ -7547,6 +7643,18 @@ function showAjustesSection(name){
 }
 function closeAjustesSection(){
   document.getElementById('ajustesShell').classList.remove('section-open');
+}
+// Mismo esqueleto que showAjustesSection/closeAjustesSection, sin las
+// ramas de montaje (usuarios/auditoría/apariencia/etc.): en la Fase 1 las
+// 12 secciones son placeholders, no montan nada todavía.
+function showFinPerSection(name){
+  document.querySelectorAll('.finper-cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.section===name));
+  const cap=name.charAt(0).toUpperCase()+name.slice(1);
+  document.querySelectorAll('.finper-section').forEach(s=>s.classList.toggle('current',s.id==='finperSection'+cap));
+  document.getElementById('finperShell').classList.add('section-open');
+}
+function closeFinPerSection(){
+  document.getElementById('finperShell').classList.remove('section-open');
 }
 // Reparenta page-usuarios/page-auditoria UNA sola vez hacia el panel de
 // Ajustes (appendChild real, no clona — mismos ids, funciones, permisos y
