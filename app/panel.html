@@ -1585,16 +1585,35 @@ tr:hover td{background:var(--bg2)}
         <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-layout-dashboard" style="font-size:14px;margin-right:4px"></i>Resumen</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 4 (dashboard + ahorro + estadísticas).</p></div>
       </div>
       <div class="finper-section" id="finperSectionCompartida">
-        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-users-group" style="font-size:14px;margin-right:4px"></i>Cuenta Compartida</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 2, junto con la importación del historial de enero a agosto de 2026.</p></div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="ti ti-users-group" style="font-size:14px;margin-right:4px"></i>Cuenta Compartida</div></div>
+          <div id="finper-compartida-saldo" style="margin-bottom:1rem"></div>
+          <button class="btn btn-primary btn-sm" onclick="openFinPerMovimiento(null)"><i class="ti ti-plus"></i><span>Agregar movimiento</span></button>
+          <div id="finper-compartida-recientes" style="margin-top:1rem"></div>
+        </div>
       </div>
       <div class="finper-section" id="finperSectionPersonalcta">
         <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-user" style="font-size:14px;margin-right:4px"></i>Cuenta Personal</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 3, junto con la detección de transferencias internas.</p></div>
       </div>
       <div class="finper-section" id="finperSectionMovimientos">
-        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-arrows-left-right" style="font-size:14px;margin-right:4px"></i>Movimientos</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 2.</p></div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="ti ti-arrows-left-right" style="font-size:14px;margin-right:4px"></i>Movimientos</div>
+            <button class="btn btn-primary btn-sm" onclick="openFinPerMovimiento(null)"><i class="ti ti-plus"></i><span>Agregar movimiento</span></button>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
+            <select id="finper-mov-filter-account" onchange="renderFinPerMovimientos()" style="padding:6px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);font-size:12px;background:var(--bg)"><option value="all">Todas las cuentas personales</option></select>
+            <input type="month" id="finper-mov-filter-month" onchange="renderFinPerMovimientos()" style="padding:6px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);font-size:12px;background:var(--bg)">
+          </div>
+          <div class="table-wrap" id="finper-mov-table-wrap">
+            <table><thead><tr><th>Fecha</th><th>Cuenta</th><th>Descripción</th><th>Categoría</th><th>Tipo</th><th style="text-align:right">Importe</th><th></th></tr></thead>
+            <tbody id="finper-mov-tbody"></tbody></table>
+          </div>
+          <div id="finper-mov-cards" style="display:none"></div>
+        </div>
       </div>
       <div class="finper-section" id="finperSectionTc">
-        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-credit-card" style="font-size:14px;margin-right:4px"></i>Tarjeta/TC</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 2.</p></div>
+        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-credit-card" style="font-size:14px;margin-right:4px"></i>Tarjeta/TC</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 4, con las estadísticas de TC. Los pagos de TC ya se cargan por separado en Movimientos (nunca se suman a "gastos reales").</p></div>
       </div>
       <div class="finper-section" id="finperSectionAhorro">
         <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-piggy-bank" style="font-size:14px;margin-right:4px"></i>Ahorro</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 4, con saldo inicial editable desde agosto de 2026.</p></div>
@@ -1609,10 +1628,26 @@ tr:hover td{background:var(--bg2)}
         <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-message-circle" style="font-size:14px;margin-right:4px"></i>Consejero CEO/CFO</div></div><p class="finper-placeholder">Esta sección se construye en las Fases 6 a 9 (requiere una función de servidor nueva — nunca una clave de IA en el panel).</p></div>
       </div>
       <div class="finper-section" id="finperSectionImportar">
-        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-file-import" style="font-size:14px;margin-right:4px"></i>Importar datos</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 2, con previsualización antes de confirmar cualquier importación.</p></div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="ti ti-file-import" style="font-size:14px;margin-right:4px"></i>Importar datos</div></div>
+          <p style="font-size:11px;color:var(--text2);margin:0 0 1rem">Acepta el JSON/CSV/XLSX con el historial de movimientos, contra Cuenta Compartida. Se muestra una previsualización con los conteos exactos — no se escribe nada hasta tocar "Confirmar importación".</p>
+          <label class="btn btn-primary" style="cursor:pointer;display:inline-flex"><i class="ti ti-upload"></i><span>Elegir archivo</span><input type="file" id="finper-import-file" accept=".json,.csv,.xlsx" style="display:none" onchange="onFinPerImportFileSelected(this)"></label>
+          <div id="finper-import-status" style="margin-top:1rem;font-size:12px;color:var(--text2)"></div>
+        </div>
       </div>
       <div class="finper-section" id="finperSectionCategorias">
-        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-tags" style="font-size:14px;margin-right:4px"></i>Categorías</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 2.</p></div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="ti ti-tags" style="font-size:14px;margin-right:4px"></i>Categorías</div></div>
+          <div id="finper-cat-list"></div>
+          <div style="margin-top:1rem;border-top:0.5px solid var(--border);padding-top:1rem">
+            <label>Nueva categoría</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+              <input id="finper-cat-name" type="text" placeholder="Nombre" style="flex:1;min-width:140px;padding:6px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);font-size:12px;background:var(--bg)">
+              <select id="finper-cat-parent" style="padding:6px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);font-size:12px;background:var(--bg)"><option value="">(categoría raíz)</option></select>
+              <button class="btn btn-sm" onclick="addFinPerCategory()"><i class="ti ti-plus"></i><span>Agregar</span></button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="finper-section" id="finperSectionConfiguracion">
         <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-settings" style="font-size:14px;margin-right:4px"></i>Configuración</div></div><p class="finper-placeholder">Sin opciones todavía.</p></div>
@@ -2296,6 +2331,76 @@ tr:hover td{background:var(--bg2)}
   <div class="modal-footer">
     <button class="btn" onclick="closeModal('modal-task')" data-i18n="common.cancelar">Cancelar</button>
     <button class="btn btn-primary" onclick="saveTask()"><i class="ti ti-check"></i> <span data-i18n="common.guardar">Guardar</span></button>
+  </div>
+</div></div>
+
+<!-- FINANZAS PERSONALES — MOVIMIENTO -->
+<div class="modal-overlay" id="modal-finper-mov">
+<div class="modal modal-sm">
+  <div class="modal-header"><div class="modal-title" id="modal-finper-mov-title">Agregar movimiento</div><button class="btn btn-sm btn-icon" onclick="closeModal('modal-finper-mov')"><i class="ti ti-x"></i></button></div>
+  <div class="modal-body">
+    <input type="hidden" id="finper-mov-id">
+    <div class="form-row">
+      <div class="form-group"><label>Fecha *</label><input id="finper-mov-fecha" type="date"></div>
+      <div class="form-group"><label>Cuenta *</label><select id="finper-mov-cuenta"></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Tipo *</label>
+        <select id="finper-mov-tipo">
+          <option value="ingreso">Ingreso</option>
+          <option value="gasto">Gasto</option>
+          <option value="transferencia_externa">Transferencia</option>
+          <option value="retiro">Retiro</option>
+          <option value="deposito">Depósito</option>
+          <option value="pago_tc">TC (pago de tarjeta)</option>
+          <option value="devolucion">Devolución</option>
+          <option value="ajuste">Ajuste</option>
+          <option value="pendiente_clasificar">Por clasificar</option>
+          <option value="transferencia_interna" disabled>Transferencia interna (solo detección automática)</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Importe *</label><input id="finper-mov-importe" type="number" step="0.01" min="0" placeholder="0.00"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Categoría</label><select id="finper-mov-categoria" onchange="populateFinPerSubcategorySelect()"><option value="">(sin categoría)</option></select></div>
+      <div class="form-group"><label>Subcategoría</label><select id="finper-mov-subcategoria"><option value="">(ninguna)</option></select></div>
+    </div>
+    <div class="form-group"><label>Descripción</label><input id="finper-mov-descripcion" type="text" placeholder="Ej: UTE agosto"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Forma de pago</label>
+        <select id="finper-mov-forma-pago">
+          <option value="">(sin especificar)</option>
+          <option value="efectivo">Efectivo</option>
+          <option value="debito">Débito</option>
+          <option value="credito">Crédito</option>
+          <option value="transferencia">Transferencia</option>
+          <option value="deposito">Depósito</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Observación</label><input id="finper-mov-observacion" type="text"></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('modal-finper-mov')">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveFinPerMovimiento()"><i class="ti ti-check"></i> <span>Guardar</span></button>
+  </div>
+</div></div>
+
+<!-- FINANZAS PERSONALES — PREVIEW DE IMPORTACIÓN -->
+<div class="modal-overlay" id="modal-finper-import-preview">
+<div class="modal modal-lg">
+  <div class="modal-header"><div class="modal-title">Previsualización de importación</div><button class="btn btn-sm btn-icon" onclick="closeModal('modal-finper-import-preview')"><i class="ti ti-x"></i></button></div>
+  <div class="modal-body">
+    <div id="finper-import-summary" style="font-size:13px;margin-bottom:1rem"></div>
+    <div class="table-wrap" style="max-height:400px;overflow-y:auto">
+      <table><thead><tr><th>Fecha</th><th>Descripción</th><th style="text-align:right">Importe</th><th>Tipo</th><th>Categoría</th><th>Estado</th></tr></thead>
+      <tbody id="finper-import-preview-tbody"></tbody></table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('modal-finper-import-preview')">Cancelar</button>
+    <button class="btn btn-primary" id="finper-import-confirm-btn" onclick="confirmFinPerImport()"><i class="ti ti-check"></i> <span>Confirmar importación</span></button>
   </div>
 </div></div>
 
@@ -3870,6 +3975,15 @@ async function loadSessionUser(authUser){
   await loadCashOperators();
   await loadBillingConfig();
   await loadFacturas();
+  if(currentUser.personalFinanceBeta){
+    await loadFinanceAccounts();
+    await loadFinanceCategories();
+    await loadFinanceTransactions();
+    populateFinPerSelects();
+    renderFinPerCategorias();
+    renderFinPerMovimientos();
+    renderFinPerCuentaCompartida();
+  }
   supabaseClient.from('profiles').update({last_active_at:new Date().toISOString()}).eq('id',authUser.id).then(()=>{});
   calYear=2026;calMonth=0; // demo: arranca en enero 2026 (temporada)
   renderBizModeUI();
@@ -3989,7 +4103,7 @@ function showPage(name){
 // Tabla de renderizadores por página. Está afuera de showPage() para que
 // toggleBizMode() pueda re-dibujar la página actual sin volver a navegar.
 function refreshPage(name){
-  const R={dashboard:updateDashboard,monthly:renderMonthly,calendar:renderCalendar,whatsapp:renderWhatsappPage,reservations:renderReservationsTable,properties:renderProperties,owners:renderOwners,guests:renderGuests,finances:renderFinances,expenses:renderExpensesPage,alerts:renderAlerts,messages:renderMessages,billing:renderBilling,reception:renderReception,roomtypes:renderRoomTypes,rooms:renderRooms,housekeeping:renderHousekeeping,maintenance:renderMaintenance,cashbox:renderCashbox,hotelreports:renderHotelReports,usuarios:renderUsersPage,auditoria:renderAuditPage,ajustes:renderAjustesPage,market:renderMarketPage};
+  const R={dashboard:updateDashboard,monthly:renderMonthly,calendar:renderCalendar,whatsapp:renderWhatsappPage,reservations:renderReservationsTable,properties:renderProperties,owners:renderOwners,guests:renderGuests,finances:renderFinances,expenses:renderExpensesPage,alerts:renderAlerts,messages:renderMessages,billing:renderBilling,reception:renderReception,roomtypes:renderRoomTypes,rooms:renderRooms,housekeeping:renderHousekeeping,maintenance:renderMaintenance,cashbox:renderCashbox,hotelreports:renderHotelReports,usuarios:renderUsersPage,auditoria:renderAuditPage,ajustes:renderAjustesPage,market:renderMarketPage,personalfinance:renderFinPerMovimientos};
   if(R[name])R[name]();
 }
 function showTab(el,tabId){
@@ -7656,6 +7770,396 @@ function showFinPerSection(name){
 function closeFinPerSection(){
   document.getElementById('finperShell').classList.remove('section-open');
 }
+
+// ══════════════════════════════════════════════════════════════
+// FINANZAS PERSONALES (beta) — Fase 2: Cuenta Compartida + importación.
+// Aislado a propósito de Finanzas (negocio): tablas finance_* propias,
+// nunca reservations/expenses/cash_sessions. RLS por user_id+flag, no por
+// tenant -- ver migraciones 0048/0049.
+// ══════════════════════════════════════════════════════════════
+let financeAccounts=[], financeCategories=[], financeTransactions=[], finperPendingImport=null;
+
+async function loadFinanceAccounts(){
+  if(!supabaseClient||!currentUser?.personalFinanceBeta)return;
+  const {data,error}=await supabaseClient.from('finance_accounts').select('*').order('created_at');
+  if(error){showToast('No se pudieron cargar las cuentas de Finanzas personales: '+error.message,'error');return;}
+  financeAccounts=data||[];
+}
+async function loadFinanceCategories(){
+  if(!supabaseClient||!currentUser?.personalFinanceBeta)return;
+  const {data,error}=await supabaseClient.from('finance_categories').select('*').order('name');
+  if(error){showToast('No se pudieron cargar las categorías: '+error.message,'error');return;}
+  financeCategories=data||[];
+}
+async function loadFinanceTransactions(){
+  if(!supabaseClient||!currentUser?.personalFinanceBeta)return;
+  const {data,error}=await supabaseClient.from('finance_transactions').select('*').order('date',{ascending:false});
+  if(error){showToast('No se pudieron cargar los movimientos: '+error.message,'error');return;}
+  financeTransactions=data||[];
+}
+
+function financeTxSignedAmount(t){ return t.direction==='salida' ? -Number(t.amount) : Number(t.amount); }
+function financeAccountName(id){ return financeAccounts.find(a=>a.id===id)?.name || '—'; }
+function financeCategoryName(id){ return financeCategories.find(c=>c.id===id)?.name || ''; }
+function financeNatureLabel(n){
+  return {ingreso:'Ingreso',gasto:'Gasto',transferencia_interna:'Transferencia interna',transferencia_externa:'Transferencia',pago_tc:'TC',retiro:'Retiro',deposito:'Depósito',devolucion:'Devolución',ajuste:'Ajuste',pendiente_clasificar:'Por clasificar'}[n]||n;
+}
+// Clave compuesta fecha|monto_con_signo|descripcion -- NO es un hash
+// criptográfico. Debe coincidir EXACTO con dedupe_fingerprint calculado
+// en import_finance_transactions() (0049) para que el dedupe funcione.
+function financeFingerprint(fecha, montoConSigno, descripcion){
+  return `${fecha}|${montoConSigno}|${String(descripcion||'').trim().toLowerCase()}`;
+}
+
+function populateFinPerSelects(){
+  const cuentaSel=document.getElementById('finper-mov-cuenta');
+  if(cuentaSel){
+    cuentaSel.innerHTML='';
+    financeAccounts.forEach(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=a.name;cuentaSel.appendChild(o);});
+  }
+  const filterSel=document.getElementById('finper-mov-filter-account');
+  if(filterSel){
+    const first=filterSel.options[0];filterSel.innerHTML='';if(first)filterSel.appendChild(first);
+    financeAccounts.forEach(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=a.name;filterSel.appendChild(o);});
+  }
+  [document.getElementById('finper-mov-categoria'),document.getElementById('finper-cat-parent')].forEach(s=>{
+    if(!s)return;
+    const first=s.options[0];s.innerHTML='';if(first)s.appendChild(first);
+    financeCategories.filter(c=>!c.parent_id&&!c.archived).sort((a,b)=>a.name.localeCompare(b.name))
+      .forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;s.appendChild(o);});
+  });
+  populateFinPerSubcategorySelect();
+}
+function populateFinPerSubcategorySelect(){
+  const parentId=document.getElementById('finper-mov-categoria')?.value;
+  const s=document.getElementById('finper-mov-subcategoria');
+  if(!s)return;
+  s.innerHTML='<option value="">(ninguna)</option>';
+  if(!parentId)return;
+  financeCategories.filter(c=>c.parent_id===parentId&&!c.archived).sort((a,b)=>a.name.localeCompare(b.name))
+    .forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;s.appendChild(o);});
+}
+
+// ── Categorías ──
+function renderFinPerCategorias(){
+  const box=document.getElementById('finper-cat-list');
+  if(!box)return;
+  const roots=financeCategories.filter(c=>!c.parent_id).sort((a,b)=>a.name.localeCompare(b.name));
+  let html='';
+  roots.forEach(r=>{
+    html+=`<div style="padding:6px 0;border-bottom:0.5px solid var(--border)">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <strong style="${r.archived?'text-decoration:line-through;color:var(--text3)':''}">${esc(r.name)}</strong>
+        <button class="btn btn-sm" onclick="archiveFinPerCategory('${r.id}',${!r.archived})">${r.archived?'Desarchivar':'Archivar'}</button>
+      </div>`;
+    financeCategories.filter(c=>c.parent_id===r.id).sort((a,b)=>a.name.localeCompare(b.name)).forEach(c=>{
+      html+=`<div style="display:flex;align-items:center;justify-content:space-between;padding-left:16px;margin-top:4px">
+        <span style="font-size:12px;color:var(--text2);${c.archived?'text-decoration:line-through;color:var(--text3)':''}">${esc(c.name)}</span>
+        <button class="btn btn-sm" onclick="archiveFinPerCategory('${c.id}',${!c.archived})">${c.archived?'Desarchivar':'Archivar'}</button>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  box.innerHTML=html||'<p class="finper-placeholder">Sin categorías todavía.</p>';
+}
+async function addFinPerCategory(){
+  const nameInput=document.getElementById('finper-cat-name');
+  const name=nameInput.value.trim();
+  if(!name){showToast('Ponele un nombre a la categoría','error');return;}
+  const parentId=document.getElementById('finper-cat-parent').value||null;
+  const {data,error}=await supabaseClient.from('finance_categories').insert({
+    tenant_id:currentUser.tenantId, user_id:currentUser.id, parent_id:parentId, name
+  }).select().single();
+  if(error){showToast('No se pudo crear la categoría: '+error.message,'error');return;}
+  financeCategories.push(data);
+  nameInput.value='';
+  populateFinPerSelects();
+  renderFinPerCategorias();
+  showToast('Categoría creada');
+}
+async function archiveFinPerCategory(id,archived){
+  const {data,error}=await supabaseClient.from('finance_categories').update({archived}).eq('id',id).select().single();
+  if(error){showToast('No se pudo actualizar la categoría: '+error.message,'error');return;}
+  upsertLocal(financeCategories,data);
+  populateFinPerSelects();
+  renderFinPerCategorias();
+}
+
+// ── Movimientos ──
+function renderFinPerMovimientos(){
+  const tbody=document.getElementById('finper-mov-tbody');
+  if(!tbody)return; // página todavía no montada (usuario sin beta, u otra página activa)
+  const accFilter=document.getElementById('finper-mov-filter-account')?.value||'all';
+  const monthFilter=document.getElementById('finper-mov-filter-month')?.value||'';
+  const rows=financeTransactions.filter(t=>{
+    if(accFilter!=='all'&&t.account_id!==accFilter)return false;
+    if(monthFilter&&!t.date.startsWith(monthFilter))return false;
+    return true;
+  });
+  const cardsBox=document.getElementById('finper-mov-cards');
+  const tableWrap=document.getElementById('finper-mov-table-wrap');
+  if(esMobileCards()){
+    tableWrap.style.display='none';cardsBox.style.display='';
+    cardsBox.innerHTML=renderMobileCards(rows,{
+      getTitle:r=>r.description_original,
+      headerRight:r=>`<span style="font-weight:500;color:${r.direction==='salida'?'var(--red)':'var(--green)'}">${fmt(financeTxSignedAmount(r))}</span>`,
+      fields:[
+        {label:'Fecha',value:r=>esc(fmtDate(r.date))},
+        {label:'Cuenta',value:r=>esc(financeAccountName(r.account_id))},
+        {label:'Tipo',value:r=>esc(financeNatureLabel(r.nature))},
+        {label:'Categoría',value:r=>esc(financeCategoryName(r.category_id))}
+      ],
+      actions:r=>`<button class="btn btn-sm" onclick="openFinPerMovimiento('${r.id}')"><i class="ti ti-pencil"></i></button> <button class="btn btn-sm" onclick="deleteFinPerMovimiento('${r.id}')"><i class="ti ti-trash"></i></button>`,
+      emptyText:'Sin movimientos todavía.'
+    });
+  } else {
+    tableWrap.style.display='';cardsBox.style.display='none';
+    tbody.innerHTML=rows.map(r=>`<tr>
+      <td>${esc(fmtDate(r.date))}</td>
+      <td>${esc(financeAccountName(r.account_id))}</td>
+      <td>${esc(r.description_original)}</td>
+      <td>${esc(financeCategoryName(r.category_id))}</td>
+      <td>${esc(financeNatureLabel(r.nature))}</td>
+      <td style="text-align:right;font-weight:500;color:${r.direction==='salida'?'var(--red)':'var(--green)'}">${fmt(financeTxSignedAmount(r))}</td>
+      <td><button class="btn btn-sm" onclick="openFinPerMovimiento('${r.id}')"><i class="ti ti-pencil"></i></button> <button class="btn btn-sm" onclick="deleteFinPerMovimiento('${r.id}')"><i class="ti ti-trash"></i></button></td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text3)">Sin movimientos todavía.</td></tr>';
+  }
+}
+
+function openFinPerMovimiento(id){
+  document.getElementById('finper-mov-id').value=id||'';
+  document.getElementById('modal-finper-mov-title').textContent=id?'Editar movimiento':'Agregar movimiento';
+  const sharedAcc=financeAccounts.find(a=>a.kind==='shared');
+  if(id){
+    const t=financeTransactions.find(x=>x.id===id);
+    if(!t)return;
+    document.getElementById('finper-mov-fecha').value=t.date;
+    document.getElementById('finper-mov-cuenta').value=t.account_id;
+    document.getElementById('finper-mov-tipo').value=t.nature;
+    document.getElementById('finper-mov-importe').value=t.amount;
+    const cat=financeCategories.find(c=>c.id===t.category_id);
+    document.getElementById('finper-mov-categoria').value = cat ? (cat.parent_id||cat.id) : '';
+    populateFinPerSubcategorySelect();
+    document.getElementById('finper-mov-subcategoria').value = (cat&&cat.parent_id) ? cat.id : '';
+    document.getElementById('finper-mov-descripcion').value=t.description_original;
+    document.getElementById('finper-mov-forma-pago').value=t.payment_method||'';
+    document.getElementById('finper-mov-observacion').value=t.observaciones||'';
+  } else {
+    document.getElementById('finper-mov-fecha').value=new Date().toISOString().slice(0,10);
+    document.getElementById('finper-mov-cuenta').value=sharedAcc?.id||'';
+    document.getElementById('finper-mov-tipo').value='gasto';
+    document.getElementById('finper-mov-importe').value='';
+    document.getElementById('finper-mov-categoria').value='';
+    populateFinPerSubcategorySelect();
+    document.getElementById('finper-mov-descripcion').value='';
+    document.getElementById('finper-mov-forma-pago').value='';
+    document.getElementById('finper-mov-observacion').value='';
+  }
+  openModal('modal-finper-mov');
+}
+
+async function saveFinPerMovimiento(){
+  const id=document.getElementById('finper-mov-id').value;
+  const fecha=document.getElementById('finper-mov-fecha').value;
+  const accountId=document.getElementById('finper-mov-cuenta').value;
+  const nature=document.getElementById('finper-mov-tipo').value;
+  const amount=parseFloat(document.getElementById('finper-mov-importe').value);
+  const subcategoria=document.getElementById('finper-mov-subcategoria').value;
+  const categoria=document.getElementById('finper-mov-categoria').value;
+  const categoryId=subcategoria||categoria||null;
+  const descripcion=document.getElementById('finper-mov-descripcion').value.trim();
+  const formaPago=document.getElementById('finper-mov-forma-pago').value||null;
+  const observacion=document.getElementById('finper-mov-observacion').value.trim()||null;
+  if(!fecha||!accountId||!amount||amount<=0||!descripcion){showToast('Completá fecha, cuenta, importe y descripción','error');return;}
+  const direction=['ingreso','devolucion','deposito'].includes(nature)?'entrada':'salida';
+  const fp=financeFingerprint(fecha, direction==='salida'?-amount:amount, descripcion);
+  const payload={
+    tenant_id:currentUser.tenantId, user_id:currentUser.id, account_id:accountId, date:fecha,
+    description_original:descripcion, amount, direction, nature, category_id:categoryId,
+    payment_method:formaPago, origin:'manual', observaciones:observacion, dedupe_fingerprint:fp
+  };
+  if(id){
+    const {data,error}=await supabaseClient.from('finance_transactions').update(payload).eq('id',id).select().single();
+    if(error){showToast('No se pudo guardar: '+error.message,'error');return;}
+    upsertLocal(financeTransactions,data);
+  } else {
+    const {data,error}=await supabaseClient.from('finance_transactions').insert(payload).select().single();
+    if(error){showToast('No se pudo guardar: '+error.message,'error');return;}
+    financeTransactions.push(data);
+  }
+  closeModal('modal-finper-mov');
+  renderFinPerMovimientos();
+  renderFinPerCuentaCompartida();
+  showToast('Movimiento guardado');
+}
+
+async function deleteFinPerMovimiento(id){
+  if(!confirm('¿Eliminar este movimiento?'))return;
+  const {error}=await supabaseClient.from('finance_transactions').delete().eq('id',id);
+  if(error){showToast('No se pudo eliminar: '+error.message,'error');return;}
+  financeTransactions=financeTransactions.filter(t=>t.id!==id);
+  renderFinPerMovimientos();
+  renderFinPerCuentaCompartida();
+}
+
+// ── Cuenta Compartida ──
+function renderFinPerCuentaCompartida(){
+  const box=document.getElementById('finper-compartida-saldo');
+  const listBox=document.getElementById('finper-compartida-recientes');
+  if(!box)return;
+  const acc=financeAccounts.find(a=>a.kind==='shared');
+  if(!acc){box.innerHTML='<p class="finper-placeholder">Todavía no existe la Cuenta Compartida.</p>';return;}
+  const txs=financeTransactions.filter(t=>t.account_id===acc.id);
+  const total=txs.reduce((s,t)=>s+financeTxSignedAmount(t),0)+Number(acc.opening_balance||0);
+  box.innerHTML=`<div style="font-size:22px;font-weight:600">${fmt(total)}</div>
+    <div style="font-size:11px;color:var(--text2)">Saldo calculado desde movimientos importados — no es el saldo bancario real hasta cargar un saldo de referencia.</div>`;
+  const recientes=[...txs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
+  listBox.innerHTML=recientes.length?recientes.map(t=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border);font-size:12px">
+    <span>${esc(fmtDate(t.date))} — ${esc(t.description_original)}</span>
+    <span style="font-weight:500;color:${t.direction==='salida'?'var(--red)':'var(--green)'}">${fmt(financeTxSignedAmount(t))}</span>
+  </div>`).join(''):'<p class="finper-placeholder">Sin movimientos todavía.</p>';
+}
+
+// ── Importar datos ──
+// Clasifica nature por prioridad (no el primer if que matchee): PAGO DE TC
+// trae categoria="Tarjeta de crédito" Y tratamiento="Gasto identificado" al
+// mismo tiempo -- si tratamiento se chequeara primero, TC caería como gasto
+// normal. Fallback final separado por dirección: una entrada sin clasificar
+// NUNCA cae en "gasto" (contablemente absurdo).
+function financeClassifyNature(row){
+  const cat=(row.categoria||'').trim().toLowerCase();
+  const trat=(row.tratamiento||'').trim().toLowerCase();
+  if(row.traspasoInterno)return 'transferencia_interna';
+  if(cat==='tarjeta de crédito'||cat==='tarjeta de credito')return 'pago_tc';
+  if(cat==='retiro de efectivo')return 'retiro';
+  if(cat==='depósito'||cat==='deposito')return 'deposito';
+  if(cat==='crédito / devolución'||cat==='credito / devolucion')return 'devolucion';
+  if(trat.includes('transferencia saliente'))return 'transferencia_externa';
+  if(trat.includes('por clasificar'))return 'pendiente_clasificar';
+  return row.direction==='salida' ? 'gasto' : 'pendiente_clasificar';
+}
+function finperPick(raw,...keys){
+  for(const k of keys){ if(raw[k]!==undefined&&raw[k]!==null&&raw[k]!=='')return raw[k]; }
+  return null;
+}
+function normalizeFinPerDate(v){
+  if(v==null)return null;
+  if(v instanceof Date){
+    return `${v.getFullYear()}-${String(v.getMonth()+1).padStart(2,'0')}-${String(v.getDate()).padStart(2,'0')}`;
+  }
+  const s=String(v).trim();
+  if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);
+  if(/^\d+(\.\d+)?$/.test(s)&&typeof XLSX!=='undefined'&&XLSX.SSF){
+    const p=XLSX.SSF.parse_date_code(Number(s));
+    if(p)return `${p.y}-${String(p.m).padStart(2,'0')}-${String(p.d).padStart(2,'0')}`;
+  }
+  return s;
+}
+function normalizeFinPerRow(raw){
+  const fecha=normalizeFinPerDate(finperPick(raw,'fecha','Fecha'));
+  const descripcion=finperPick(raw,'descripcion','Descripción','Descripcion')||'';
+  let monto=finperPick(raw,'monto','Monto');
+  monto=typeof monto==='number'?monto:parseFloat(String(monto).replace(',','.'));
+  const categoria=finperPick(raw,'categoria','Categoría','Categoria')||'';
+  const subcategoria=finperPick(raw,'subcategoria','Subcategoría','Subcategoria')||'';
+  const tratamiento=finperPick(raw,'tratamiento','Tratamiento')||'';
+  const traspasoRaw=finperPick(raw,'traspaso_interno','Traspaso interno');
+  const traspasoInterno=traspasoRaw===true||traspasoRaw==='Sí'||traspasoRaw==='Si'||traspasoRaw==='true';
+  const direction=monto>0?'entrada':'salida';
+  return {fecha,descripcion,monto,categoria,subcategoria,tratamiento,traspasoInterno,direction};
+}
+
+function onFinPerImportFileSelected(input){
+  const file=input.files[0];if(!file)return;
+  const name=file.name.toLowerCase();
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      let rawRows=[];
+      if(name.endsWith('.json')){
+        const parsed=JSON.parse(e.target.result);
+        rawRows=Array.isArray(parsed)?parsed:(parsed.movimientos||[]);
+      } else {
+        const wb=XLSX.read(e.target.result,{type:name.endsWith('.csv')?'string':'array'});
+        const sheetName=wb.SheetNames.includes('Movimientos')?'Movimientos':wb.SheetNames[0];
+        rawRows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName]);
+      }
+      buildFinPerImportPreview(rawRows,file.name);
+    }catch(err){
+      showToast('Error al leer el archivo: '+err.message,'error');
+    }
+    input.value='';
+  };
+  if(name.endsWith('.json')||name.endsWith('.csv'))reader.readAsText(file);
+  else reader.readAsArrayBuffer(file);
+}
+
+// Preview del lado del cliente -- informativo, de solo lectura. La fuente
+// de verdad de qué es duplicado la decide siempre import_finance_transactions()
+// del lado del servidor (con lock de concurrencia), recién al confirmar.
+function buildFinPerImportPreview(rawRows,filename){
+  const accountId=financeAccounts.find(a=>a.kind==='shared')?.id;
+  if(!accountId){showToast('No existe todavía la Cuenta Compartida.','error');return;}
+  const normalized=rawRows.map(raw=>{
+    const n=normalizeFinPerRow(raw);
+    const nature=financeClassifyNature(n);
+    const fp=financeFingerprint(n.fecha,n.monto,n.descripcion);
+    return {fecha:n.fecha, descripcion:n.descripcion, amount:Math.abs(n.monto), direction:n.direction,
+      nature, categoria:n.categoria||null, subcategoria:n.subcategoria||null,
+      payment_method:null, dedupe_fingerprint:fp, raw};
+  });
+  const existingCounts={};
+  financeTransactions.filter(t=>t.account_id===accountId).forEach(t=>{
+    existingCounts[t.dedupe_fingerprint]=(existingCounts[t.dedupe_fingerprint]||0)+1;
+  });
+  const seenInFile={};
+  let nuevos=0,duplicados=0,transferenciasInternas=0;
+  normalized.forEach(r=>{
+    seenInFile[r.dedupe_fingerprint]=(seenInFile[r.dedupe_fingerprint]||0)+1;
+    const occurrence=seenInFile[r.dedupe_fingerprint];
+    const existing=existingCounts[r.dedupe_fingerprint]||0;
+    r._isDuplicatePreview=occurrence<=existing;
+    if(r._isDuplicatePreview)duplicados++;else nuevos++;
+    if(r.nature==='transferencia_interna')transferenciasInternas++;
+  });
+  finperPendingImport={accountId,rows:normalized,filename};
+  document.getElementById('finper-import-summary').innerHTML=
+    `<strong>${normalized.length}</strong> movimientos encontrados en <em>${esc(filename)}</em> — <strong>${nuevos}</strong> nuevos, <strong>${duplicados}</strong> duplicados, <strong>${transferenciasInternas}</strong> transferencias internas ya identificadas.`;
+  document.getElementById('finper-import-preview-tbody').innerHTML=normalized.map(r=>`<tr>
+    <td>${esc(r.fecha)}</td><td>${esc(r.descripcion)}</td>
+    <td style="text-align:right">${fmt(r.direction==='salida'?-r.amount:r.amount)}</td>
+    <td>${esc(financeNatureLabel(r.nature))}</td><td>${esc(r.categoria||'')}</td>
+    <td>${r._isDuplicatePreview?'<span style="color:var(--text3)">Duplicado</span>':'<span style="color:var(--green)">Nuevo</span>'}</td>
+  </tr>`).join('');
+  document.getElementById('finper-import-status').textContent='';
+  openModal('modal-finper-import-preview');
+}
+
+async function confirmFinPerImport(){
+  if(!finperPendingImport)return;
+  const btn=document.getElementById('finper-import-confirm-btn');
+  btn.disabled=true;
+  const payload=finperPendingImport.rows.map(r=>({
+    fecha:r.fecha, descripcion:r.descripcion, amount:r.amount, direction:r.direction, nature:r.nature,
+    categoria:r.categoria, subcategoria:r.subcategoria, payment_method:r.payment_method,
+    dedupe_fingerprint:r.dedupe_fingerprint, raw:r.raw
+  }));
+  const {data,error}=await supabaseClient.rpc('import_finance_transactions',{
+    p_account_id:finperPendingImport.accountId, p_rows:payload
+  });
+  btn.disabled=false;
+  if(error){showToast('No se pudo importar: '+error.message,'error');return;}
+  closeModal('modal-finper-import-preview');
+  finperPendingImport=null;
+  await loadFinanceCategories();
+  await loadFinanceTransactions();
+  populateFinPerSelects();
+  renderFinPerMovimientos();
+  renderFinPerCuentaCompartida();
+  renderFinPerCategorias();
+  showToast(`Importación completa: ${data.nuevos} nuevos, ${data.duplicados} duplicados.`);
+}
+
 // Reparenta page-usuarios/page-auditoria UNA sola vez hacia el panel de
 // Ajustes (appendChild real, no clona — mismos ids, funciones, permisos y
 // datos, sin duplicar lógica). Se les saca la clase "page" para que dejen
