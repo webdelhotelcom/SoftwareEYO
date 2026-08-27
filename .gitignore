@@ -13,3 +13,7 @@ app/config.js
 Thumbs.db
 .DS_Store
 *.tmp
+paren_check_result.txt
+
+# Estado local del CLI de Supabase (project ref, versiones) -- no es código
+supabase/.temp/

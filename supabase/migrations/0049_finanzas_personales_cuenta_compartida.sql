@@ -47,22 +47,55 @@ comment on function public.has_personal_finance_beta() is 'Feature flag de Finan
 revoke all on function public.has_personal_finance_beta() from public;
 grant execute on function public.has_personal_finance_beta() to authenticated;
 
--- ── Cuentas (Cuenta Compartida / Cuenta Personal) ──
+-- ── Cuentas (Cuenta Compartida / Cuenta Empresa / futuras) ──
+-- `kind` es una CLASIFICACIÓN abierta, no la identidad de la cuenta -- la
+-- identidad la da `name`. Se deja un check (protección real contra typos)
+-- en vez de un catálogo aparte, con una salida genérica ('other') para no
+-- necesitar una migración cada vez que se agregue un tipo de cuenta nuevo.
+--
+-- Saldo bancario, ahorro y completitud de movimientos son TRES conceptos
+-- independientes, nunca mezclados en un solo campo:
+--   - transactions_complete_from/through: rango de cobertura bancaria
+--     CONFIRMADA (nunca inferida de min/max de las filas -- ver el import
+--     real más abajo, que carga esto desde metadata.periodo del archivo
+--     de origen, no desde las fechas de los movimientos).
+--   - balance_reference_amount/date: saldo bancario real conocido, AL
+--     CIERRE de balance_reference_date. Sin esto, ningún cálculo puede
+--     mostrarse como "saldo actual" aunque haya movimientos completos.
+--   - savings_tracking_start/opening_savings_balance: base del control de
+--     AHORRO (Fase 4), nunca un ingreso ni el saldo bancario de la cuenta.
 create table public.finance_accounts (
   id uuid primary key default gen_random_uuid(),
   tenant_id uuid not null references public.tenants(id),
   user_id uuid not null references auth.users(id),
-  kind text not null check (kind in ('shared','personal')),
+  kind text not null check (kind in ('shared','business','other')),
   name text not null,
   currency text not null default 'UYU',
-  opening_balance numeric not null default 0,
-  opening_balance_date date,
+  transactions_complete_from date,
+  transactions_complete_through date,
+  balance_reference_amount numeric,
+  balance_reference_date date,
+  savings_tracking_start date,
+  opening_savings_balance numeric,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  unique (id, user_id, tenant_id)
+  unique (id, user_id, tenant_id),
+  constraint finance_accounts_balance_ref_pair check (
+    (balance_reference_amount is null) = (balance_reference_date is null)
+  ),
+  constraint finance_accounts_savings_pair check (
+    (savings_tracking_start is null) = (opening_savings_balance is null)
+  ),
+  constraint finance_accounts_complete_range_pair check (
+    (transactions_complete_from is null) = (transactions_complete_through is null)
+  ),
+  constraint finance_accounts_complete_range_order check (
+    transactions_complete_from is null or transactions_complete_from <= transactions_complete_through
+  )
 );
 
-comment on column public.finance_accounts.opening_balance is 'Saldo previo al primer movimiento cargado. 0 por defecto cuando no hay saldo de referencia real (ver Cuenta Compartida en la Fase 2) -- la UI nunca debe mostrar el cálculo resultante como "saldo actual" si este valor es provisional.';
+comment on column public.finance_accounts.balance_reference_date is 'Saldo AL CIERRE de este día -- para sumar movimientos posteriores usar date > balance_reference_date, nunca >=, para no contar dos veces los movimientos del propio día de referencia.';
+comment on column public.finance_accounts.transactions_complete_through is 'Hasta esta fecha el historial de movimientos está confirmado completo. NUNCA se actualiza automáticamente con max(date) de una importación -- una fila suelta de un mes futuro no prueba que los meses intermedios no tengan huecos. Se actualiza con una decisión explícita.';
 
 -- ── Categorías/subcategorías administrables (nunca se borran, se archivan) ──
 create table public.finance_categories (
@@ -209,8 +242,20 @@ begin
     return;
   end if;
 
-  insert into public.finance_accounts (tenant_id, user_id, kind, name, currency)
-  values (v_tenant_id, v_user_id, 'shared', 'Cuenta Compartida', 'UYU')
+  -- transactions_complete_from/through quedan NULL acá a propósito -- se
+  -- cargan recién después de la importación real, con el rango que declare
+  -- metadata.periodo del archivo de origen (ver Parte A del plan). No se
+  -- asume ningún valor de antemano. savings_tracking_start/opening_savings_balance
+  -- sí se conocen de entrada: son la base del control de ahorro desde
+  -- agosto 2026, un concepto totalmente distinto del saldo bancario.
+  insert into public.finance_accounts (
+    tenant_id, user_id, kind, name, currency,
+    savings_tracking_start, opening_savings_balance
+  )
+  values (
+    v_tenant_id, v_user_id, 'shared', 'Cuenta Compartida', 'UYU',
+    '2026-08-01', 15135.52
+  )
   returning id into v_account_id;
 
   foreach v_cat in array array[
@@ -263,7 +308,7 @@ begin
   -- (aunque terminen siendo duplicadas -- no hay costo real en tenerlas
   -- creadas de antemano, y simplifica no tener que separar "solo las nuevas").
   insert into public.finance_categories (tenant_id, user_id, parent_id, name)
-  select distinct v_tenant_id, v_uid, null, r->>'categoria'
+  select distinct v_tenant_id, v_uid, null::uuid, r->>'categoria'
   from jsonb_array_elements(p_rows) as r
   where nullif(r->>'categoria', '') is not null
   on conflict (user_id, (lower(trim(name)))) where parent_id is null do nothing;

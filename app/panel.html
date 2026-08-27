@@ -4,6 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Software EYO</title>
+<!-- Instalable como app (PWA) -- ver app/manifest.webmanifest y app/sw.js.
+     start_url del manifest apunta a /panel (nunca a la landing pública). -->
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#1a1a18">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="EYO">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<!-- Inter: mismo estilo de fuente que usa Productividad Ori (Geist) para la
+     pantalla de login/recuperación -- Geist en sí no está en Google Fonts,
+     Inter es el sustituto más cercano y ya está permitido por la CSP (la
+     landing pública ya carga fonts.googleapis.com). Se carga acá, no dentro
+     del <head> general de siempre, para no afectar la tipografía del resto
+     del panel (Ajustes, Reservas, etc.), que sigue con la fuente del sistema. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <!--
   Librerías externas: TODAS con versión fija (nunca un tag flotante tipo "@2")
   y con Subresource Integrity (SRI). Si un CDN fuera comprometido y sirviera un
@@ -74,16 +92,61 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
    reportes) tiene su propio overflow-x:auto local (.table-wrap, .cal-grid-
    scroll, .page-actions-scroll, etc.). Esto solo evita que, si algo se
    escapa igual, se lleve puesta la página entera. */
-#login-screen,#recovery-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg3)}
-.login-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:2.5rem;width:380px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
-.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:2rem}
-.login-logo-icon{width:56px;height:56px;background:var(--accent);border-radius:var(--radius);display:flex;align-items:center;justify-content:center}
-.login-logo-icon i{color:#fff;font-size:26px}
-.login-logo-text{font-size:17px;font-weight:600;line-height:1.35}
-.login-card h2{font-size:20px;font-weight:500;margin-bottom:.4rem}
-.login-card .sub{color:var(--text2);margin-bottom:1.5rem;font-size:13px}
-.login-hint{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:1.25rem;font-size:11px;color:var(--text2);line-height:1.7}
-.login-hint strong{color:var(--text)}
+/* ── Login / recuperación: diseño visual tomado de Productividad Ori ──
+   Valores exactos leídos de su código fuente (globals.css :root Y .dark,
+   FormField, SubmitButton, Card) -- las DOS paletas, no solo la oscura.
+   Automático: sigue el mismo data-theme que ya resuelve el script de arriba
+   (localStorage del último usuario, o prefers-color-scheme si no hay
+   ninguno todavía) -- igual que el resto del panel, nunca fijo en un modo.
+   Escopado a #login-screen/#recovery-screen a propósito: el resto del panel
+   (Reservas, Ajustes, etc.) sigue con su propio tema y tipografía. */
+:root{
+  --po-bg:#f7f7f8;--po-surface:#ffffff;--po-border:#e5e5e8;
+  --po-text:#17171a;--po-text-muted:#6b6b74;
+  --po-accent:#5b5bf0;--po-accent-hover:#4747d8;
+  --po-danger:#dc2626;--po-danger-soft:#fef2f2;
+}
+[data-theme="dark"]{
+  --po-bg:#0f0f12;--po-surface:#17171b;--po-border:#2a2a30;
+  --po-text:#f2f2f4;--po-text-muted:#a4a4ad;
+  --po-accent:#7c7cf5;--po-accent-hover:#9090f7;
+  --po-danger:#f87171;--po-danger-soft:#331414;
+}
+#login-screen,#recovery-screen{
+  display:flex;align-items:center;justify-content:center;min-height:100vh;
+  background:var(--po-bg);padding:1rem;
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+.login-card{
+  background:var(--po-surface);border:1px solid var(--po-border);
+  border-radius:1.25rem;padding:1.25rem;width:100%;max-width:24rem;
+  box-shadow:0 1px 3px rgba(0,0,0,.3),0 1px 2px -1px rgba(0,0,0,.3);
+}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem}
+.login-logo-icon{width:40px;height:40px;background:var(--po-accent);border-radius:.875rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.login-logo-icon i{color:#fff;font-size:19px}
+.login-logo-text{font-size:15px;font-weight:600;line-height:1.35;color:var(--po-text)}
+.login-card h2{font-size:18px;font-weight:600;margin-bottom:.4rem;color:var(--po-text)}
+.login-card .sub{color:var(--po-text-muted);margin-bottom:1.5rem;font-size:13px}
+#login-screen .form-group label,#recovery-screen .form-group label{
+  font-size:14px;font-weight:500;color:var(--po-text-muted);
+  text-transform:none;letter-spacing:normal;margin-bottom:6px;
+}
+#login-screen .form-group input,#recovery-screen .form-group input{
+  background:var(--po-surface);border:1px solid var(--po-border);border-radius:.875rem;
+  padding:10px 12px;font-size:14px;color:var(--po-text);
+}
+#login-screen .form-group input:focus,#recovery-screen .form-group input:focus{border-color:var(--po-accent)}
+#login-screen .btn,#recovery-screen .btn{
+  border-radius:1.25rem;border-color:var(--po-border);background:var(--po-surface);
+  color:var(--po-text);font-size:14px;font-weight:500;padding:10px 14px;
+}
+#login-screen .btn:hover,#recovery-screen .btn:hover{background:var(--po-border)}
+#login-screen .btn-primary,#recovery-screen .btn-primary{background:var(--po-accent);border-color:var(--po-accent);color:#fff}
+#login-screen .btn-primary:hover,#recovery-screen .btn-primary:hover{background:var(--po-accent-hover);border-color:var(--po-accent-hover)}
+#login-error,#recovery-error{background:var(--po-danger-soft) !important;border-color:var(--po-danger) !important;color:var(--po-danger) !important}
+.login-hint{background:var(--po-border);border:1px solid var(--po-border);border-radius:.875rem;padding:10px 12px;margin-bottom:1.25rem;font-size:11px;color:var(--po-text-muted);line-height:1.7}
+.login-hint strong{color:var(--po-text)}
 .form-group{margin-bottom:1rem}
 .form-group label{display:block;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:.03em}
 .form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);font-size:13px;background:var(--bg);color:var(--text);outline:none;transition:border-color .15s}
@@ -606,18 +669,14 @@ tr:hover td{background:var(--bg2)}
     <h2>Iniciar sesión</h2>
     <p class="sub">Ingresá tus credenciales para continuar.</p>
     <div id="login-error" style="display:none;font-size:12px;color:var(--red);background:var(--red-bg,#fcebeb);border:0.5px solid var(--red);border-radius:var(--radius);padding:8px 10px;margin-bottom:.75rem"></div>
-    <!-- Login con Google/Microsoft: pausado (config. de Google Cloud sin
-         terminar, ver docs/obsidian/Login-Externo-Google-Microsoft.md) —
-         oculto para no mostrarle un botón roto a un usuario real. El código
-         (doOAuthLogin, linkIdentity en Ajustes) sigue entero más abajo, listo
-         para reactivar sacando este comentario cuando se retome. -->
-    <div id="login-oauth-buttons" style="display:none">
-      <button class="btn btn-full" id="btn-oauth-google" onclick="doOAuthLogin('google')" style="display:flex;align-items:center;justify-content:center;gap:8px"><i class="ti ti-brand-google"></i> Continuar con Google</button>
-      <button class="btn btn-full" id="btn-oauth-azure" onclick="doOAuthLogin('azure')" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px"><i class="ti ti-brand-windows"></i> Continuar con Microsoft</button>
-      <div style="display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--text3);font-size:11px">
-        <div style="flex:1;height:0.5px;background:var(--border)"></div>o con tu correo<div style="flex:1;height:0.5px;background:var(--border)"></div>
-      </div>
-    </div>
+    <!-- Login con Google/Microsoft: retirado el 2026-08-26. Nunca llegó a
+         verse en producción (estaba en display:none desde antes, la
+         configuración de Google Cloud no se había terminado), y no aportaba
+         nada sobre el alta admin-controlada existente: para que alguien
+         pudiera entrar con Google igual hacía falta que el admin le creara
+         antes el perfil a mano. Se decidió no reactivarlo y sacar el código
+         en vez de mantenerlo pausado -- ver doOAuthLogin()/linkIdentity() en
+         el historial de git si hace falta recuperarlo. -->
     <div class="form-group"><label>Correo</label><input id="login-user" type="email" autocomplete="username" placeholder="tu@correo.com"></div>
     <div class="form-group"><label>Contraseña</label><input id="login-pass" type="password" autocomplete="current-password"></div>
     <button class="btn btn-primary btn-full" onclick="doLogin()"><i class="ti ti-login"></i> Iniciar sesión</button>
@@ -1384,16 +1443,8 @@ tr:hover td{background:var(--bg2)}
           <div style="margin-top:1rem;border-top:0.5px solid var(--border);padding-top:1rem">
             <button class="btn" onclick="openChangeOwnPassword()"><i class="ti ti-key"></i><span>Cambiar mi contraseña</span></button>
           </div>
-          <!-- Vinculación Google/Microsoft: pausada junto con el login externo,
-               ver docs/obsidian/Login-Externo-Google-Microsoft.md -->
-          <div style="margin-top:1rem;border-top:0.5px solid var(--border);padding-top:1rem;display:none">
-            <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:.5rem">Métodos de inicio de sesión vinculados a tu cuenta</div>
-            <p style="font-size:11px;color:var(--text3);margin:0 0 .5rem">
-              Vinculá Google o Microsoft para poder entrar con "Continuar con..." usando
-              <b>esta misma cuenta</b> — nunca crea una cuenta nueva ni duplicada.
-            </p>
-            <div id="ajustes-identidades-list" style="font-size:13px"></div>
-          </div>
+          <!-- Vinculación Google/Microsoft: retirada junto con el login externo
+               el 2026-08-26 (ver comentario en #login-screen). -->
         </div>
       </div>
 
@@ -1566,7 +1617,7 @@ tr:hover td{background:var(--bg2)}
     <div class="finper-categories" id="finperCategories">
       <button class="finper-cat-btn" data-section="resumen" onclick="showFinPerSection('resumen')"><i class="ti ti-layout-dashboard"></i><span>Resumen</span></button>
       <button class="finper-cat-btn" data-section="compartida" onclick="showFinPerSection('compartida')"><i class="ti ti-users-group"></i><span>Cuenta Compartida</span></button>
-      <button class="finper-cat-btn" data-section="personalcta" onclick="showFinPerSection('personalcta')"><i class="ti ti-user"></i><span>Cuenta Personal</span></button>
+      <button class="finper-cat-btn" data-section="personalcta" onclick="showFinPerSection('personalcta')"><i class="ti ti-building-store"></i><span>Cuenta Empresa</span></button>
       <button class="finper-cat-btn" data-section="movimientos" onclick="showFinPerSection('movimientos')"><i class="ti ti-arrows-left-right"></i><span>Movimientos</span></button>
       <button class="finper-cat-btn" data-section="tc" onclick="showFinPerSection('tc')"><i class="ti ti-credit-card"></i><span>Tarjeta/TC</span></button>
       <button class="finper-cat-btn" data-section="ahorro" onclick="showFinPerSection('ahorro')"><i class="ti ti-piggy-bank"></i><span>Ahorro</span></button>
@@ -1593,7 +1644,14 @@ tr:hover td{background:var(--bg2)}
         </div>
       </div>
       <div class="finper-section" id="finperSectionPersonalcta">
-        <div class="card"><div class="card-header"><div class="card-title"><i class="ti ti-user" style="font-size:14px;margin-right:4px"></i>Cuenta Personal</div></div><p class="finper-placeholder">Esta sección se construye en la Fase 3, junto con la detección de transferencias internas.</p></div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="ti ti-building-store" style="font-size:14px;margin-right:4px"></i>Cuenta Empresa</div></div>
+          <div id="finper-empresa-cobertura" style="margin-bottom:1rem"></div>
+          <button class="btn btn-primary btn-sm" onclick="openFinPerMovimiento(null,'business')"><i class="ti ti-plus"></i><span>Agregar movimiento</span></button>
+          <button class="btn btn-sm" onclick="scanFinPerTransferCandidates()" style="margin-left:8px"><i class="ti ti-search"></i><span>Buscar transferencias</span></button>
+          <div id="finper-empresa-candidatos" style="margin-top:1rem"></div>
+          <div id="finper-empresa-recientes" style="margin-top:1rem"></div>
+        </div>
       </div>
       <div class="finper-section" id="finperSectionMovimientos">
         <div class="card">
@@ -2419,6 +2477,15 @@ if(typeof window.supabase!=='undefined' && window.SUPABASE_URL && window.SUPABAS
 }
 let tenantLimits={maxProperties:null,maxUsers:null,maxRooms:null};
 let tenantRow=null;
+
+// ══════════════════════════════════════════════════════════════
+// PWA — registro del service worker (app/sw.js). Solo fuera de localhost:
+// en desarrollo local un SW cachearía panel.html y taparía los cambios que
+// se están probando, sin avisar por qué "no se actualiza".
+// ══════════════════════════════════════════════════════════════
+if('serviceWorker' in navigator && location.hostname!=='localhost' && location.hostname!=='127.0.0.1'){
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+}
 
 // Usuarios y permisos
 const ROLES=[
@@ -3875,30 +3942,6 @@ const ROLE_LABELS={
 };
 function loginError(msg){const el=document.getElementById('login-error');el.textContent=msg;el.style.display='block';}
 
-// Login con proveedor externo (Google/Microsoft) vía Supabase Auth — nunca
-// un sistema de login casero. El Client Secret de cada proveedor NUNCA pasa
-// por acá: vive únicamente en la configuración de Supabase (Authentication →
-// Providers), el navegador solo dispara el redirect y Supabase se encarga
-// del intercambio de tokens del lado del servidor.
-async function doOAuthLogin(provider){
-  if(!supabaseClient){loginError('Supabase no está configurado (falta app/config.js).');return;}
-  document.getElementById('login-error').style.display='none';
-  const {error}=await supabaseClient.auth.signInWithOAuth({
-    provider,
-    options:{redirectTo:window.location.origin+window.location.pathname},
-  });
-  if(error){
-    loginError(
-      error.message&&error.message.toLowerCase().includes('provider')
-        ? `El login con ${provider==='google'?'Google':'Microsoft'} todavía no está habilitado en esta cuenta. Contactá al administrador.`
-        : error.message
-    );
-  }
-  // Si no hay error, el navegador redirige a Google/Microsoft — no hay nada
-  // más que hacer acá. La vuelta la maneja el chequeo de sesión que ya
-  // corre al cargar la página (getSession() más abajo).
-}
-
 async function doLogin(){
   if(!supabaseClient){loginError('Supabase no está configurado (falta app/config.js).');return;}
   const emailInput=document.getElementById('login-user');
@@ -3919,12 +3962,12 @@ async function doLogin(){
 async function loadSessionUser(authUser){
   const {data:profile,error:profErr}=await supabaseClient.from('profiles').select('*').eq('id',authUser.id).single();
   if(profErr||!profile){
-    // Con login por Google/Microsoft, Supabase crea la cuenta de Auth en el
-    // momento del primer click — ANTES de que exista perfil. Es esperado y
-    // no es un problema de seguridad (sin fila en "profiles" no hay ningún
-    // acceso a datos, RLS lo exige en todas las tablas), pero el mensaje
-    // tiene que ser claro sobre por qué no entra igual.
-    loginError('Tu usuario no tiene un perfil asignado en ningún cliente de Software EYO. Pedile al administrador que te dé de alta (si ya tenías cuenta con correo y contraseña, pedile que vincule tu cuenta de Google/Microsoft en vez de crear una nueva).');
+    // Defensa en profundidad: un usuario de auth.users sin fila en "profiles"
+    // no debe entrar aunque la contraseña sea correcta (no debería poder
+    // pasar hoy -- el alta siempre crea el perfil en el mismo flujo, ver
+    // "Usuarios y permisos" -- pero si alguna vez pasara, sin perfil no hay
+    // ningún acceso a datos, RLS lo exige en todas las tablas).
+    loginError('Tu usuario no tiene un perfil asignado en ningún cliente de Software EYO. Pedile al administrador que te dé de alta.');
     await supabaseClient.auth.signOut();
     return false;
   }
@@ -3982,7 +4025,7 @@ async function loadSessionUser(authUser){
     populateFinPerSelects();
     renderFinPerCategorias();
     renderFinPerMovimientos();
-    renderFinPerCuentaCompartida();
+    renderFinPerAllAccounts();
   }
   supabaseClient.from('profiles').update({last_active_at:new Date().toISOString()}).eq('id',authUser.id).then(()=>{});
   calYear=2026;calMonth=0; // demo: arranca en enero 2026 (temporada)
@@ -7315,9 +7358,13 @@ function accountMenuEscHandler(e){ if(e.key==='Escape') closeAccountMenu(); }
 
 
 // ═══════════════════════════════════════════════════════
-// SINCRONIZACIÓN CON GOOGLE SHEETS — resumen diario por email
+// SINCRONIZACIÓN CON GOOGLE SHEETS — desactivada
 // ═══════════════════════════════════════════════════════
-const SYNC_URL = 'https://script.google.com/macros/s/AKfycbx_bGYCGjopQMC5ZEzR85XQbYRGbEjAFJRKA52F9nKtdEqiQEfqpLn0CcDqlzk_oUevTA/exec';
+// La constante SYNC_URL (un endpoint de Google Apps Script) se eliminó el
+// 2026-08-26: la sincronización está desactivada desde hace tiempo y la URL
+// no se usaba en ningún lado. Una URL de script externo dentro de una página
+// que pide credenciales es exactamente el tipo de patrón que los escáneres
+// automáticos (Google Safe Browsing) puntúan como sospechoso.
 
 function syncToSheets(){
   /* sincronizacion desactivada en esta version demo */
@@ -7720,9 +7767,7 @@ function renderAjustesPage(){
   }
   box.innerHTML=rows.map(([label,val])=>`<div><div style="color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px">${esc(label)}</div><div style="font-weight:600">${esc(String(val))}</div></div>`).join('');
   populatePersonalizacionForm();
-  // renderAjustesIdentidades(): pausado junto con el login externo (sección
-  // oculta más arriba) — no tiene sentido gastar una consulta a Supabase
-  // para poblar algo que no se muestra. Descomentar al reactivar.
+  // renderAjustesIdentidades() se retiró junto con el login externo (2026-08-26).
   initAjustesShell();
 }
 
@@ -7926,10 +7971,10 @@ function renderFinPerMovimientos(){
   }
 }
 
-function openFinPerMovimiento(id){
+function openFinPerMovimiento(id,presetKind){
   document.getElementById('finper-mov-id').value=id||'';
   document.getElementById('modal-finper-mov-title').textContent=id?'Editar movimiento':'Agregar movimiento';
-  const sharedAcc=financeAccounts.find(a=>a.kind==='shared');
+  const sharedAcc=financeAccounts.find(a=>a.kind===(presetKind||'shared'));
   if(id){
     const t=financeTransactions.find(x=>x.id===id);
     if(!t)return;
@@ -7978,6 +8023,7 @@ async function saveFinPerMovimiento(){
     description_original:descripcion, amount, direction, nature, category_id:categoryId,
     payment_method:formaPago, origin:'manual', observaciones:observacion, dedupe_fingerprint:fp
   };
+  let savedId=id;
   if(id){
     const {data,error}=await supabaseClient.from('finance_transactions').update(payload).eq('id',id).select().single();
     if(error){showToast('No se pudo guardar: '+error.message,'error');return;}
@@ -7986,11 +8032,16 @@ async function saveFinPerMovimiento(){
     const {data,error}=await supabaseClient.from('finance_transactions').insert(payload).select().single();
     if(error){showToast('No se pudo guardar: '+error.message,'error');return;}
     financeTransactions.push(data);
+    savedId=data.id;
   }
   closeModal('modal-finper-mov');
   renderFinPerMovimientos();
-  renderFinPerCuentaCompartida();
+  renderFinPerAllAccounts();
   showToast('Movimiento guardado');
+  // Detección de transferencias: solo al cargar un movimiento NUEVO (no al
+  // editar uno ya revisado) -- si hay candidatos de otra cuenta con misma
+  // fecha/monto/dirección opuesta, se ofrece Confirmar/Rechazar/Editar.
+  if(!id)await checkFinPerTransferCandidate(savedId);
 }
 
 async function deleteFinPerMovimiento(id){
@@ -7999,25 +8050,93 @@ async function deleteFinPerMovimiento(id){
   if(error){showToast('No se pudo eliminar: '+error.message,'error');return;}
   financeTransactions=financeTransactions.filter(t=>t.id!==id);
   renderFinPerMovimientos();
-  renderFinPerCuentaCompartida();
+  renderFinPerAllAccounts();
 }
 
-// ── Cuenta Compartida ──
-function renderFinPerCuentaCompartida(){
-  const box=document.getElementById('finper-compartida-saldo');
-  const listBox=document.getElementById('finper-compartida-recientes');
+// ── Cuenta Compartida / Cuenta Empresa: misma lógica, distinto contenedor ──
+// Generalizada de renderFinPerCuentaCompartida() (Fase 2) para que sirva para
+// cualquier cuenta -- el saldo/flujo nunca se etiqueta "saldo actual" salvo
+// que exista una referencia bancaria real verificada (Fase 4+, todavía no
+// implementado), y la cobertura de movimientos siempre se muestra explícita
+// (rango real o "no confirmada"), nunca como un booleano completo/parcial.
+const FINPER_ACCOUNT_CONTAINERS={
+  shared:{saldo:'finper-compartida-saldo', recientes:'finper-compartida-recientes'},
+  business:{saldo:'finper-empresa-cobertura', recientes:'finper-empresa-recientes'}
+};
+function renderFinPerAccountSummary(kind){
+  const ids=FINPER_ACCOUNT_CONTAINERS[kind];
+  if(!ids)return;
+  const box=document.getElementById(ids.saldo);
+  const listBox=document.getElementById(ids.recientes);
   if(!box)return;
-  const acc=financeAccounts.find(a=>a.kind==='shared');
-  if(!acc){box.innerHTML='<p class="finper-placeholder">Todavía no existe la Cuenta Compartida.</p>';return;}
+  const acc=financeAccounts.find(a=>a.kind===kind);
+  if(!acc){box.innerHTML=`<p class="finper-placeholder">Todavía no existe esta cuenta.</p>`;if(listBox)listBox.innerHTML='';return;}
   const txs=financeTransactions.filter(t=>t.account_id===acc.id);
-  const total=txs.reduce((s,t)=>s+financeTxSignedAmount(t),0)+Number(acc.opening_balance||0);
-  box.innerHTML=`<div style="font-size:22px;font-weight:600">${fmt(total)}</div>
-    <div style="font-size:11px;color:var(--text2)">Saldo calculado desde movimientos importados — no es el saldo bancario real hasta cargar un saldo de referencia.</div>`;
+  const flujo=txs.reduce((s,t)=>s+financeTxSignedAmount(t),0);
+  const cobertura=(acc.transactions_complete_from&&acc.transactions_complete_through)
+    ? `Cobertura confirmada: ${esc(fmtDate(acc.transactions_complete_from))} – ${esc(fmtDate(acc.transactions_complete_through))}`
+    : 'Cobertura bancaria no confirmada';
+  box.innerHTML=`<div style="font-size:22px;font-weight:600">${fmt(flujo)}</div>
+    <div style="font-size:11px;color:var(--text2)">Flujo de movimientos cargados — no es el saldo bancario real hasta cargar una referencia verificada.</div>
+    <div style="font-size:11px;color:var(--text2);margin-top:2px">${cobertura}</div>`;
+  if(!listBox)return;
   const recientes=[...txs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
   listBox.innerHTML=recientes.length?recientes.map(t=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border);font-size:12px">
-    <span>${esc(fmtDate(t.date))} — ${esc(t.description_original)}</span>
+    <span>${esc(fmtDate(t.date))} — ${esc(t.description_original||t.reconstruction_note||'')}</span>
     <span style="font-weight:500;color:${t.direction==='salida'?'var(--red)':'var(--green)'}">${fmt(financeTxSignedAmount(t))}</span>
   </div>`).join(''):'<p class="finper-placeholder">Sin movimientos todavía.</p>';
+}
+function renderFinPerAllAccounts(){
+  renderFinPerAccountSummary('shared');
+  renderFinPerAccountSummary('business');
+}
+
+// ── Detección de transferencias internas (Fase 3) ──
+// Dos entradas: (1) automática, después de guardar UN movimiento nuevo
+// manual (saveFinPerMovimiento); (2) en lote, botón "Buscar transferencias"
+// en Cuenta Empresa, para después de importar un extracto real completo.
+// Las dos comparten el mismo renderer -- Confirmar/Rechazar/Editar por par.
+async function checkFinPerTransferCandidate(transactionId){
+  const {data,error}=await supabaseClient.rpc('find_finance_internal_transfer_candidates',{p_transaction_id:transactionId});
+  if(error||!data||!data.length)return;
+  const pairs=data.map(c=>({transaction_id:transactionId, candidate_id:c.id, candidate_account_id:c.account_id, candidate_date:c.date, candidate_amount:c.amount}));
+  renderFinPerTransferCandidatesList(pairs);
+  showFinPerSection('personalcta');
+}
+
+async function scanFinPerTransferCandidates(){
+  const acc=financeAccounts.find(a=>a.kind==='business');
+  if(!acc){showToast('No existe todavía la Cuenta Empresa.','error');return;}
+  const {data,error}=await supabaseClient.rpc('scan_finance_internal_transfer_candidates',{p_account_id:acc.id});
+  if(error){showToast('No se pudo buscar transferencias: '+error.message,'error');return;}
+  renderFinPerTransferCandidatesList(data||[]);
+}
+
+function renderFinPerTransferCandidatesList(pairs){
+  const box=document.getElementById('finper-empresa-candidatos');
+  if(!box)return;
+  if(!pairs.length){box.innerHTML='<p class="finper-placeholder">No se encontraron transferencias candidatas.</p>';return;}
+  box.innerHTML=`<div class="card" style="background:var(--bg2)">
+    <div style="font-size:12px;font-weight:600;margin-bottom:8px">¿Son transferencias entre tus cuentas? (${pairs.length})</div>
+    ${pairs.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border);font-size:12px;flex-wrap:wrap">
+        <span>${esc(fmtDate(p.candidate_date))} — ${fmt(p.candidate_amount)} (${esc(financeAccountName(p.candidate_account_id))})</span>
+        <span>
+          <button class="btn btn-sm" onclick="decideFinPerTransfer('${p.transaction_id}','${p.candidate_id}','confirmed')">Confirmar</button>
+          <button class="btn btn-sm" onclick="decideFinPerTransfer('${p.transaction_id}','${p.candidate_id}','rejected')">Rechazar</button>
+          <button class="btn btn-sm" onclick="openFinPerMovimiento('${p.transaction_id}')">Editar</button>
+        </span>
+      </div>`).join('')}
+  </div>`;
+}
+
+async function decideFinPerTransfer(sourceId,candidateId,decision){
+  const {error}=await supabaseClient.rpc('confirm_finance_internal_transfer',{p_source_transaction_id:sourceId,p_destination_transaction_id:candidateId,p_decision:decision});
+  if(error){showToast('No se pudo procesar: '+error.message,'error');return;}
+  showToast(decision==='confirmed'?'Transferencia confirmada':'Sugerencia rechazada');
+  await loadFinanceTransactions();
+  renderFinPerMovimientos();
+  renderFinPerAllAccounts();
+  await scanFinPerTransferCandidates();
 }
 
 // ── Importar datos ──
@@ -8155,7 +8274,7 @@ async function confirmFinPerImport(){
   await loadFinanceTransactions();
   populateFinPerSelects();
   renderFinPerMovimientos();
-  renderFinPerCuentaCompartida();
+  renderFinPerAllAccounts();
   renderFinPerCategorias();
   showToast(`Importación completa: ${data.nuevos} nuevos, ${data.duplicados} duplicados.`);
 }
@@ -8457,78 +8576,6 @@ function ayudaSetCat(cat){
   const btn=document.querySelectorAll('#ayuda-categorias .btn')[idx+1]||document.querySelectorAll('#ayuda-categorias .btn')[0];
   if(btn)btn.classList.add('btn-primary');
   renderAjustesAyuda();
-}
-
-// ==================== VINCULACIÓN DE IDENTIDADES (Google/Microsoft) ====================
-// Usa linkIdentity()/unlinkIdentity() de Supabase Auth — NUNCA crea una
-// cuenta nueva: agrega o saca un proveedor de la MISMA cuenta ya logueada.
-// Así se evita el problema de "cuenta duplicada al usar el mismo correo con
-// otro proveedor": si el usuario ya existe con contraseña, vincula Google/
-// Microsoft desde acá en vez de que "Continuar con Google" le cree un
-// usuario de Auth aparte sin perfil.
-const OAUTH_PROVIDER_LABEL={google:'Google',azure:'Microsoft'};
-const OAUTH_PROVIDER_ICON={google:'ti-brand-google',azure:'ti-brand-windows'};
-
-async function renderAjustesIdentidades(){
-  const box=document.getElementById('ajustes-identidades-list');
-  if(!box||!supabaseClient)return;
-  box.innerHTML='<p style="font-size:12px;color:var(--text3)">Cargando...</p>';
-  const {data,error}=await supabaseClient.auth.getUserIdentities();
-  if(error){box.innerHTML=`<p style="font-size:12px;color:var(--red)">No se pudo consultar: ${esc(error.message)}</p>`;return;}
-  const identities=data?.identities||[];
-  const vinculados=new Set(identities.map(i=>i.provider));
-  const filas=['google','azure'].map(provider=>{
-    const label=OAUTH_PROVIDER_LABEL[provider];
-    const icon=OAUTH_PROVIDER_ICON[provider];
-    const identidad=identities.find(i=>i.provider===provider);
-    if(identidad){
-      // Nunca dejar sin ningún método de login: Supabase representa el login
-      // por contraseña como una identidad "email" más, así que
-      // identities.length>1 ya cubre "tiene contraseña + este proveedor" o
-      // "tiene dos proveedores" — solo se bloquea si esta es la única.
-      const puedeDesvincular=identities.length>1;
-      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border)">
-        <span><i class="ti ${icon}"></i> ${label} — <span style="color:var(--green)">vinculado</span></span>
-        <button class="btn btn-sm" ${puedeDesvincular?'':'disabled title="No podés desvincular tu único método de acceso"'} onclick="doUnlinkIdentity('${provider}')">Desvincular</button>
-      </div>`;
-    }
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border)">
-      <span><i class="ti ${icon}"></i> ${label} — <span style="color:var(--text3)">no vinculado</span></span>
-      <button class="btn btn-sm btn-primary" onclick="doLinkIdentity('${provider}')">Vincular</button>
-    </div>`;
-  });
-  box.innerHTML=filas.join('');
-}
-
-async function doLinkIdentity(provider){
-  if(!supabaseClient)return;
-  const {error}=await supabaseClient.auth.linkIdentity({
-    provider,
-    options:{redirectTo:window.location.origin+window.location.pathname},
-  });
-  if(error){
-    showToast(
-      error.message&&error.message.toLowerCase().includes('provider')
-        ? `${OAUTH_PROVIDER_LABEL[provider]} todavía no está habilitado en esta cuenta de Software EYO.`
-        : 'No se pudo vincular: '+error.message,
-      'error',
-    );
-    return;
-  }
-  // Supabase redirige a Google/Microsoft y vuelve a esta misma página — al
-  // volver, renderAjustesIdentidades() ya va a mostrarlo vinculado.
-}
-
-async function doUnlinkIdentity(provider){
-  if(!supabaseClient)return;
-  const {data}=await supabaseClient.auth.getUserIdentities();
-  const identidad=data?.identities?.find(i=>i.provider===provider);
-  if(!identidad)return;
-  if(!confirm(`¿Desvincular ${OAUTH_PROVIDER_LABEL[provider]}? Vas a dejar de poder entrar con "Continuar con ${OAUTH_PROVIDER_LABEL[provider]}".`))return;
-  const {error}=await supabaseClient.auth.unlinkIdentity(identidad);
-  if(error){showToast('No se pudo desvincular: '+error.message,'error');return;}
-  showToast(`${OAUTH_PROVIDER_LABEL[provider]} desvinculado`);
-  renderAjustesIdentidades();
 }
 
 // ==================== PERSONALIZACIÓN (Ajustes) ====================
