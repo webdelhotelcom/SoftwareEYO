@@ -1335,8 +1335,9 @@ tr:hover td{background:var(--bg2)}
     </div>
     <p style="font-size:11px;color:var(--text2);margin:.25rem 0 .75rem" data-i18n="mercado.explicacion_escaneo">
       Puede tardar bastante — a veces más de una hora — pero podés seguir usando el resto de Software EYO mientras corre.
-      Se abre un navegador en tu computadora para hacer las búsquedas; si en algún momento pide resolver una
-      verificación de seguridad, el escaneo la registra y sigue solo, sin detenerse a esperarte.
+      Se abre un navegador en tu computadora para hacer las búsquedas; si algún sitio de origen bloquea una
+      búsqueda puntual, el escaneo la salta y sigue con las demás sin detenerse a esperarte — revisá el resumen
+      final para ver si quedó algo sin cubrir.
     </p>
     <button class="btn btn-primary" id="mkt-btn-generar" onclick="iniciarEscaneoMercado()"><i class="ti ti-search"></i> <span data-i18n="mercado.generar_informe">Generar informe</span></button>
     <button class="btn btn-sm" onclick="mktVerInformesAnteriores()" style="margin-left:.5rem"><i class="ti ti-folder"></i> <span data-i18n="mercado.ver_informes_anteriores">Ver informes anteriores</span></button>
@@ -7629,7 +7630,7 @@ async function mktDetectarAgente(){
     cardAgente.innerHTML=`
       <span style="color:var(--text2)"><i class="ti ti-circle-x"></i> El componente EYO Market no está instalado (o no está corriendo) en esta computadora.</span>
       <p style="font-size:11px;color:var(--text3);margin-top:.5rem">Instalalo una vez en la PC donde el dueño va a generar los informes de mercado — esta función solo funciona en esa computadora, no desde el celular ni desde otro equipo. Es gratis, corre local, y se abre solo cuando vos lo abrís (no queda prendido con Windows).</p>
-      <a class="btn btn-sm btn-primary" style="margin-top:.5rem;text-decoration:none" href="/descargas/EYOMarket-Instalador.exe" download><i class="ti ti-download"></i> Descargar e instalar</a>
+      <a class="btn btn-sm btn-primary" style="margin-top:.5rem;text-decoration:none" href="https://github.com/webdelhotelcom/eyo-market-instalador/releases/latest" target="_blank" rel="noopener"><i class="ti ti-download"></i> Descargar e instalar</a>
       <button class="btn btn-sm" style="margin-top:.5rem;margin-left:.5rem" onclick="mktDetectarAgente()"><i class="ti ti-refresh"></i> Ya lo instalé, reintentar</button>`;
     document.getElementById('mkt-card-generar').style.display='none';
     document.getElementById('mkt-card-progreso').style.display='none';
