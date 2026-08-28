@@ -56,7 +56,7 @@ de salida. **Nunca deployar con el dev server corriendo** — en Windows,
 `@netlify/plugin-nextjs`/el propio proceso de Netlify puede fallar por locks
 de archivo si algo sigue sirviendo `.next`/el build previo.
 
-## Estado actual (2026-08-26)
+## Estado actual (2026-08-28)
 
 - Fases 1-3 del software hotelero completas, auditadas en seguridad
   (multi-tenant, permisos, XSS, auditoría de acciones) — ver
@@ -64,11 +64,48 @@ de archivo si algo sigue sirviendo `.next`/el build previo.
 - El módulo "Finanzas personales (beta)" que vivía acá **fue extraído a un
   proyecto aparte, Finanzas Ori** (`D:\Ori\finanzas-ori`, repo separado).
   En Bestoic todavía existen las tablas `finance_*` viejas y el nav-item oculto,
-  pendientes de limpieza (migración `0051`, **bloqueada** hasta que Finanzas
-  Ori tenga el checkpoint de integridad en PASS completo — no borrar nada de
-  esto sin ese checkpoint aprobado).
-- PWA instalable agregada recientemente (`manifest.webmanifest`, `sw.js`,
-  íconos) — esto es del software hotelero, no de Finanzas.
+  pendientes de limpieza. **OJO con el número de migración**: cuando se
+  documentó esto se pensaba usar `0051` para esa limpieza, pero `0051`/`0052`/
+  `0053` ya se usaron para otras cosas (ver abajo) — la limpieza de Finanzas
+  personales toma el próximo número libre cuando se haga. Sigue **bloqueada**
+  hasta que Finanzas Ori tenga el checkpoint de integridad en PASS completo —
+  no borrar nada de esto sin ese checkpoint aprobado.
+- PWA instalable agregada (`manifest.webmanifest`, `sw.js`, íconos) — esto es
+  del software hotelero, no de Finanzas.
+- **Rebranding "Software EYO" → "Bestoic" (2026-08-27/28), código listo y
+  commiteado localmente, deploy pendiente:**
+  - 2 commits en `master`: `952a8de` (aísla `owner_bank_accounts` por permiso
+    + restaura CSP del agente Mercado) y `efbb0c0` (el rebranding completo:
+    texto en marketing/panel/docs/skills, imágenes `almacen-*` renombradas,
+    logo nuevo integrado en favicon/header/footer/og-cover/íconos PWA).
+  - Migración `0053_rebrand_bestoic_comments.sql` — **ya aplicada en
+    producción** (comentarios de metadata + 2 mensajes de error).
+  - **No se pudo hacer `git push`** — el remote `software-eyo` exige la
+    cuenta de GitHub `webdelhotelcom`, y el Git Credential Manager de esta
+    compu/sesión tenía cacheada la cuenta `alojamietoeyo-maker` (la de los
+    otros 2 proyectos personales), que da 403. Para sincronizar entre
+    computadoras: en la compu donde SÍ esté logueado como `webdelhotelcom`
+    en Git, correr `git push software-eyo master` — los 2 commits están
+    listos, solo falta subirlos.
+  - **El deploy a Netlify se cuelga sistemáticamente desde una sesión de
+    Claude Code** (probado 6 veces: se traba siempre en "Waiting for deploy
+    to go live", aunque los archivos sí terminan de subirse) — parece un
+    problema de red/conexión larga del entorno sandboxeado, no del sitio ni
+    de la cuenta. Hay que correrlo a mano, en una terminal real (Git Bash):
+    `bash deploy/build.sh` → `cd /tmp/bestoic_publish` →
+    `netlify deploy --dir=. --site=4a32f93b-1d36-4093-ac74-a5483f83c131 --no-build`
+    (borrador primero, revisar, recién después `--prod`).
+  - Logo nuevo (el que el usuario proveyó) queda guardado en
+    `D:\Ori\LOGO\ChatGPT Image 27 ago 2026, 23_36_54.png` — ya integrado en
+    el repo (favicon embebido en `index.html`/`software.html`, 2 `<img>` de
+    header/footer, `assets/images/og-cover.jpg`, `app/icon-192.png`,
+    `app/icon-512.png`, `app/icon-maskable-512.png`). El original tenía fondo
+    negro cuadrado detrás del círculo blanco — se le sacó ese fondo (chroma
+    key sobre negro puro) antes de componerlo en cada uso.
+  - Pendiente, no hecho todavía: renombrar el repo de GitHub, el dominio/site
+    de Netlify, el proyecto de Google Cloud OAuth, y el instalador
+    `eyo-market-instalador` — todos son servicios externos, documentados
+    como migración aparte en el plan de rebranding.
 
 ## Cómo trabajar en este proyecto
 
