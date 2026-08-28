@@ -1,8 +1,8 @@
-// Service worker de Software EYO — mismo patrón que Productividad Ori:
+// Service worker de Bestoic — mismo patrón que Productividad Ori:
 // red primero para la app (siempre datos/código frescos), cache primero para
 // assets estáticos inmutables, y NUNCA cachea nada fuera de este origen (ni
 // Supabase ni los CDN de librerías) -- ver el chequeo de origin más abajo.
-const CACHE_NAME = "eyo-panel-v1";
+const CACHE_NAME = "bestoic-panel-v1";
 const PRECACHE_URLS = [
   "/offline.html",
   "/manifest.webmanifest",

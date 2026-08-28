@@ -4,7 +4,7 @@ Ver también: [[00-Indice]]
 
 Términos del proyecto explicados en una línea, para quien no viene del mundo Supabase/Postgres.
 
-- **Tenant** — un cliente de EYO. Todas las tablas de negocio cuelgan de un `tenant_id`.
+- **Tenant** — un cliente de Bestoic. Todas las tablas de negocio cuelgan de un `tenant_id`.
 - **RLS (Row Level Security)** — reglas de PostgreSQL que filtran automáticamente qué filas puede leer/escribir cada usuario, según quién esté logueado. Es la base de todo el aislamiento de este sistema — ver [[Seguridad]].
 - **Policy (política RLS)** — una regla concreta de RLS sobre una tabla y una operación (select/insert/update/delete). Puede tener una cláusula `USING` (qué filas son visibles/afectables) y `WITH CHECK` (qué valores nuevos se aceptan).
 - **`security definer`** — una función de Postgres que se ejecuta con los permisos de quien la creó, no de quien la llama. Se usa para funciones como `current_tenant_id()` que necesitan leer `profiles` saltando su propia RLS, sin abrir esa tabla al cliente.

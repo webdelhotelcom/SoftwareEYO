@@ -1,4 +1,4 @@
-# Auditoría de seguridad — Software EYO
+# Auditoría de seguridad — Bestoic
 
 **Fecha:** 2026-08-21
 **Alcance:** panel (`app/panel.html` + Supabase `ckbarfwqdnehqnpafzay` + `dashing-conkies-92cb00.netlify.app`), web comercial (`index.html` / `software.html` + `software-eyo.netlify.app`), repositorio `webdelhotelcom/SoftwareEYO`.

@@ -1,7 +1,7 @@
 {
-  "name": "Software EYO",
-  "short_name": "EYO",
-  "description": "Gestión de alojamientos, reservas y finanzas para Software EYO.",
+  "name": "Bestoic",
+  "short_name": "Bestoic",
+  "description": "Gestión de alojamientos, reservas y finanzas para Bestoic.",
   "start_url": "/panel",
   "scope": "/",
   "display": "standalone",

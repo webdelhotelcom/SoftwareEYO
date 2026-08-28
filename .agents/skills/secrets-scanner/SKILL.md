@@ -1,9 +1,9 @@
 ---
 name: secrets-scanner
-description: Buscar credenciales, tokens o claves expuestas en el repositorio de Software EYO (Netlify token, Supabase service_role, contraseñas) antes de un commit, push, o deploy. Usar ante pedidos como "revisá que no haya secretos filtrados", "escaneá el repo por credenciales", antes de hacer público el repositorio, o después de pegar un token en el chat/consola para un deploy.
+description: Buscar credenciales, tokens o claves expuestas en el repositorio de Bestoic (Netlify token, Supabase service_role, contraseñas) antes de un commit, push, o deploy. Usar ante pedidos como "revisá que no haya secretos filtrados", "escaneá el repo por credenciales", antes de hacer público el repositorio, o después de pegar un token en el chat/consola para un deploy.
 ---
 
-# Escaneo de secretos — Software EYO
+# Escaneo de secretos — Bestoic
 
 ## Qué NO debe aparecer versionado (ni en `git log`, no solo en el working tree)
 

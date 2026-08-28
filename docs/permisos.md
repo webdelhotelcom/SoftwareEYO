@@ -1,6 +1,6 @@
 # Roles y permisos
 
-Cómo funciona el sistema de permisos de Software EYO, y por qué un botón oculto en la pantalla no es, por sí solo, ninguna garantía de seguridad.
+Cómo funciona el sistema de permisos de Bestoic, y por qué un botón oculto en la pantalla no es, por sí solo, ninguna garantía de seguridad.
 
 ## El modelo
 

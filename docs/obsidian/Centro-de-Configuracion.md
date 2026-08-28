@@ -38,7 +38,7 @@ Manual completo dentro de la app (Ajustes → Obtener ayuda): buscador + filtro 
 
 ## Más información / legales
 
-`terminos.html` y `privacidad.html` se **movieron** (no copiaron) de la raíz del repo a `app/` — antes no se desplegaban en absoluto (solo se publica el contenido de `app/`); ahora es la única copia real, evitando que quedaran dos versiones que se desincronizan con el tiempo. Se les agregó un aviso visible de "Borrador sujeto a revisión legal" (no habían sido revisados por un profesional). "Acerca de EYO" no inventa versión ni datos de contacto que no existen en el proyecto.
+`terminos.html` y `privacidad.html` se **movieron** (no copiaron) de la raíz del repo a `app/` — antes no se desplegaban en absoluto (solo se publica el contenido de `app/`); ahora es la única copia real, evitando que quedaran dos versiones que se desincronizan con el tiempo. Se les agregó un aviso visible de "Borrador sujeto a revisión legal" (no habían sido revisados por un profesional). "Acerca de Bestoic" no inventa versión ni datos de contacto que no existen en el proyecto.
 
 ## Mejorar plan
 

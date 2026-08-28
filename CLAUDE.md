@@ -1,4 +1,4 @@
-# Software EYO — Contexto para retomar el proyecto
+# Bestoic — Contexto para retomar el proyecto
 
 Panel de gestión de alojamientos (hoteles/alojamientos), SaaS multi-tenant.
 App de un solo archivo HTML+JS sin build, con Supabase de backend.
@@ -63,7 +63,7 @@ de archivo si algo sigue sirviendo `.next`/el build previo.
   `docs/cierre-auditoria-2026-08-02.md`.
 - El módulo "Finanzas personales (beta)" que vivía acá **fue extraído a un
   proyecto aparte, Finanzas Ori** (`D:\Ori\finanzas-ori`, repo separado).
-  En EYO todavía existen las tablas `finance_*` viejas y el nav-item oculto,
+  En Bestoic todavía existen las tablas `finance_*` viejas y el nav-item oculto,
   pendientes de limpieza (migración `0051`, **bloqueada** hasta que Finanzas
   Ori tenga el checkpoint de integridad en PASS completo — no borrar nada de
   esto sin ese checkpoint aprobado).

@@ -1,9 +1,9 @@
 ---
 name: auth-specialist
-description: Trabajo en login, alta de usuarios, cambio/recuperación de contraseña, sesión activa o desactivación de cuentas en Software EYO (Supabase Auth). Usar ante pedidos como "agregar un método de login", "arreglar el flujo de contraseña", "un usuario desactivado sigue entrando", "el login no redirige bien", o cualquier cambio en `Usuarios y permisos` / pantalla de login.
+description: Trabajo en login, alta de usuarios, cambio/recuperación de contraseña, sesión activa o desactivación de cuentas en Bestoic (Supabase Auth). Usar ante pedidos como "agregar un método de login", "arreglar el flujo de contraseña", "un usuario desactivado sigue entrando", "el login no redirige bien", o cualquier cambio en `Usuarios y permisos` / pantalla de login.
 ---
 
-# Autenticación — Software EYO (Supabase Auth)
+# Autenticación — Bestoic (Supabase Auth)
 
 ## Cómo funciona hoy (no reinventar sin revisar esto primero)
 

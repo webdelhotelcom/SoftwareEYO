@@ -1,11 +1,11 @@
 > ## ⚠️ HISTÓRICO — este documento describe la demo vieja (localStorage), no el sistema actual
-> Software EYO ya no es un conjunto de archivos HTML sueltos con `localStorage` y usuario/contraseña
+> Bestoic ya no es un conjunto de archivos HTML sueltos con `localStorage` y usuario/contraseña
 > `admin`/`1234`. Hoy es un sistema real en `app/panel.html`, con autenticación real y base de datos
 > en Supabase (multi-cliente, con permisos por rol aplicados en el servidor). Este archivo queda como
 > referencia histórica de cómo era la demo original — **ver `README.md` en la raíz del repositorio
 > para la documentación vigente.**
 
-# Software EYO — Archivos finales
+# Bestoic — Archivos finales
 
 Todo quedó en **archivos únicos**: cada uno lleva adentro el diseño, el código y las imágenes.
 No hay carpetas ni archivos sueltos que dependan uno del otro.

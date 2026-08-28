@@ -90,7 +90,7 @@ Cada recomendación queda persistida (`market_searches` + `market_snapshots` + `
 
 ## Servicios externos y costos
 
-Ninguno nuevo. Todo corre sobre el mismo proyecto Supabase (base de datos + RLS) y el mismo sitio Netlify que ya usaba el resto de Software EYO. El cálculo de similitud/estadística/recomendación corre en el navegador (JavaScript), no requiere ningún servicio de cómputo aparte.
+Ninguno nuevo. Todo corre sobre el mismo proyecto Supabase (base de datos + RLS) y el mismo sitio Netlify que ya usaba el resto de Bestoic. El cálculo de similitud/estadística/recomendación corre en el navegador (JavaScript), no requiere ningún servicio de cómputo aparte.
 
 ## Limitaciones actuales
 

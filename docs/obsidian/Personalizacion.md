@@ -42,7 +42,7 @@ tenant_settings
   updated_by    uuid FK -> auth.users(id)
 ```
 
-Una fila por tenant. Todos los campos en NULL = usar el diseño original de Software EYO (ese es el estado por default y también el resultado de "Restaurar diseño original" — nunca se borra la fila, se limpian sus columnas).
+Una fila por tenant. Todos los campos en NULL = usar el diseño original de Bestoic (ese es el estado por default y también el resultado de "Restaurar diseño original" — nunca se borra la fila, se limpian sus columnas).
 
 ## Almacenamiento del logo
 

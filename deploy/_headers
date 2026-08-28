@@ -18,8 +18,13 @@
 # autorizada a hablar con Supabase (no lo hace) y el panel a cargar Google
 # Fonts / un iframe de YouTube (no lo hace). Lo que importa para seguridad
 # se mantiene estricto:
-#   - connect-src: solo 'self' y NUESTRO proyecto de Supabase. Las
-#     credenciales del login no pueden salir hacia ningún otro dominio.
+#   - connect-src: solo 'self', NUESTRO proyecto de Supabase, y el agente
+#     local de Mercado Bestoic (http://127.0.0.1:8765 — la app instalable que se
+#     distribuye por GitHub Releases, ver eyo-market-instalador). Una
+#     auditoría anterior lo había sacado creyendo que era un resto de
+#     desarrollo sin uso; se confirmó con el usuario (2026-08-27) que sigue
+#     siendo una función real, así que se restauró. Las credenciales del
+#     login no pueden salir hacia ningún otro dominio.
 #   - form-action 'self': ningún formulario puede postear a un tercero.
 #   - frame-ancestors 'none' + X-Frame-Options: DENY: nadie puede embeber
 #     el login en un iframe (anti-clickjacking).
@@ -32,4 +37,4 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Cross-Origin-Opener-Policy: same-origin
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.sheetjs.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com data:; img-src 'self' data: blob:; connect-src 'self' https://ckbarfwqdnehqnpafzay.supabase.co wss://ckbarfwqdnehqnpafzay.supabase.co; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.sheetjs.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com data:; img-src 'self' data: blob:; connect-src 'self' https://ckbarfwqdnehqnpafzay.supabase.co wss://ckbarfwqdnehqnpafzay.supabase.co http://127.0.0.1:8765; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests

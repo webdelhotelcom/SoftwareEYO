@@ -1,11 +1,11 @@
 ---
 name: security-audit
-description: Auditoría de seguridad COMPLETA de Software EYO (no solo el diff pendiente) — RLS, exposición de service_role, XSS, aislamiento multi-tenant, CSP, autenticación. Usar ante pedidos como "auditoría de seguridad", "revisá la seguridad de la app", "¿esto es seguro para clientes reales?", antes de dar de alta un cliente pagando, o después de agregar un módulo nuevo con tablas propias. Se diferencia de /security-review (que solo mira el diff de la rama actual): esta skill revisa TODO el sistema en su estado actual, incluso código no tocado en esta sesión.
+description: Auditoría de seguridad COMPLETA de Bestoic (no solo el diff pendiente) — RLS, exposición de service_role, XSS, aislamiento multi-tenant, CSP, autenticación. Usar ante pedidos como "auditoría de seguridad", "revisá la seguridad de la app", "¿esto es seguro para clientes reales?", antes de dar de alta un cliente pagando, o después de agregar un módulo nuevo con tablas propias. Se diferencia de /security-review (que solo mira el diff de la rama actual): esta skill revisa TODO el sistema en su estado actual, incluso código no tocado en esta sesión.
 ---
 
-# Auditoría de seguridad — Software EYO
+# Auditoría de seguridad — Bestoic
 
-Software EYO es un panel de gestión de alojamientos multi-tenant (Supabase +
+Bestoic es un panel de gestión de alojamientos multi-tenant (Supabase +
 Postgres + Netlify, un solo archivo `app/panel.html`). Ya pasó una auditoría
 completa el 2026-08-02 (ver `docs/obsidian/Seguridad.md` y
 `docs/cierre-auditoria-2026-08-02.md` si existen) — esta skill es para volver

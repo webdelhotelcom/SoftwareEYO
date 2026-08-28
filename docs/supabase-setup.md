@@ -8,7 +8,7 @@ Esto lo tenés que hacer vos: no puedo crear la cuenta ni cargar datos de pago e
 2. **New project**.
 3. Elegí una organización (o creá una nueva, es gratis).
 4. Completá:
-   - **Name**: por ejemplo `eyo-produccion` (el nombre es solo para vos, no lo ve nadie más).
+   - **Name**: por ejemplo `bestoic-produccion` (el nombre es solo para vos, no lo ve nadie más).
    - **Database Password**: generá una y **guardala en un lugar seguro** (gestor de contraseñas). No hace falta usarla en el día a día, pero es la llave maestra de la base.
    - **Region**: elegí la más cercana a Uruguay (por ejemplo `South America (São Paulo)` si está disponible).
    - **Pricing Plan**: dejá **Free** — no lo cambies a Pro. Este proyecto está pensado para quedarse en el plan gratuito; cualquier cambio de plan se consulta antes.

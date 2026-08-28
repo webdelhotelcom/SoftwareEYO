@@ -2,7 +2,7 @@
 
 Ver también: [[00-Indice]] · [[Arquitectura]] · [[Seguridad]] · [[Modulos]] · [[Estado-actual]]
 
-Trabajo iniciado el 2026-08-05 para agregar "Continuar con Google" y "Continuar con Microsoft" al login de Software EYO, usando exclusivamente Supabase Auth + proveedores oficiales (nunca un sistema de login casero). **Pausado a pedido explícito del usuario** por trancarse en la configuración de Google Cloud Console — el código queda listo, oculto, para retomar sin tener que rehacer nada.
+Trabajo iniciado el 2026-08-05 para agregar "Continuar con Google" y "Continuar con Microsoft" al login de Bestoic, usando exclusivamente Supabase Auth + proveedores oficiales (nunca un sistema de login casero). **Pausado a pedido explícito del usuario** por trancarse en la configuración de Google Cloud Console — el código queda listo, oculto, para retomar sin tener que rehacer nada.
 
 ## Qué está construido y probado (en `app/panel.html`)
 

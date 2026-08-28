@@ -1,4 +1,4 @@
-# Software EYO
+# Bestoic
 
 **Panel en vivo:** https://dashing-conkies-92cb00.netlify.app (hosting gratis en Netlify, conectado al proyecto real de Supabase, plan Free).
 

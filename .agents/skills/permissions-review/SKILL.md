@@ -1,9 +1,9 @@
 ---
 name: permissions-review
-description: Revisar o extender el sistema de roles y permisos de Software EYO (fundador, administrador, encargado, empleado, propietario) — catálogo de permisos, role_permissions, gating de páginas/botones, o cuando un rol puede hacer algo que no debería (o no puede hacer algo que sí debería). Usar ante pedidos como "agregar un permiso nuevo", "el rol empleado no debería ver X", "revisá los permisos del módulo Y".
+description: Revisar o extender el sistema de roles y permisos de Bestoic (fundador, administrador, encargado, empleado, propietario) — catálogo de permisos, role_permissions, gating de páginas/botones, o cuando un rol puede hacer algo que no debería (o no puede hacer algo que sí debería). Usar ante pedidos como "agregar un permiso nuevo", "el rol empleado no debería ver X", "revisá los permisos del módulo Y".
 ---
 
-# Roles y permisos — Software EYO
+# Roles y permisos — Bestoic
 
 ## Los 5 roles
 

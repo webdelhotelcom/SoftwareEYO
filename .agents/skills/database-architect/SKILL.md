@@ -1,9 +1,9 @@
 ---
 name: database-architect
-description: Diseñar o revisar el esquema de base de datos de Software EYO (Supabase/Postgres) — tablas nuevas, columnas, migraciones, relaciones, índices. Usar ante pedidos como "agregar una tabla para X", "diseñar el esquema de Y", "esta migración está bien armada?", o cuando un módulo nuevo necesita persistencia.
+description: Diseñar o revisar el esquema de base de datos de Bestoic (Supabase/Postgres) — tablas nuevas, columnas, migraciones, relaciones, índices. Usar ante pedidos como "agregar una tabla para X", "diseñar el esquema de Y", "esta migración está bien armada?", o cuando un módulo nuevo necesita persistencia.
 ---
 
-# Arquitectura de base de datos — Software EYO
+# Arquitectura de base de datos — Bestoic
 
 Postgres vía Supabase, un solo proyecto (`ckbarfwqdnehqnpafzay`, free
 tier) compartido por todos los tenants. `supabase/migrations/NNNN_*.sql`

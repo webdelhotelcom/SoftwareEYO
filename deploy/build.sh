@@ -23,7 +23,7 @@
 set -euo pipefail
 
 REPO="D:/Ori/EYO"
-OUT="${1:-/tmp/eyo_publish}"
+OUT="${1:-/tmp/bestoic_publish}"
 SITE_ID="4a32f93b-1d36-4093-ac74-a5483f83c131"
 
 rm -rf "$OUT" && mkdir -p "$OUT/app"

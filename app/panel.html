@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Software EYO</title>
+<title>Bestoic</title>
 <!-- Instalable como app (PWA) -- ver app/manifest.webmanifest y app/sw.js.
      start_url del manifest apunta a /panel (nunca a la landing pública). -->
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#1a1a18">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="EYO">
+<meta name="apple-mobile-web-app-title" content="Bestoic">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <!-- Inter: mismo estilo de fuente que usa Productividad Ori (Geist) para la
@@ -664,7 +664,7 @@ tr:hover td{background:var(--bg2)}
   <div class="login-card">
     <div class="login-logo">
       <div class="login-logo-icon"><i class="ti ti-building"></i></div>
-      <div class="login-logo-text">Software EYO</div>
+      <div class="login-logo-text">Bestoic</div>
     </div>
     <h2>Iniciar sesión</h2>
     <p class="sub">Ingresá tus credenciales para continuar.</p>
@@ -689,7 +689,7 @@ tr:hover td{background:var(--bg2)}
   <div class="login-card">
     <div class="login-logo">
       <div class="login-logo-icon"><i class="ti ti-lock"></i></div>
-      <div class="login-logo-text">Software EYO</div>
+      <div class="login-logo-text">Bestoic</div>
     </div>
     <h2>Elegí una contraseña nueva</h2>
     <p class="sub">Mínimo 8 caracteres.</p>
@@ -743,7 +743,7 @@ tr:hover td{background:var(--bg2)}
     <div class="sidebar-logo">
       <div class="sidebar-logo-icon"><i class="ti ti-building"></i></div>
       <div>
-        <div class="sidebar-logo-text">Software EYO</div>
+        <div class="sidebar-logo-text">Bestoic</div>
         <div id="sidebar-business-name" style="display:none;font-size:12px;color:var(--text2);font-weight:400;margin-top:1px"></div>
       </div>
     </div>
@@ -1313,12 +1313,12 @@ tr:hover td{background:var(--bg2)}
   <div class="page-header">
     <div>
       <div class="page-title" data-i18n="mercado.titulo">Mercado</div>
-      <div class="page-subtitle" data-i18n="mercado.subtitulo">Escanea Google Maps y Booking.com para ver precios reales de la competencia en tu zona. Corre en tu computadora, no en la nube de Software EYO.</div>
+      <div class="page-subtitle" data-i18n="mercado.subtitulo">Escanea Google Maps y Booking.com para ver precios reales de la competencia en tu zona. Corre en tu computadora, no en la nube de Bestoic.</div>
     </div>
   </div>
 
   <div class="card" id="mkt-card-agente">
-    <div class="card-header"><div class="card-title" data-i18n="mercado.agente_local">Agente local EYO Market</div></div>
+    <div class="card-header"><div class="card-title" data-i18n="mercado.agente_local">Agente local Mercado Bestoic</div></div>
     <div id="mkt-agente-status" style="font-size:12px;color:var(--text2)" data-i18n="mercado.verificando_agente">Verificando si el agente está instalado en esta computadora...</div>
   </div>
 
@@ -1334,7 +1334,7 @@ tr:hover td{background:var(--bg2)}
       <div class="form-group"><label data-i18n="habitaciones.titulo">Habitaciones</label><input id="mkt-habitaciones" type="number" min="1" max="10" value="1"></div>
     </div>
     <p style="font-size:11px;color:var(--text2);margin:.25rem 0 .75rem" data-i18n="mercado.explicacion_escaneo">
-      Puede tardar bastante — a veces más de una hora — pero podés seguir usando el resto de Software EYO mientras corre.
+      Puede tardar bastante — a veces más de una hora — pero podés seguir usando el resto de Bestoic mientras corre.
       Se abre un navegador en tu computadora para hacer las búsquedas; si algún sitio de origen bloquea una
       búsqueda puntual, el escaneo la salta y sigue con las demás sin detenerse a esperarte — revisá el resumen
       final para ver si quedó algo sin cubrir.
@@ -1390,7 +1390,7 @@ tr:hover td{background:var(--bg2)}
           <div class="card-header"><div class="card-title"><i class="ti ti-building" style="font-size:14px;margin-right:4px"></i>General</div></div>
           <p style="font-size:11px;color:var(--text2);margin:0 0 1rem" id="personalizacion-permiso-nota">Solo un administrador puede cambiar esto. Los cambios se guardan al tocar "Guardar cambios" — nada se aplica solo.</p>
           <div class="form-group">
-            <label>Nombre comercial <span style="text-transform:none;font-weight:400">(opcional, aparece debajo de "Software EYO")</span></label>
+            <label>Nombre comercial <span style="text-transform:none;font-weight:400">(opcional, aparece debajo de "Bestoic")</span></label>
             <input id="pers-business-name" type="text" maxlength="60" placeholder="Ej: Hotel Central">
           </div>
           <div class="form-group">
@@ -2685,7 +2685,7 @@ const I18N_ES={
   'alojamientos.telefono_prop':'Teléfono prop.','alojamientos.personas':'personas','alojamientos.comision_gestion':'Comisión gestión','alojamientos.cuenta_bancaria':'Cuenta bancaria / CBU / Alias',
   'alojamientos.temporada.nombre':'Nombre','alojamientos.temporada.desde':'Desde','alojamientos.temporada.hasta':'Hasta','alojamientos.temporada.precio':'Precio/noche','alojamientos.sin_temporadas':'Sin temporadas configuradas. Se usará el precio base del alojamiento.','alojamientos.temporada.nueva':'Nueva temporada',
   'alojamientos.error_temporadas':'No se pudieron guardar las temporadas:','alojamientos.temporadas_guardadas':'Temporadas guardadas',
-  'alojamientos.limite_no_configurado':'El límite de alojamientos de tu cuenta no está configurado todavía. Contactá al administrador de EYO.','alojamientos.limite_plan':'Tu plan permite hasta','alojamientos.limite_plan_sufijo':'alojamientos. Para agregar más, actualizá tu plan.',
+  'alojamientos.limite_no_configurado':'El límite de alojamientos de tu cuenta no está configurado todavía. Contactá al administrador de Bestoic.','alojamientos.limite_plan':'Tu plan permite hasta','alojamientos.limite_plan_sufijo':'alojamientos. Para agregar más, actualizá tu plan.',
   'alojamientos.nuevo_alojamiento':'Nuevo alojamiento','alojamientos.editar_alojamiento':'Editar alojamiento','alojamientos.validacion.nombre':'Ingresá el nombre',
   'alojamientos.limite_alcanzado':'Alcanzaste el límite de','alojamientos.limite_alcanzado_sufijo':'alojamientos de tu plan.','alojamientos.guardado':'Alojamiento guardado','alojamientos.confirmar_eliminar':'¿Eliminar este alojamiento? Esta acción no se puede deshacer.','alojamientos.eliminado':'Alojamiento eliminado',
   'alojamientos.form.nombre':'Nombre *','alojamientos.form.nombre_ejemplo':'Ej: Cabaña del Lago','alojamientos.form.direccion':'Dirección / Ubicación','alojamientos.form.capacidad_max':'Capacidad máxima',
@@ -2855,7 +2855,7 @@ const I18N_ES={
   'usuarios.tab.usuarios':'Usuarios','usuarios.tab.permisos':'Permisos por rol','usuarios.table.email':'Email','usuarios.table.rol':'Rol','usuarios.table.ultimo_acceso':'Último acceso',
   'usuarios.que_puede_hacer':'Qué puede hacer cada rol','usuarios.guardar_cambios':'Guardar cambios','usuarios.permisos_ayuda':'Administrador siempre tiene todos los permisos. Los cambios se aplican de verdad — no es solo visual, la base de datos también los exige.',
   'usuarios.limite_sin_configurar':'límite sin configurar, consultá al administrador','usuarios.de_limite_usados':'{used} de {max} usuarios utilizados','usuarios.vos':'vos','usuarios.activo':'Activo','usuarios.desactivado':'Desactivado','usuarios.permiso':'Permiso',
-  'usuarios.error_guardar_permisos':'No se pudieron guardar los permisos','usuarios.permisos_guardados':'Permisos guardados','usuarios.error_limite_no_configurado':'El límite de usuarios de tu cuenta no está configurado todavía. Contactá al administrador de EYO.',
+  'usuarios.error_guardar_permisos':'No se pudieron guardar los permisos','usuarios.permisos_guardados':'Permisos guardados','usuarios.error_limite_no_configurado':'El límite de usuarios de tu cuenta no está configurado todavía. Contactá al administrador de Bestoic.',
   'usuarios.error_limite_alcanzado':'Alcanzaste el límite de {max} usuarios de tu plan.','usuarios.error_ingresar_email':'Ingresá el email','usuarios.error_password_corta':'La contraseña provisoria debe tener al menos 8 caracteres',
   'usuarios.error_crear_usuario':'No se pudo crear el usuario','usuarios.error_crear_usuario_inesperado':'No se pudo crear el usuario (respuesta inesperada de Supabase)','usuarios.error_asignar_usuario':'El usuario se creó pero no se pudo asignar a tu cuenta',
   'usuarios.usuario_creado':'Usuario creado — pasale el email y la contraseña provisoria por fuera del sistema','usuarios.confirmar_autodegradar':'Te estás por sacar tus propios permisos de administrador o desactivarte. ¿Confirmás?',
@@ -2948,7 +2948,7 @@ const I18N_EN={
   'alojamientos.telefono_prop':'Owner phone','alojamientos.personas':'people','alojamientos.comision_gestion':'Management fee','alojamientos.cuenta_bancaria':'Bank account / IBAN / Alias',
   'alojamientos.temporada.nombre':'Name','alojamientos.temporada.desde':'From','alojamientos.temporada.hasta':'To','alojamientos.temporada.precio':'Price/night','alojamientos.sin_temporadas':'No seasons configured. The property\'s base price will be used.','alojamientos.temporada.nueva':'New season',
   'alojamientos.error_temporadas':'Could not save the seasons:','alojamientos.temporadas_guardadas':'Seasons saved',
-  'alojamientos.limite_no_configurado':'Your account\'s property limit isn\'t configured yet. Contact the EYO administrator.','alojamientos.limite_plan':'Your plan allows up to','alojamientos.limite_plan_sufijo':'properties. To add more, upgrade your plan.',
+  'alojamientos.limite_no_configurado':'Your account\'s property limit isn\'t configured yet. Contact the Bestoic administrator.','alojamientos.limite_plan':'Your plan allows up to','alojamientos.limite_plan_sufijo':'properties. To add more, upgrade your plan.',
   'alojamientos.nuevo_alojamiento':'New property','alojamientos.editar_alojamiento':'Edit property','alojamientos.validacion.nombre':'Enter the name',
   'alojamientos.limite_alcanzado':'You reached the limit of','alojamientos.limite_alcanzado_sufijo':'properties on your plan.','alojamientos.guardado':'Property saved','alojamientos.confirmar_eliminar':'Delete this property? This action cannot be undone.','alojamientos.eliminado':'Property deleted',
   'alojamientos.form.nombre':'Name *','alojamientos.form.nombre_ejemplo':'E.g.: Lake Cabin','alojamientos.form.direccion':'Address / Location','alojamientos.form.capacidad_max':'Maximum capacity',
@@ -3118,7 +3118,7 @@ const I18N_EN={
   'usuarios.tab.usuarios':'Users','usuarios.tab.permisos':'Permissions by role','usuarios.table.email':'Email','usuarios.table.rol':'Role','usuarios.table.ultimo_acceso':'Last active',
   'usuarios.que_puede_hacer':'What each role can do','usuarios.guardar_cambios':'Save changes','usuarios.permisos_ayuda':'Administrator always has every permission. Changes are enforced for real — it’s not just visual, the database requires them too.',
   'usuarios.limite_sin_configurar':'limit not configured yet, contact the administrator','usuarios.de_limite_usados':'{used} of {max} users used','usuarios.vos':'you','usuarios.activo':'Active','usuarios.desactivado':'Disabled','usuarios.permiso':'Permission',
-  'usuarios.error_guardar_permisos':'Could not save the permissions','usuarios.permisos_guardados':'Permissions saved','usuarios.error_limite_no_configurado':'Your account’s user limit is not configured yet. Contact the EYO administrator.',
+  'usuarios.error_guardar_permisos':'Could not save the permissions','usuarios.permisos_guardados':'Permissions saved','usuarios.error_limite_no_configurado':'Your account’s user limit is not configured yet. Contact the Bestoic administrator.',
   'usuarios.error_limite_alcanzado':'You’ve reached your plan’s limit of {max} users.','usuarios.error_ingresar_email':'Enter the email','usuarios.error_password_corta':'The temporary password must be at least 8 characters',
   'usuarios.error_crear_usuario':'Could not create the user','usuarios.error_crear_usuario_inesperado':'Could not create the user (unexpected response from Supabase)','usuarios.error_asignar_usuario':'The user was created but could not be assigned to your account',
   'usuarios.usuario_creado':'User created — share the email and temporary password with them outside the system','usuarios.confirmar_autodegradar':'You’re about to remove your own administrator permissions or deactivate yourself. Confirm?',
@@ -3211,7 +3211,7 @@ const I18N_PT={
   'alojamientos.telefono_prop':'Telefone do proprietário','alojamientos.personas':'pessoas','alojamientos.comision_gestion':'Comissão de gestão','alojamientos.cuenta_bancaria':'Conta bancária / PIX / Alias',
   'alojamientos.temporada.nombre':'Nome','alojamientos.temporada.desde':'De','alojamientos.temporada.hasta':'Até','alojamientos.temporada.precio':'Preço/noite','alojamientos.sin_temporadas':'Nenhuma temporada configurada. Será usado o preço base da acomodação.','alojamientos.temporada.nueva':'Nova temporada',
   'alojamientos.error_temporadas':'Não foi possível salvar as temporadas:','alojamientos.temporadas_guardadas':'Temporadas salvas',
-  'alojamientos.limite_no_configurado':'O limite de acomodações da sua conta ainda não foi configurado. Entre em contato com o administrador do EYO.','alojamientos.limite_plan':'Seu plano permite até','alojamientos.limite_plan_sufijo':'acomodações. Para adicionar mais, atualize seu plano.',
+  'alojamientos.limite_no_configurado':'O limite de acomodações da sua conta ainda não foi configurado. Entre em contato com o administrador do Bestoic.','alojamientos.limite_plan':'Seu plano permite até','alojamientos.limite_plan_sufijo':'acomodações. Para adicionar mais, atualize seu plano.',
   'alojamientos.nuevo_alojamiento':'Nova acomodação','alojamientos.editar_alojamiento':'Editar acomodação','alojamientos.validacion.nombre':'Informe o nome',
   'alojamientos.limite_alcanzado':'Você atingiu o limite de','alojamientos.limite_alcanzado_sufijo':'acomodações do seu plano.','alojamientos.guardado':'Acomodação salva','alojamientos.confirmar_eliminar':'Excluir esta acomodação? Esta ação não pode ser desfeita.','alojamientos.eliminado':'Acomodação excluída',
   'alojamientos.form.nombre':'Nome *','alojamientos.form.nombre_ejemplo':'Ex: Cabana do Lago','alojamientos.form.direccion':'Endereço / Localização','alojamientos.form.capacidad_max':'Capacidade máxima',
@@ -3381,7 +3381,7 @@ const I18N_PT={
   'usuarios.tab.usuarios':'Usuários','usuarios.tab.permisos':'Permissões por função','usuarios.table.email':'Email','usuarios.table.rol':'Função','usuarios.table.ultimo_acceso':'Último acesso',
   'usuarios.que_puede_hacer':'O que cada função pode fazer','usuarios.guardar_cambios':'Salvar alterações','usuarios.permisos_ayuda':'O Administrador sempre tem todas as permissões. As alterações são aplicadas de verdade — não é só visual, o banco de dados também as exige.',
   'usuarios.limite_sin_configurar':'limite não configurado, consulte o administrador','usuarios.de_limite_usados':'{used} de {max} usuários utilizados','usuarios.vos':'você','usuarios.activo':'Ativo','usuarios.desactivado':'Desativado','usuarios.permiso':'Permissão',
-  'usuarios.error_guardar_permisos':'Não foi possível salvar as permissões','usuarios.permisos_guardados':'Permissões salvas','usuarios.error_limite_no_configurado':'O limite de usuários da sua conta ainda não está configurado. Entre em contato com o administrador da EYO.',
+  'usuarios.error_guardar_permisos':'Não foi possível salvar as permissões','usuarios.permisos_guardados':'Permissões salvas','usuarios.error_limite_no_configurado':'O limite de usuários da sua conta ainda não está configurado. Entre em contato com o administrador da Bestoic.',
   'usuarios.error_limite_alcanzado':'Você atingiu o limite de {max} usuários do seu plano.','usuarios.error_ingresar_email':'Digite o email','usuarios.error_password_corta':'A senha provisória deve ter pelo menos 8 caracteres',
   'usuarios.error_crear_usuario':'Não foi possível criar o usuário','usuarios.error_crear_usuario_inesperado':'Não foi possível criar o usuário (resposta inesperada do Supabase)','usuarios.error_asignar_usuario':'O usuário foi criado, mas não foi possível associá-lo à sua conta',
   'usuarios.usuario_creado':'Usuário criado — repasse o email e a senha provisória fora do sistema','usuarios.confirmar_autodegradar':'Você está prestes a remover suas próprias permissões de administrador ou se desativar. Confirma?',
@@ -3697,17 +3697,28 @@ function badgeA(s){return s==='activo'?`<span class="badge badge-green">${t('alo
 // Propietarios (owners) ya NO se guarda en localStorage: vive en Supabase,
 // mismo patrón que Alojamientos (ver loadProperties más abajo).
 let owners=[];
+// La cuenta bancaria del propietario vive en una tabla aparte
+// (owner_bank_accounts) desde la migración 0052, con su propio RLS
+// gateado por el permiso "ver_datos_bancarios" -- RLS por fila no puede
+// proteger una sola columna de "owners", así que se separó la tabla.
+// Este mapa solo va a tener entradas para los propietarios que el usuario
+// actual realmente puede ver (RLS ya filtra); para el resto, "cuenta"
+// queda ausente -- nunca se debe interpretar como "sin cargar", puede ser
+// simplemente "sin permiso para verla".
+let ownerBankAccounts={};
 function ownerFromDb(row){
-  return {id:row.id, nombre:row.nombre, telefono:row.telefono||'', email:row.email||'', cuenta:row.cuenta||'', notas:row.notas||''};
+  return {id:row.id, nombre:row.nombre, telefono:row.telefono||'', email:row.email||'', notas:row.notas||''};
 }
 function ownerToDb(data){
-  return {nombre:data.nombre, telefono:data.telefono, email:data.email, cuenta:data.cuenta, notas:data.notas};
+  return {nombre:data.nombre, telefono:data.telefono, email:data.email, notas:data.notas};
 }
 async function loadOwners(){
   if(!supabaseClient||!currentUser)return;
   const {data,error}=await supabaseClient.from('owners').select('*').order('nombre');
   if(error){showToast('No se pudieron cargar los propietarios: '+error.message,'error');return;}
   owners=(data||[]).map(ownerFromDb);
+  const {data:bankRows}=await supabaseClient.from('owner_bank_accounts').select('owner_id,cuenta');
+  ownerBankAccounts=Object.fromEntries((bankRows||[]).map(r=>[r.owner_id,r.cuenta||'']));
   populateSelects();
   if(document.getElementById('page-owners')?.classList.contains('active'))renderOwners();
 }
@@ -3968,7 +3979,7 @@ async function loadSessionUser(authUser){
     // pasar hoy -- el alta siempre crea el perfil en el mismo flujo, ver
     // "Usuarios y permisos" -- pero si alguna vez pasara, sin perfil no hay
     // ningún acceso a datos, RLS lo exige en todas las tablas).
-    loginError('Tu usuario no tiene un perfil asignado en ningún cliente de Software EYO. Pedile al administrador que te dé de alta.');
+    loginError('Tu usuario no tiene un perfil asignado en ningún cliente de Bestoic. Pedile al administrador que te dé de alta.');
     await supabaseClient.auth.signOut();
     return false;
   }
@@ -4835,7 +4846,7 @@ function applyPropertyFormModeUI(){
 }
 function openNewProperty(){
   const max=maxAlojamientos();
-  if(max==null){showToast(t('alojamientos.limite_no_configurado','El límite de alojamientos de tu cuenta no está configurado todavía. Contactá al administrador de EYO.'),'error');return;}
+  if(max==null){showToast(t('alojamientos.limite_no_configurado','El límite de alojamientos de tu cuenta no está configurado todavía. Contactá al administrador de Bestoic.'),'error');return;}
   if(properties.length>=max){showToast(t('alojamientos.limite_plan','Tu plan permite hasta')+' '+max+' '+t('alojamientos.limite_plan_sufijo','alojamientos. Para agregar más, actualizá tu plan.'),'error');return;}
   document.getElementById('prop-id').value='';document.getElementById('modal-prop-title').textContent=t('alojamientos.nuevo_alojamiento','Nuevo alojamiento');
   clearF(['prop-nombre','prop-direccion','prop-cuenta','prop-notas','prop-checkin-h','prop-checkout-h','prop-wifi','prop-wifi-pass','prop-acceso','prop-normas','prop-info','prop-contacto','prop-categoria','prop-descripcion','prop-camas','prop-tipo-cama','prop-banio','prop-piso','prop-comodidades']);
@@ -4867,7 +4878,7 @@ async function saveProperty(){
     upsertLocal(allProperties,propertyFromDb(updated));
   }else{
     const max=maxAlojamientos();
-    if(max==null){showToast(t('alojamientos.limite_no_configurado','El límite de alojamientos de tu cuenta no está configurado todavía. Contactá al administrador de EYO.'),'error');return;}
+    if(max==null){showToast(t('alojamientos.limite_no_configurado','El límite de alojamientos de tu cuenta no está configurado todavía. Contactá al administrador de Bestoic.'),'error');return;}
     if(properties.length>=max){showToast(t('alojamientos.limite_alcanzado','Alcanzaste el límite de')+' '+max+' '+t('alojamientos.limite_alcanzado_sufijo','alojamientos de tu plan.'),'error');return;}
     const {data:inserted,error}=await supabaseClient.from('properties').insert({...propertyToDb(data),tenant_id:currentUser.tenantId}).select().single();
     if(error){
@@ -4967,7 +4978,7 @@ function showOwnerDetail(id){
     <div class="metric-card green"><div class="metric-label">${t('propietarios.depositos_realizados','Depósitos realizados')}</div><div class="metric-value">${fmt(dR)}</div></div>
     <div class="metric-card amber"><div class="metric-label">${t('propietarios.depositos_pendientes','Depósitos pendientes')}</div><div class="metric-value">${fmt(dP)}</div></div>
   `;
-  document.getElementById('owner-detail-info').innerHTML=`<div class="card-header"><div class="card-title">${t('propietarios.contacto','Contacto')}</div></div><div class="detail-grid"><div class="detail-item"><label>${t('reservas.modal.telefono','Teléfono')}</label><span>${esc(owner.telefono)||'—'}</span></div><div class="detail-item"><label>${t('reservas.modal.email','Email')}</label><span>${esc(owner.email)||'—'}</span></div><div class="detail-item" style="grid-column:span 2"><label>${t('alojamientos.cuenta_bancaria','Cuenta bancaria')}</label><span style="font-size:11px">${esc(owner.cuenta)||'—'}</span></div></div>`;
+  document.getElementById('owner-detail-info').innerHTML=`<div class="card-header"><div class="card-title">${t('propietarios.contacto','Contacto')}</div></div><div class="detail-grid"><div class="detail-item"><label>${t('reservas.modal.telefono','Teléfono')}</label><span>${esc(owner.telefono)||'—'}</span></div><div class="detail-item"><label>${t('reservas.modal.email','Email')}</label><span>${esc(owner.email)||'—'}</span></div><div class="detail-item" style="grid-column:span 2"><label>${t('alojamientos.cuenta_bancaria','Cuenta bancaria')}</label><span style="font-size:11px">${esc(ownerBankAccounts[owner.id])||'—'}</span></div></div>`;
   document.getElementById('owner-detail-props').innerHTML=`<div class="card-header"><div class="card-title">${t('alojamientos.titulo','Alojamientos')}</div></div>${oP.map(p=>`<div style="padding:6px 0;border-bottom:0.5px solid var(--border);font-size:12px;display:flex;justify-content:space-between;align-items:center"><span><i class="ti ti-home" style="font-size:11px;color:var(--text3)"></i> ${esc(p.nombre)}</span>${badgeA(p.estado)}</div>`).join('')||`<p style="font-size:12px;color:var(--text3);margin-top:8px">${t('propietarios.sin_alojamientos','Sin alojamientos')}</p>`}`;
   document.getElementById('owner-detail-res').innerHTML=oR.map(r=>{
     const c=calcRes(r);const pExp=expenses.filter(e=>e.propiedadId===r.propiedadId&&e.reservaId===r.id).reduce((s,e)=>s+e.monto,0);
@@ -4989,7 +5000,7 @@ function openNewOwner(){
 function editOwner(id){
   const o=owners.find(x=>x.id===id);if(!o)return;
   document.getElementById('owner-id').value=id;document.getElementById('modal-owner-title').textContent=t('propietarios.editar_propietario','Editar propietario');
-  const F={'owner-nombre':o.nombre,'owner-telefono':o.telefono||'','owner-email':o.email||'','owner-cuenta':o.cuenta||'','owner-notas':o.notas||''};
+  const F={'owner-nombre':o.nombre,'owner-telefono':o.telefono||'','owner-email':o.email||'','owner-cuenta':ownerBankAccounts[id]||'','owner-notas':o.notas||''};
   Object.entries(F).forEach(([k,v])=>{const el=document.getElementById(k);if(el)el.value=v;});
   openModal('modal-owner');
 }
@@ -4997,7 +5008,9 @@ async function saveOwner(){
   const nombre=document.getElementById('owner-nombre').value.trim();
   if(!nombre){showToast(t('alojamientos.validacion.nombre','Ingresá el nombre'),'error');return;}
   const id=document.getElementById('owner-id').value;
-  const data={nombre,telefono:document.getElementById('owner-telefono').value,email:document.getElementById('owner-email').value,cuenta:document.getElementById('owner-cuenta').value,notas:document.getElementById('owner-notas').value};
+  const cuenta=document.getElementById('owner-cuenta').value;
+  const data={nombre,telefono:document.getElementById('owner-telefono').value,email:document.getElementById('owner-email').value,notas:document.getElementById('owner-notas').value};
+  let ownerId=id;
   if(id){
     const {data:updated,error}=await supabaseClient.from('owners').update(ownerToDb(data)).eq('id',id).select().single();
     if(error){showToast(t('reservas.error_guardar','No se pudo guardar:')+' '+error.message,'error');return;}
@@ -5007,6 +5020,17 @@ async function saveOwner(){
     const {data:inserted,error}=await supabaseClient.from('owners').insert({...ownerToDb(data),tenant_id:currentUser.tenantId}).select().single();
     if(error){showToast(t('reservas.error_guardar','No se pudo guardar:')+' '+error.message,'error');return;}
     owners.push(ownerFromDb(inserted));
+    ownerId=inserted.id;
+  }
+  // La cuenta bancaria se guarda aparte (tabla owner_bank_accounts, 0052).
+  // Solo se intenta si el usuario puede ver datos bancarios -- si no puede,
+  // el campo del formulario siempre está vacío para él, y forzar el guardado
+  // igual solo generaría un error de RLS sin sentido para su rol.
+  if(can('ver_datos_bancarios')){
+    const {error:bankError}=await supabaseClient.from('owner_bank_accounts')
+      .upsert({owner_id:ownerId,tenant_id:currentUser.tenantId,cuenta},{onConflict:'owner_id'});
+    if(bankError){showToast(t('reservas.error_guardar','No se pudo guardar:')+' '+bankError.message,'error');return;}
+    ownerBankAccounts[ownerId]=cuenta;
   }
   populateSelects();renderOwners();closeModal('modal-owner');showToast(t('propietarios.guardado','Propietario guardado'));
 }
@@ -5290,7 +5314,7 @@ function generateReport(){
       </table>
       </div>
       <div class="rep-detail-cards">${repDetailCards}</div>
-      <div style="margin-top:2rem;padding-top:1rem;border-top:0.5px solid var(--border);font-size:10px;color:var(--text3);text-align:center">Software EYO · ${t('reportes.reporte_generado_el','Reporte generado el')} ${formatDateOnly(today())}</div>
+      <div style="margin-top:2rem;padding-top:1rem;border-top:0.5px solid var(--border);font-size:10px;color:var(--text3);text-align:center">Bestoic · ${t('reportes.reporte_generado_el','Reporte generado el')} ${formatDateOnly(today())}</div>
     </div>`;
 }
 
@@ -5468,7 +5492,7 @@ function downloadReport(){
       {header:t('reservas.table.estado','Estado'),width:30,align:'left'}
     ],
     rows:aR.map(r=>[r.huesped,fmtDate(r.checkin),r.noches,canalLabel(r.canal),fmt(r.precio),fmt(calcRes(r).cobrado),statusLabel(r.estado)]),
-    footer:'Software EYO · '+t('reportes.reporte_generado_el','Reporte generado el')+' '+formatDateOnly(today())
+    footer:'Bestoic · '+t('reportes.reporte_generado_el','Reporte generado el')+' '+formatDateOnly(today())
   };
   const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
   renderReportPDF(doc,cfg);
@@ -5654,7 +5678,7 @@ function downloadListPDF(title,subtitle,columns,rows,filename){
   for(let i=1;i<=pages;i++){
     doc.setPage(i);
     doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...pdfHexRgb(PDFCOLORS.text3));
-    doc.text('Software EYO',PW/2,PH-10,{align:'center'});
+    doc.text('Bestoic',PW/2,PH-10,{align:'center'});
     doc.text(`Página ${i} de ${pages}`,PW-M,PH-10,{align:'right'});
   }
   doc.save(filename);
@@ -5676,7 +5700,7 @@ async function exportPropertiesBackup(){
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`eyo-alojamientos-backup-${today()}.json`;a.click();
+  a.href=url;a.download=`bestoic-alojamientos-backup-${today()}.json`;a.click();
   URL.revokeObjectURL(url);
   showToast('Backup de alojamientos exportado');
 }
@@ -5770,7 +5794,7 @@ async function exportOwnersBackup(){
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`eyo-propietarios-backup-${today()}.json`;a.click();
+  a.href=url;a.download=`bestoic-propietarios-backup-${today()}.json`;a.click();
   URL.revokeObjectURL(url);
   showToast('Backup de propietarios exportado');
 }
@@ -5787,11 +5811,20 @@ async function importOwnersBackup(input){
         input.value='';return;
       }
       let ok=0,fail=0;
+      const canBank=can('ver_datos_bancarios');
       for(const row of rows){
         const payload=ownerToDb(ownerFromDb(row));
         payload.tenant_id=currentUser.tenantId;
-        const {error}=await supabaseClient.from('owners').insert(payload);
-        if(error)fail++;else ok++;
+        const {data:inserted,error}=await supabaseClient.from('owners').insert(payload).select().single();
+        if(error){fail++;continue;}
+        ok++;
+        // Backups viejos (de antes de la migración 0052) todavía traen
+        // "cuenta" en la fila del owner -- se restaura aparte, en la tabla
+        // nueva, para no perder ese dato.
+        if(canBank&&row.cuenta&&String(row.cuenta).trim()){
+          await supabaseClient.from('owner_bank_accounts')
+            .upsert({owner_id:inserted.id,tenant_id:currentUser.tenantId,cuenta:row.cuenta},{onConflict:'owner_id'});
+        }
       }
       await loadOwners();
       await logRestoreEvent('owners','backup_propio',ok,fail,rows.length,backup.exportedAt||'');
@@ -5847,7 +5880,7 @@ async function exportReservationsBackup(){
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`eyo-reservas-backup-${today()}.json`;a.click();
+  a.href=url;a.download=`bestoic-reservas-backup-${today()}.json`;a.click();
   URL.revokeObjectURL(url);
   showToast('Backup de reservas exportado');
 }
@@ -5951,7 +5984,7 @@ async function exportExpensesBackup(){
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`eyo-gastos-backup-${today()}.json`;a.click();
+  a.href=url;a.download=`bestoic-gastos-backup-${today()}.json`;a.click();
   URL.revokeObjectURL(url);
   showToast('Backup de gastos exportado');
 }
@@ -6042,7 +6075,7 @@ async function exportGuestsBackup(){
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`eyo-huespedes-backup-${today()}.json`;a.click();
+  a.href=url;a.download=`bestoic-huespedes-backup-${today()}.json`;a.click();
   URL.revokeObjectURL(url);
   showToast('Backup de huéspedes exportado');
 }
@@ -6119,7 +6152,7 @@ async function exportTasksBackup(){
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`eyo-tareas-backup-${today()}.json`;a.click();
+  a.href=url;a.download=`bestoic-tareas-backup-${today()}.json`;a.click();
   URL.revokeObjectURL(url);
   showToast('Backup de tareas exportado');
 }
@@ -6195,7 +6228,7 @@ async function exportRoomTypesBackup(){
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`eyo-tipos-habitacion-backup-${today()}.json`;a.click();
+  a.href=url;a.download=`bestoic-tipos-habitacion-backup-${today()}.json`;a.click();
   URL.revokeObjectURL(url);
   showToast('Backup de tipos de habitación exportado');
 }
@@ -6239,7 +6272,7 @@ async function exportRoomsBackup(){
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`eyo-habitaciones-backup-${today()}.json`;a.click();
+  a.href=url;a.download=`bestoic-habitaciones-backup-${today()}.json`;a.click();
   URL.revokeObjectURL(url);
   showToast('Backup de habitaciones exportado');
 }
@@ -6335,7 +6368,7 @@ async function exportStaysBackup(){
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`eyo-estadias-backup-${today()}.json`;a.click();
+  a.href=url;a.download=`bestoic-estadias-backup-${today()}.json`;a.click();
   URL.revokeObjectURL(url);
   showToast('Backup de estadías exportado');
 }
@@ -6692,7 +6725,7 @@ async function exportHkTasksBackup(){
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`eyo-housekeeping-backup-${today()}.json`;a.click();
+  a.href=url;a.download=`bestoic-housekeeping-backup-${today()}.json`;a.click();
   URL.revokeObjectURL(url);
   showToast('Backup de housekeeping exportado');
 }
@@ -6736,7 +6769,7 @@ async function exportMaintTicketsBackup(){
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`eyo-mantenimiento-backup-${today()}.json`;a.click();
+  a.href=url;a.download=`bestoic-mantenimiento-backup-${today()}.json`;a.click();
   URL.revokeObjectURL(url);
   showToast('Backup de mantenimiento exportado');
 }
@@ -6780,7 +6813,7 @@ async function exportCashSessionsBackup(){
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`eyo-caja-backup-${today()}.json`;a.click();
+  a.href=url;a.download=`bestoic-caja-backup-${today()}.json`;a.click();
   URL.revokeObjectURL(url);
   showToast('Backup de caja exportado');
 }
@@ -6824,7 +6857,7 @@ async function exportFacturasBackup(){
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`eyo-facturas-backup-${today()}.json`;a.click();
+  a.href=url;a.download=`bestoic-facturas-backup-${today()}.json`;a.click();
   URL.revokeObjectURL(url);
   showToast('Backup de comprobantes exportado');
 }
@@ -6902,7 +6935,7 @@ async function exportarBackupCompleto(){
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`eyo-backup-completo-${today()}.json`;a.click();
+  a.href=url;a.download=`bestoic-backup-completo-${today()}.json`;a.click();
   URL.revokeObjectURL(url);
   const totalFilas=BACKUP_COMPLETO_TABLAS.reduce((s,t)=>s+(Array.isArray(backup[t.tabla])?backup[t.tabla].length:(backup[t.tabla]?1:0)),0);
   showToast(`Backup completo exportado (${totalFilas} filas en total)`);
@@ -7229,7 +7262,7 @@ function exportMonthlyPDF(){
       {header:t('reportes.hr.ingresos','Ingresos'),width:30,align:'right',color:PDFCOLORS.green}
     ],
     rows:s.propRows.map(p=>[p.nombre,p.reservas,p.noches,p.ocup+'%',fmt(p.ingresos)]),
-    footer:'Software EYO · '+t('reportes.reporte_generado_el','Reporte generado el')+' '+formatDateOnly(today())
+    footer:'Bestoic · '+t('reportes.reporte_generado_el','Reporte generado el')+' '+formatDateOnly(today())
   };
   const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
   renderReportPDF(doc,cfg);
@@ -7559,7 +7592,7 @@ function updatePlanUsage(){
   }
 }
 
-// ==================== MERCADO (agente local EYO Market) ====================
+// ==================== MERCADO (agente local Mercado Bestoic) ====================
 // Todo este bloque habla directo con el agente local por HTTP a
 // 127.0.0.1:8765 — nunca toca Supabase ni ningún otro servicio en la nube.
 // El agente es un proceso Python aparte (bot-precios-alojamientos) que el
@@ -7628,7 +7661,7 @@ async function mktDetectarAgente(){
     }
   }catch(e){
     cardAgente.innerHTML=`
-      <span style="color:var(--text2)"><i class="ti ti-circle-x"></i> El componente EYO Market no está instalado (o no está corriendo) en esta computadora.</span>
+      <span style="color:var(--text2)"><i class="ti ti-circle-x"></i> El componente Mercado Bestoic no está instalado (o no está corriendo) en esta computadora.</span>
       <p style="font-size:11px;color:var(--text3);margin-top:.5rem">Instalalo una vez en la PC donde el dueño va a generar los informes de mercado — esta función solo funciona en esa computadora, no desde el celular ni desde otro equipo. Es gratis, corre local, y se abre solo cuando vos lo abrís (no queda prendido con Windows).</p>
       <a class="btn btn-sm btn-primary" style="margin-top:.5rem;text-decoration:none" href="https://github.com/webdelhotelcom/eyo-market-instalador/releases/latest" target="_blank" rel="noopener"><i class="ti ti-download"></i> Descargar e instalar</a>
       <button class="btn btn-sm" style="margin-top:.5rem;margin-left:.5rem" onclick="mktDetectarAgente()"><i class="ti ti-refresh"></i> Ya lo instalé, reintentar</button>`;
@@ -8325,13 +8358,13 @@ function renderAjustesInfo(){
   const year=new Date().getFullYear();
   body.innerHTML=`
     <div style="margin-bottom:1.5rem">
-      <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Acerca de EYO</div>
-      <p style="font-size:13px;color:var(--text2);margin:0 0 4px">Software EYO es un sistema de gestión para alojamientos y hostales: reservas, huéspedes, alojamientos, finanzas, recepción, limpieza, mantenimiento y caja en un mismo panel.</p>
-      <p style="font-size:11px;color:var(--text3);margin:0">Software EYO © ${year}</p>
+      <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Acerca de Bestoic</div>
+      <p style="font-size:13px;color:var(--text2);margin:0 0 4px">Bestoic es un sistema de gestión para alojamientos y hostales: reservas, huéspedes, alojamientos, finanzas, recepción, limpieza, mantenimiento y caja en un mismo panel.</p>
+      <p style="font-size:11px;color:var(--text3);margin:0">Bestoic © ${year}</p>
     </div>
     <div style="margin-bottom:1.5rem">
       <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem">Política de uso</div>
-      <p style="font-size:13px;color:var(--text2);margin:0">Software EYO se usa para gestionar tu propio negocio de alojamiento. No está permitido usar el sistema para cargar datos de terceros sin su consentimiento, ni para fines distintos a la operación del alojamiento contratado. El detalle completo de qué incluye el servicio está en los Términos de servicio.</p>
+      <p style="font-size:13px;color:var(--text2);margin:0">Bestoic se usa para gestionar tu propio negocio de alojamiento. No está permitido usar el sistema para cargar datos de terceros sin su consentimiento, ni para fines distintos a la operación del alojamiento contratado. El detalle completo de qué incluye el servicio está en los Términos de servicio.</p>
     </div>
     <div style="display:flex;flex-direction:column;gap:2px">
       <a class="ajustes-cat-btn" href="privacidad.html" target="_blank" rel="noopener" style="text-decoration:none"><i class="ti ti-shield-check"></i><span>Política de privacidad</span><i class="ti ti-external-link" style="margin-left:auto;font-size:12px"></i></a>
@@ -8342,7 +8375,7 @@ function renderAjustesInfo(){
   `;
 }
 // ==================== CENTRO DE AYUDA ====================
-// Manual completo de Software EYO, basado en las funciones reales del
+// Manual completo de Bestoic, basado en las funciones reales del
 // código (no se documenta nada que la app no tenga). videoSlot queda
 // preparado para más adelante — no se integra ninguna plataforma ahora.
 const HELP_CATEGORIAS=[
@@ -8351,7 +8384,7 @@ const HELP_CATEGORIAS=[
 ];
 const HELP_ARTICLES=[
   {id:'primeros-pasos',categoria:'primeros',titulo:'Primeros pasos',
-   paraQueSirve:'Entender la estructura general de Software EYO antes de usar cualquier módulo — en particular, dos distinciones que confunden al principio: "Modo Propietario" vs "Modo Administrador" (un filtro de qué negocio estás viendo, NO un permiso), y los roles de usuario (qué podés hacer vos, según lo que te asignó el administrador).',
+   paraQueSirve:'Entender la estructura general de Bestoic antes de usar cualquier módulo — en particular, dos distinciones que confunden al principio: "Modo Propietario" vs "Modo Administrador" (un filtro de qué negocio estás viendo, NO un permiso), y los roles de usuario (qué podés hacer vos, según lo que te asignó el administrador).',
    comoUsarlo:'Al entrar, la app recuerda el último "modo de negocio" que usaste (Modo Propietario u Modo Administrador — botón en el menú lateral). Esto decide qué conjunto de alojamientos/reservas ves, no qué podés hacer con ellos. Tu rol (Administrador, Gerencia, Encargado, Recepción, Limpieza, Mantenimiento, Contador o Propietario) decide qué páginas y botones tenés disponibles — lo configura un Administrador desde Ajustes → Usuarios y permisos.',
    pasoAPaso:['Iniciá sesión con tu correo y contraseña.','Fijate qué modo está activo en el menú lateral (Modo Propietario / Modo Administrador) y cambialo si hace falta.','Explorá el Dashboard para tener una vista general antes de cargar datos.','Si sos Administrador, revisá Ajustes → Usuarios y permisos para confirmar que cada persona tenga el rol correcto.'],
    erroresFrecuentes:['Pensar que "Modo Propietario" tiene que ver con el rol "Propietario" — no tiene relación, es solo un filtro de datos.','Buscar una función en el modo de negocio equivocado (por ejemplo, buscar Habitaciones estando en Modo Administrador cuando esa vista es de Modo Propietario/Hostal).'],
@@ -9085,7 +9118,7 @@ function printInvoice(f){
       </div>
     </div>
     <div class="legal">
-      Comprobante interno / pre-factura generado con Software EYO. Para tener validez fiscal como CFE, debe emitirse desde un sistema homologado por la DGI, firmado con certificado digital y con CAE vigente. Conservar por 5 años. Verificación: efactura.dgi.gub.uy
+      Comprobante interno / pre-factura generado con Bestoic. Para tener validez fiscal como CFE, debe emitirse desde un sistema homologado por la DGI, firmado con certificado digital y con CAE vigente. Conservar por 5 años. Verificación: efactura.dgi.gub.uy
     </div>
   </div>
   </body></html>`);
@@ -10813,7 +10846,7 @@ function genTempPassword(){
 function regenerateNewUserPassword(){document.getElementById('newuser-password').value=genTempPassword();}
 function openNewUser(){
   const max=tenantLimits.maxUsers;
-  if(max==null){showToast(t('usuarios.error_limite_no_configurado','El límite de usuarios de tu cuenta no está configurado todavía. Contactá al administrador de EYO.'),'error');return;}
+  if(max==null){showToast(t('usuarios.error_limite_no_configurado','El límite de usuarios de tu cuenta no está configurado todavía. Contactá al administrador de Bestoic.'),'error');return;}
   if(tenantUsers.length>=max){showToast(t('usuarios.error_limite_alcanzado','Alcanzaste el límite de {max} usuarios de tu plan.').replaceAll('{max}',max),'error');return;}
   document.getElementById('newuser-email').value='';
   document.getElementById('newuser-role').value='recepcion';
@@ -10934,7 +10967,7 @@ async function renderAuditPage(){
   if(desde)q=q.gte('created_at',desde);
   const {data,error}=await q;
   if(error){
-    tb.innerHTML=`<tr><td colspan="3" style="text-align:center;padding:1.5rem;color:var(--text2)">${t('auditoria.error_cargar','No se pudo cargar la auditoría')}: ${error.message}</td></tr>`;
+    tb.innerHTML=`<tr><td colspan="3" style="text-align:center;padding:1.5rem;color:var(--text2)">${t('auditoria.error_cargar','No se pudo cargar la auditoría')}: ${esc(error.message)}</td></tr>`;
     return;
   }
   const sub=document.getElementById('auditoria-subtitle');

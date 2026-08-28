@@ -1,9 +1,9 @@
 ---
 name: dependency-audit
-description: Revisar las dependencias externas de Software EYO (librerías CDN, cliente Supabase JS, y las del motor Python del bot de mercado) por versiones desactualizadas, vulnerabilidades conocidas, o costos nuevos. Usar ante pedidos como "revisá las dependencias", "¿hay alguna librería vieja o insegura?", o antes de agregar cualquier paquete/servicio nuevo al proyecto.
+description: Revisar las dependencias externas de Bestoic (librerías CDN, cliente Supabase JS, y las del motor Python del bot de mercado) por versiones desactualizadas, vulnerabilidades conocidas, o costos nuevos. Usar ante pedidos como "revisá las dependencias", "¿hay alguna librería vieja o insegura?", o antes de agregar cualquier paquete/servicio nuevo al proyecto.
 ---
 
-# Auditoría de dependencias — Software EYO
+# Auditoría de dependencias — Bestoic
 
 ## Regla de negocio que manda sobre esto
 
@@ -15,7 +15,7 @@ de agregarla — no se asume "el free tier alcanza para siempre".
 
 ## Superficie real de dependencias (dos proyectos distintos)
 
-### Software EYO (`app/panel.html`) — sin bundler, sin `package.json`
+### Bestoic (`app/panel.html`) — sin bundler, sin `package.json`
 Todo vía CDN, cargado directo en el HTML:
 ```
 grep -n "cdn.jsdelivr.net\|cdnjs.cloudflare.com\|<script src=" app/panel.html
@@ -39,7 +39,7 @@ cat requirements.txt   # playwright, pandas, reportlab
 ```
 - `playwright`: instala su propio Chromium — verificar que
   `playwright install chromium` esté documentado en el manual de
-  instalación/instalador (Fase 6 del proyecto EYO Market, si ya se llegó
+  instalación/instalador (Fase 6 del proyecto Mercado Bestoic, si ya se llegó
   ahí), porque sin eso el motor no arranca en una PC nueva.
 - Ninguna de las tres (`playwright`, `pandas`, `reportlab`) tiene versión
   paga — está bien así, no cambiar por una alternativa de pago sin

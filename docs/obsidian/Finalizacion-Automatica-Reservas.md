@@ -37,7 +37,7 @@ Existe una función separada `intentar_finalizar_reserva()` (migración `0034`, 
 
 ## TODO futuro documentado en el propio SQL
 
-Tanto `'America/Montevideo'` como la hora de check-out (10:00, de ahí la ejecución a las 11:00) están hardcodeados. El día que Software EYO tenga clientes fuera de Uruguay o con otro horario de check-out, ambos valores deberían salir de columnas configurables por tenant/establecimiento (ej. `tenants.timezone`, `tenants.checkout_hour`) — no resuelto en esta ronda.
+Tanto `'America/Montevideo'` como la hora de check-out (10:00, de ahí la ejecución a las 11:00) están hardcodeados. El día que Bestoic tenga clientes fuera de Uruguay o con otro horario de check-out, ambos valores deberían salir de columnas configurables por tenant/establecimiento (ej. `tenants.timezone`, `tenants.checkout_hour`) — no resuelto en esta ronda.
 
 ## Verificación antes de aprobar
 

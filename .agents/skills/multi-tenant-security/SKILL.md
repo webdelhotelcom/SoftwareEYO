@@ -1,11 +1,11 @@
 ---
 name: multi-tenant-security
-description: Verificar o garantizar el aislamiento entre clientes (tenants) de Software EYO — cualquier tabla nueva, endpoint nuevo, o módulo nuevo que guarde datos debe quedar imposible de leer/escribir desde otro tenant. Usar ante pedidos como "agregar una tabla nueva", "un cliente puede ver datos de otro", "probar aislamiento entre cuentas", o después de crear cualquier migración con datos de negocio.
+description: Verificar o garantizar el aislamiento entre clientes (tenants) de Bestoic — cualquier tabla nueva, endpoint nuevo, o módulo nuevo que guarde datos debe quedar imposible de leer/escribir desde otro tenant. Usar ante pedidos como "agregar una tabla nueva", "un cliente puede ver datos de otro", "probar aislamiento entre cuentas", o después de crear cualquier migración con datos de negocio.
 ---
 
-# Aislamiento multi-tenant — Software EYO
+# Aislamiento multi-tenant — Bestoic
 
-Software EYO es **un solo proyecto Supabase compartido por todos los
+Bestoic es **un solo proyecto Supabase compartido por todos los
 clientes** (nunca un proyecto por cliente) — el aislamiento es 100%
 responsabilidad de `tenant_id` + RLS. Un error acá es el peor tipo de
 bug posible en este sistema: expone datos de un negocio real a otro.
