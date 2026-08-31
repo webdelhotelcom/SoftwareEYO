@@ -1,0 +1,75 @@
+# Publica SOLO la landing pública (index.html, software.html, assets/,
+# privacidad/terminos) en GitHub Pages -- nunca el panel real (app/panel.html,
+# app/config.js) ni nada que hable con Supabase. Objetivo: sacarle a Netlify
+# el peso de las fotos de la landing, que es lo que más créditos consume
+# (ver docs/obsidian/Estado-actual.md y la charla del 2026-08-29).
+#
+# A PROPÓSITO no se dispara solo con cada push a master -- master también
+# tiene cambios del panel y migraciones que no tienen nada que ver con la
+# landing. Se ejecuta a mano desde la pestaña "Actions" de GitHub, con el
+# botón "Run workflow", así cada publicación es una decisión explícita
+# (misma filosofía que "verificar con un borrador antes del --prod" en
+# deploy/build.sh).
+#
+# Requisito único para que esto funcione: en GitHub, Settings -> Pages ->
+# "Build and deployment" -> Source: "GitHub Actions" (se configura una sola
+# vez, a mano, con la cuenta correcta -- webdelhotelcom).
+
+name: Publicar landing en GitHub Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repo
+        uses: actions/checkout@v4
+
+      - name: Armar la carpeta a publicar (solo landing, nunca el panel)
+        run: |
+          set -euo pipefail
+          rm -rf _site
+          mkdir -p _site/app
+          cp index.html _site/index.html
+          cp software.html _site/software.html
+          cp 404.html _site/404.html
+          cp -r assets _site/assets
+          cp app/privacidad.html _site/app/privacidad.html
+          cp app/terminos.html _site/app/terminos.html
+          # Red de seguridad: si algún día alguien agrega estos archivos al
+          # job de arriba por error, que la publicación falle en vez de
+          # filtrar credenciales o el software real.
+          if [ -e _site/app/panel.html ] || [ -e _site/app/config.js ] || [ -e _site/config.js ]; then
+            echo "ERROR: el panel o config.js casi se publican en la landing pública. Abortando."
+            exit 1
+          fi
+
+      - name: Preparar Pages
+        uses: actions/configure-pages@v5
+
+      - name: Subir el contenido armado
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
