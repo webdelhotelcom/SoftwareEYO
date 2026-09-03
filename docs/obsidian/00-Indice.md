@@ -20,6 +20,7 @@ Esto **no reemplaza** la documentación operativa de `docs/` (cómo instalar, c�
 - [[Pago-Sena-Plan-MercadoPago]] — botón de pago de la seña del plan (Mercado Pago, Checkout Pro/Orders API) en la página comercial — primer backend real del proyecto (Netlify Functions). Implementado y commiteado, deploy pendiente de que Netlify se reactive.
 - [[Web-EYO-Sitio-Personal]] — proyecto aparte (no es Bestoic): el sitio personal de Orieles (`D:\Ori\webeyo`) y el micrositio de reservas `hostal.html`, publicados en **dos repos de GitHub distintos** (uno de ellos, `webdelhotelcom.github.io`, ni siquiera está clonado localmente). Migrado a una cuenta de GitHub nueva por problema de permisos con la original; contenido, fotos y arreglo responsive actualizados 2026-08-20 y 2026-08-21.
 - [[Productividad-Ori]] — séptimo producto EYO, de uso personal (no comercial): app de calendario/productividad/cronómetro/gimnasio/estadísticas (Next.js + Supabase, `D:\Ori\productividad-ori`). Ya tiene código real y en producción — incluye un módulo de Nutrición completo (agregado 2026-08-20). Ver la memoria de sesión del proyecto para el detalle técnico; esta carpeta de notas es la de Bestoic, no la suya propia.
+- [[Estado-de-Respaldos]] — ¿está a salvo el código de los 4 proyectos (Bestoic, Productividad Ori, Finanzas Ori, Webeyo)? Commiteado vs. subido a GitHub, revisado y no asumido.
 - [[Estado-actual]] — qué está terminado, qué está pendiente, a la fecha de esta nota.
 - [[Glosario]] — términos técnicos del proyecto explicados en una línea.
 
