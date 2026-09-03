@@ -700,6 +700,11 @@ tr:hover td{background:var(--bg2)}
 </div>
 
 <div id="app">
+<div id="trialBanner" style="display:none;position:sticky;top:0;left:0;right:0;z-index:500;background:linear-gradient(90deg,#4F46E5,#7C3AED);color:#fff;padding:10px 16px;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;font-size:13px;font-weight:600">
+  <i class="ti ti-clock-hour-4"></i>
+  <span>Cuenta de prueba — vence en <span id="trialBannerCountdown">--:--:--</span></span>
+  <a href="software.html" target="_blank" rel="noopener" style="color:#fff;text-decoration:underline;font-weight:700">Saber más →</a>
+</div>
 <div class="app-layout">
 <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()" aria-label="Abrir menú">
   <i class="ti ti-menu-2"></i>
@@ -3986,6 +3991,7 @@ async function loadSessionUser(authUser){
   if(!profile.active){loginError('Tu usuario está desactivado. Contactá al administrador.');await supabaseClient.auth.signOut();return false;}
   const {data:tenant,error:tenantErr}=await supabaseClient.from('tenants').select('*').eq('id',profile.tenant_id).single();
   if(tenantErr||!tenant){loginError('No se pudo cargar la cuenta del cliente. Contactá al administrador.');await supabaseClient.auth.signOut();return false;}
+  if(tenant.trial_expires_at&&new Date(tenant.trial_expires_at)<=new Date()){loginError('Tu prueba venció. Contactá a Bestoic para renovarla.');await supabaseClient.auth.signOut();return false;}
 
   tenantRow=tenant;
   PLAN=tenant.plan;
@@ -4046,6 +4052,7 @@ async function loadSessionUser(authUser){
   document.getElementById('dash-date').textContent=todayLabel();
   updateAlertBadge();
   startActiveUserWatch();
+  startTrialCountdown();
   return true;
 }
 
@@ -4055,6 +4062,37 @@ async function loadSessionUser(authUser){
 // active=true — ver 0020_deactivated_user_lockout.sql). Este chequeo
 // periódico es solo para avisarle con un mensaje claro y sacarlo del
 // panel, en vez de que se encuentre con errores sueltos de Supabase.
+// Banner de cuenta de prueba con cuenta regresiva -- solo se muestra cuando
+// tenantRow.trial_expires_at existe (cuentas de prueba de cliente, ver
+// 0054_tenant_trial_expiration.sql). Un cliente normal (trial_expires_at
+// NULL) nunca ve este banner. El vencimiento real ya lo garantiza la base
+// de datos (current_tenant_id()/etc dejan de reconocer al usuario) -- esto
+// es solo la cuenta regresiva visible + el link a más información.
+let trialCountdownTimer=null;
+function startTrialCountdown(){
+  const banner=document.getElementById('trialBanner');
+  if(trialCountdownTimer){clearInterval(trialCountdownTimer);trialCountdownTimer=null;}
+  if(!tenantRow||!tenantRow.trial_expires_at){
+    if(banner)banner.style.display='none';
+    return;
+  }
+  if(banner)banner.style.display='flex';
+  const expiresAt=new Date(tenantRow.trial_expires_at).getTime();
+  const tick=()=>{
+    const el=document.getElementById('trialBannerCountdown');
+    if(!el)return;
+    const ms=expiresAt-Date.now();
+    if(ms<=0){el.textContent='00:00:00';return;}
+    const totalSec=Math.floor(ms/1000);
+    const h=Math.floor(totalSec/3600);
+    const m=Math.floor((totalSec%3600)/60);
+    const s=totalSec%60;
+    el.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  };
+  tick();
+  trialCountdownTimer=setInterval(tick,1000);
+}
+
 let activeUserWatchTimer=null;
 function startActiveUserWatch(){
   if(activeUserWatchTimer)clearInterval(activeUserWatchTimer);
@@ -4065,6 +4103,18 @@ function startActiveUserWatch(){
     if(!data||data.active===false){
       clearInterval(activeUserWatchTimer);activeUserWatchTimer=null;
       alert('Tu usuario fue desactivado. La sesión se cerrará.');
+      await doLogout();
+      return;
+    }
+    // Mismo chequeo, ahora para vencimiento de cuentas de prueba
+    // (ver 0054_tenant_trial_expiration.sql) -- current_tenant_id() ya deja
+    // de reconocerlo en la base apenas vence, esto es solo para avisarle
+    // con un mensaje claro en vez de que se encuentre con pantallas vacías.
+    const {data:tenantCheck,error:tenantErr}=await supabaseClient.from('tenants').select('trial_expires_at').eq('id',currentUser.tenantId).maybeSingle();
+    if(tenantErr)return;
+    if(tenantCheck&&tenantCheck.trial_expires_at&&new Date(tenantCheck.trial_expires_at)<=new Date()){
+      clearInterval(activeUserWatchTimer);activeUserWatchTimer=null;
+      alert('Tu prueba venció. La sesión se cerrará.');
       await doLogout();
     }
   },60000);
@@ -4087,6 +4137,8 @@ async function doLogout(){
   closeAccountMenu();
   closeMobileSidebar();
   if(activeUserWatchTimer){clearInterval(activeUserWatchTimer);activeUserWatchTimer=null;}
+  if(trialCountdownTimer){clearInterval(trialCountdownTimer);trialCountdownTimer=null;}
+  const trialBannerEl=document.getElementById('trialBanner');if(trialBannerEl)trialBannerEl.style.display='none';
   if(supabaseClient)await supabaseClient.auth.signOut();
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';

@@ -672,9 +672,46 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   body{background:#fff;color:#000;}
 }
 
+/* ---------- Modal de pago de seña (Mercado Pago) -------------------- */
+.mp-modal-backdrop{
+  position:fixed;inset:0;background:rgba(11,27,46,.55);z-index:300;
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+.mp-modal-backdrop.open{display:flex;}
+.mp-modal{
+  background:var(--surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);
+  max-width:440px;width:100%;padding:32px;position:relative;
+}
+.mp-modal h3{margin-bottom:6px;}
+.mp-modal p.mp-sub{color:var(--text-secondary);margin-bottom:20px;font-size:.92rem;}
+.mp-modal-close{
+  position:absolute;top:16px;right:16px;background:none;border:0;font-size:1.3rem;
+  color:var(--text-secondary);cursor:pointer;line-height:1;padding:4px;
+}
+.mp-field{margin-bottom:14px;}
+.mp-field label{display:block;font-size:.86rem;font-weight:600;margin-bottom:6px;color:var(--navy);}
+.mp-field input{
+  width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:10px;
+  font-family:inherit;font-size:.95rem;
+}
+.mp-field input:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px rgba(90,143,203,.18);}
+.mp-turnstile{margin:16px 0;}
+.mp-modal-error{
+  display:none;background:#FBE9E7;color:var(--danger);border-radius:10px;padding:10px 14px;
+  font-size:.86rem;margin-bottom:14px;
+}
+.mp-modal-error.show{display:block;}
+.mp-modal-submit[disabled]{opacity:.6;cursor:not-allowed;}
+
 </style>
 
 <!-- ANALÍTICA: pegá acá el script de Google Analytics 4 o Meta Pixel. -->
+
+<!-- Turnstile (Cloudflare) -- protege el botón de pago de la seña contra
+     bots/abuso. Sin versión pineable con SRI (mismo caso documentado
+     para el SDK de Mercado Pago -- ninguno de los dos ofrece una URL de
+     versión fija como Chart.js/jsPDF). -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 
 <body data-page="software">
@@ -1072,6 +1109,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
             <li class="li-extra">Página web y Perfil de Empresa en Google: disponibles como adicional</li>
           </ul>
           <button class="btn btn-secondary-light btn-block" type="button" data-wa="inicial">Consultar Plan Inicial</button>
+          <button class="btn btn-primary btn-block" type="button" data-mp-plan="inicial" style="margin-top:10px">Pagar seña y empezar (USD 75)</button>
         </div>
       </div>
 
@@ -1091,6 +1129,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
             <li>Configuración y capacitación</li><li>Garantía técnica de hasta 2 años</li>
           </ul>
           <button class="btn btn-primary btn-block" type="button" data-wa="profesional">Consultar Plan Profesional</button>
+          <button class="btn btn-secondary-light btn-block" type="button" data-mp-plan="profesional" style="margin-top:10px">Pagar seña y empezar (USD 250)</button>
         </div>
       </div>
 
@@ -1500,6 +1539,32 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   <button class="lb-close" type="button" aria-label="Cerrar">&times;</button>
   <img id="lb-img" src="" alt="">
 </div>
+
+<div class="mp-modal-backdrop" id="mpModalBackdrop">
+  <div class="mp-modal" role="dialog" aria-modal="true" aria-labelledby="mpModalTitle">
+    <button class="mp-modal-close" type="button" id="mpModalClose" aria-label="Cerrar">&times;</button>
+    <h3 id="mpModalTitle">Pagar seña — <span id="mpModalPlanName">Plan</span></h3>
+    <p class="mp-sub" id="mpModalSub">Pagás el 50% para empezar; el resto se acuerda al entregar el software funcionando.</p>
+    <div class="mp-modal-error" id="mpModalError"></div>
+    <form id="mpModalForm">
+      <div class="mp-field">
+        <label for="mpNombre">Tu nombre</label>
+        <input type="text" id="mpNombre" required maxlength="200" autocomplete="name">
+      </div>
+      <div class="mp-field">
+        <label for="mpEmail">Email</label>
+        <input type="email" id="mpEmail" required maxlength="200" autocomplete="email">
+      </div>
+      <div class="mp-field">
+        <label for="mpTelefono">Teléfono (opcional)</label>
+        <input type="tel" id="mpTelefono" maxlength="30" autocomplete="tel">
+      </div>
+      <div class="mp-turnstile cf-turnstile" id="mpTurnstile" data-sitekey="0x4AAAAAAEmJpaPsvgEPsEHE"></div>
+      <button class="btn btn-primary btn-block mp-modal-submit" type="submit" id="mpModalSubmit">Ir a pagar</button>
+    </form>
+  </div>
+</div>
+
 <script>
 /* ==========================================================================
    Bestoic — JavaScript principal
@@ -1942,6 +2007,159 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   }
 })();
 
+</script>
+
+<script>
+/* ==========================================================================
+   Bestoic — Pago de la seña del plan (Mercado Pago, Checkout Pro / Orders
+   API). Bloque separado del script principal a propósito, para no tocar
+   la lógica ya existente de la página -- ver el plan en
+   splendid-weaving-origami.md, sección "BESTOIC — Botón de pago de la
+   seña del plan".
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var PLAN_LABELS = { inicial: 'Plan Inicial', profesional: 'Plan Profesional' };
+  var PLAN_DEPOSIT_USD = { inicial: 75, profesional: 250 }; // solo texto informativo -- el backend recalcula siempre
+
+  var backdrop = document.getElementById('mpModalBackdrop');
+  var closeBtn = document.getElementById('mpModalClose');
+  var form = document.getElementById('mpModalForm');
+  var submitBtn = document.getElementById('mpModalSubmit');
+  var errorBox = document.getElementById('mpModalError');
+  var planNameEl = document.getElementById('mpModalPlanName');
+  var subEl = document.getElementById('mpModalSub');
+
+  var currentPlan = null;
+  var idempotencyKey = null;
+  var pollTimer = null;
+
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.classList.add('show');
+  }
+  function hideError() {
+    errorBox.classList.remove('show');
+    errorBox.textContent = '';
+  }
+
+  function resetTurnstile() {
+    if (window.turnstile) {
+      try { window.turnstile.reset('#mpTurnstile'); } catch (e) { /* noop */ }
+    }
+  }
+
+  function getTurnstileToken() {
+    if (window.turnstile) {
+      try { return window.turnstile.getResponse('#mpTurnstile') || ''; } catch (e) { return ''; }
+    }
+    return '';
+  }
+
+  function openModal(plan) {
+    currentPlan = plan;
+    idempotencyKey = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : (Date.now() + '-' + Math.random());
+    planNameEl.textContent = PLAN_LABELS[plan] || plan;
+    subEl.textContent = 'Pagás USD ' + PLAN_DEPOSIT_USD[plan] + ' (seña del 50%) para empezar; el resto se acuerda al entregar el software funcionando.';
+    hideError();
+    form.reset();
+    resetTurnstile();
+    backdrop.classList.add('open');
+  }
+
+  function closeModal() {
+    backdrop.classList.remove('open');
+    if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+  }
+
+  document.querySelectorAll('[data-mp-plan]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      openModal(btn.getAttribute('data-mp-plan'));
+    });
+  });
+  closeBtn.addEventListener('click', closeModal);
+  backdrop.addEventListener('click', function (e) { if (e.target === backdrop) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && backdrop.classList.contains('open')) closeModal(); });
+
+  function setSubmitting(isSubmitting) {
+    submitBtn.disabled = isSubmitting;
+    submitBtn.textContent = isSubmitting ? 'Procesando...' : 'Ir a pagar';
+  }
+
+  function pollStatus() {
+    fetch('/.netlify/functions/mp-plan-order-status?idempotency_key=' + encodeURIComponent(idempotencyKey))
+      .then(function (res) { return res.json().then(function (data) { return { status: res.status, data: data }; }); })
+      .then(function (r) {
+        if (r.status === 202) {
+          pollTimer = setTimeout(pollStatus, 1500);
+          return;
+        }
+        if (r.status === 200 && r.data.status === 'listo' && r.data.checkout_url) {
+          window.location.href = r.data.checkout_url;
+          return;
+        }
+        // Cualquier otro estado: mostrar el problema y reactivar el botón.
+        setSubmitting(false);
+        showError('No pudimos confirmar tu pago (' + (r.data.status || 'error') + '). Probá de nuevo o escribinos por WhatsApp.');
+      })
+      .catch(function () {
+        pollTimer = setTimeout(pollStatus, 2000);
+      });
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    hideError();
+
+    var turnstileToken = getTurnstileToken();
+    if (!turnstileToken) {
+      showError('Completá la verificación de seguridad antes de continuar.');
+      return;
+    }
+
+    setSubmitting(true);
+
+    var payload = {
+      plan: currentPlan,
+      nombre: document.getElementById('mpNombre').value.trim(),
+      email: document.getElementById('mpEmail').value.trim(),
+      telefono: document.getElementById('mpTelefono').value.trim(),
+      idempotency_key: idempotencyKey,
+      turnstile_token: turnstileToken
+    };
+
+    fetch('/.netlify/functions/mp-plan-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (res) { return res.json().then(function (data) { return { status: res.status, data: data }; }); })
+      .then(function (r) {
+        if (r.status === 200 && r.data.checkout_url) {
+          window.location.href = r.data.checkout_url;
+          return;
+        }
+        if (r.status === 202) {
+          // Otra llamada con la misma clave está creando la orden en este
+          // momento (carrera real) -- seguimos por el endpoint de status,
+          // nunca reintentando la creación (el token de Turnstile ya se usó).
+          pollStatus();
+          return;
+        }
+        // Error: reactivar, pedir un token de Turnstile nuevo (los de
+        // Turnstile son de un solo uso) -- el idempotency_key NO cambia.
+        setSubmitting(false);
+        resetTurnstile();
+        showError('No pudimos iniciar el pago. Probá de nuevo en un momento.');
+      })
+      .catch(function () {
+        setSubmitting(false);
+        resetTurnstile();
+        showError('No pudimos conectar con el servidor de pagos. Revisá tu conexión y probá de nuevo.');
+      });
+  });
+})();
 </script>
 </body>
 </html>

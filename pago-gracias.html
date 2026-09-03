@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Pago — Bestoic</title>
+<style>
+  :root{
+    --navy:#0B1B2E;
+    --blue:#5A8FCB;
+    --blue-dark:#2F6099;
+    --orange:#F5A623;
+    --background:#F6F8FC;
+    --surface:#FFFFFF;
+    --text:#1A2B3C;
+    --text-muted:#5B6B7C;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--background);color:var(--text);display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px}
+  .card{background:var(--surface);border-radius:16px;box-shadow:0 10px 40px rgba(11,27,46,.08);max-width:460px;width:100%;padding:40px 32px;text-align:center}
+  .icon{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px}
+  .icon.success{background:#E6F4EA;color:#1E7B34}
+  .icon.pending{background:#FFF4E0;color:var(--orange)}
+  .icon.failure{background:#FBE9E7;color:#C0392B}
+  h1{font-size:1.3rem;margin:0 0 12px}
+  p{color:var(--text-muted);line-height:1.55;margin:0 0 24px}
+  a.btn{display:inline-block;background:var(--navy);color:#fff;text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:600}
+  a.btn:hover{background:var(--blue-dark)}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon" id="icon">⏳</div>
+    <h1 id="title">Procesando...</h1>
+    <p id="message">Un momento por favor.</p>
+    <a class="btn" href="software.html#comparacion">Volver a Bestoic</a>
+  </div>
+
+  <script>
+    // Página de retorno pura -- NUNCA fuente de verdad. El parámetro
+    // "result" es editable a mano por cualquiera y solo se usa acá para
+    // mostrar un texto -- no dispara ninguna acción real, no marca nada
+    // como pagado, no habilita ninguna cuenta. La habilitación real la
+    // decide el usuario mirando plan_deposit_payments.status='pagado'
+    // (que solo el webhook puede escribir).
+    var params = new URLSearchParams(window.location.search);
+    var result = params.get('result');
+    var icon = document.getElementById('icon');
+    var title = document.getElementById('title');
+    var message = document.getElementById('message');
+
+    if (result === 'success') {
+      icon.className = 'icon success'; icon.textContent = '✓';
+      title.textContent = 'Recibimos tu pago';
+      message.textContent = 'En breve nos contactamos con vos para darte acceso a tu cuenta.';
+    } else if (result === 'pending') {
+      icon.className = 'icon pending'; icon.textContent = '⏳';
+      title.textContent = 'Tu pago está pendiente';
+      message.textContent = 'Te avisamos apenas se confirme. No hace falta que hagas nada más.';
+    } else if (result === 'failure') {
+      icon.className = 'icon failure'; icon.textContent = '✕';
+      title.textContent = 'El pago no se completó';
+      message.textContent = 'Podés intentar de nuevo desde la página de planes, o escribirnos por WhatsApp.';
+    } else {
+      icon.className = 'icon pending'; icon.textContent = '⏳';
+      title.textContent = 'Gracias';
+      message.textContent = 'Si acabás de pagar, en breve nos contactamos con vos.';
+    }
+  </script>
+</body>
+</html>

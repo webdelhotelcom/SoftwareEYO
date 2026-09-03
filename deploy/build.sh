@@ -47,6 +47,9 @@ cp "$REPO/app/terminos.html"   "$OUT/terminos.html"
 cp "$REPO/app/privacidad.html" "$OUT/app/privacidad.html"
 cp "$REPO/app/terminos.html"   "$OUT/app/terminos.html"
 cp "$REPO/deploy/_headers"     "$OUT/_headers"      # CSP unificada de las dos zonas
+cp "$REPO/pago-gracias.html"   "$OUT/pago-gracias.html"  # retorno del pago de seña de plan (Mercado Pago)
+cp "$REPO/netlify.toml"        "$OUT/netlify.toml"       # declara netlify/functions/ para Netlify
+cp -r "$REPO/netlify/functions" "$OUT/netlify/functions" # mp-plan-order / mp-plan-order-status / mp-plan-webhook
 
 echo "Listo en $OUT — desplegar desde ESE directorio, no desde el repo:"
 echo "  cd \"$OUT\" && netlify deploy --dir=. --site=$SITE_ID --no-build          # borrador"
