@@ -3,6 +3,12 @@
 Panel de gestión de alojamientos (hoteles/alojamientos), SaaS multi-tenant.
 App de un solo archivo HTML+JS sin build, con Supabase de backend.
 
+@FINANCE.md — convenciones financieras (moneda, redondeo, comisiones,
+saldo pendiente, seña del plan SaaS). Fuente de verdad para cualquier
+código que calcule dinero en este proyecto; leer antes de tocar
+`app/panel.html` en las secciones de Reservas/Gastos/Caja/Finanzas o
+`netlify/functions/mp-plan-order.js`.
+
 ## Estructura del repo
 
 - `index.html`, `software.html`, `assets/` — página comercial pública (landing).

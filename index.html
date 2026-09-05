@@ -66,9 +66,9 @@
   /* Bordes y sombras */
   --border:#DCE4EE;
   --border-dark:rgba(255,255,255,.16);
-  --shadow-sm:0 1px 2px rgba(11,27,46,.06);
-  --shadow:0 10px 30px rgba(11,27,46,.06);
-  --shadow-lg:0 18px 44px rgba(11,27,46,.10);
+  --shadow-sm:0 1px 3px rgba(11,27,46,.04);
+  --shadow:0 14px 36px rgba(11,27,46,.05);
+  --shadow-lg:0 22px 52px rgba(11,27,46,.08);
 
   /* Medidas */
   --radius:14px;
@@ -114,8 +114,14 @@ strong,b{font-weight:600;}
 
 /* ---------- 3. LAYOUT Y SECCIONES ---------------------------------------- */
 .wrap{width:100%;max-width:var(--wrap);margin:0 auto;}
-section{padding:64px 20px;scroll-margin-top:90px;}
-section.compact{padding:48px 20px;}
+section{padding:96px 20px;scroll-margin-top:90px;}
+section.compact{padding:56px 20px;}
+
+/* Microinteracción sutil: revela secciones/tarjetas al hacer scroll
+   (initScrollReveal() en el script). Solo contenido estático, nunca
+   texto suelto. */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease;}
+.reveal.is-visible{opacity:1;transform:none;}
 
 /* Variantes de fondo reutilizables (alternancia de color) */
 .section-light{background:var(--surface);color:var(--text);}
@@ -137,7 +143,7 @@ section.compact{padding:48px 20px;}
 .section-dark .sec-head p{color:var(--text-light-secondary);}
 
 /* Rejillas genéricas */
-.grid{display:grid;gap:20px;}
+.grid{display:grid;gap:24px;}
 .grid-2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
 .grid-3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr));}
 .grid-4{grid-template-columns:repeat(auto-fit,minmax(230px,1fr));}
@@ -329,7 +335,7 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--danger
 /* ---------- 7. BLOQUES ESPECÍFICOS --------------------------------------- */
 /* HERO */
 .hero{
-  background:radial-gradient(circle at 80% 20%,rgba(90,143,203,.16),transparent 34%),var(--navy);
+  background:radial-gradient(circle at 82% 10%,rgba(245,166,35,.10),transparent 45%),var(--background-blue);
   padding:56px 20px 64px;
 }
 .hero-inner{
@@ -337,17 +343,21 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--danger
   gap:48px;align-items:center;
 }
 .hero-copy,.hero-visual{min-width:0;}
-.hero h1{color:#fff;margin-bottom:18px;}
-.hero h1 .hl{color:var(--orange);}
-.hero-lead{color:var(--text-light-secondary);font-size:1.05rem;max-width:34em;}
-.hero-note{color:var(--orange);font-size:.88rem;font-style:italic;max-width:34em;margin-top:10px;}
+.hero h1{margin-bottom:18px;}
+.hero h1 .hl{color:var(--orange-dark);}
+.hero-lead{color:var(--text-secondary);font-size:1.05rem;max-width:34em;}
+.hero-note{color:var(--orange-dark);font-size:.88rem;font-style:italic;max-width:34em;margin-top:10px;}
 .hero .actions{margin:26px 0 22px;}
 .hero-points{display:flex;flex-direction:column;gap:10px;}
-.hero-points li{display:flex;align-items:flex-start;gap:10px;color:var(--text-light);font-size:.94rem;}
+.hero-points li{display:flex;align-items:flex-start;gap:10px;color:var(--text);font-size:.94rem;}
 .hero-points .tick{
   flex-shrink:0;width:20px;height:20px;border-radius:50%;background:rgba(70,179,107,.18);
   color:var(--success);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;margin-top:2px;
 }
+/* Franja compacta de beneficios en una sola línea (hero) */
+.hero-points-inline{flex-direction:row;flex-wrap:wrap;gap:8px 18px;margin-top:22px;}
+.hero-points-inline li{align-items:center;font-size:.88rem;font-weight:600;color:var(--text-secondary);}
+.hero-points-inline .tick{width:16px;height:16px;font-size:.6rem;margin-top:0;}
 
 /* Mockup del panel (datos de ejemplo realistas) */
 
@@ -390,38 +400,28 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--danger
   position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
   padding:28px 24px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow);
 }
-.plan.featured{background:var(--navy);border-color:var(--navy);color:var(--text-light);box-shadow:var(--shadow-lg);}
-.plan.featured h3{color:#fff;}
-.plan.featured .plan-for{color:var(--text-light-secondary);}
+.plan.featured{border-color:var(--orange);box-shadow:var(--shadow-lg);}
 .plan-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);white-space:nowrap;}
 .plan h3{margin:0;}
 .plan-for{font-size:.9rem;color:var(--text-secondary);min-height:42px;}
 .price{margin:2px 0 0;}
 .price .usd{font-family:'Fraunces',serif;font-size:2.5rem;font-weight:700;line-height:1;color:var(--navy);display:block;}
-.plan.featured .price .usd{color:var(--orange);}
+.plan.featured .price .usd{color:var(--orange-dark);}
 .price .uyu{display:block;margin-top:5px;font-size:.95rem;font-weight:600;color:var(--text-secondary);}
-.plan.featured .price .uyu{color:var(--text-light-secondary);}
 .price .note{display:block;margin-top:8px;font-size:.78rem;color:var(--text-secondary);line-height:1.45;}
-.plan.featured .price .note{color:var(--text-light-secondary);}
 .price .later{display:block;margin-top:4px;font-size:.8rem;color:var(--text-secondary);}
-.plan.featured .price .later{color:var(--text-light-secondary);}
 .plan ul{display:flex;flex-direction:column;gap:9px;margin:4px 0;}
 .plan ul li{font-size:.9rem;padding-left:22px;position:relative;color:var(--text);}
 .plan ul li::before{
   content:"✓";position:absolute;left:0;top:0;color:var(--success-dark);font-weight:700;font-size:.85rem;
 }
-.plan.featured ul li{color:var(--text-light);}
-.plan.featured ul li::before{color:var(--success);}
 .plan ul li.li-included b{color:var(--orange-dark);}
-.plan.featured ul li.li-included b{color:var(--orange);}
 .plan ul li.li-extra{color:var(--text-secondary);font-size:.82rem;}
 .plan ul li.li-extra::before{content:"+";color:var(--blue-dark);}
-.plan.featured ul li.li-extra{color:var(--text-light-secondary);}
 .plan .btn{margin-top:auto;}
 
 /* Detalle del 50% */
 .sena{border:1px solid var(--border);border-radius:12px;background:var(--background);overflow:hidden;}
-.plan.featured .sena{border-color:var(--border-dark);background:rgba(255,255,255,.06);}
 .sena summary{
   list-style:none;cursor:pointer;padding:12px 14px;font-size:.86rem;font-weight:600;color:var(--blue-dark);
   display:flex;align-items:center;justify-content:space-between;gap:10px;
@@ -429,13 +429,11 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--danger
 .sena summary::-webkit-details-marker{display:none;}
 .sena summary::after{content:"+";font-size:1.05rem;line-height:1;}
 .sena[open] summary::after{content:"–";}
-.plan.featured .sena summary{color:var(--orange);}
+.plan.featured .sena summary{color:var(--orange-dark);}
 .sena-body{padding:0 14px 13px;}
 .sena-row{display:flex;justify-content:space-between;gap:10px;font-size:.85rem;padding:5px 0;border-bottom:1px solid var(--border);color:var(--text-secondary);}
 .sena-row:last-child{border-bottom:0;}
 .sena-row b{color:var(--navy);}
-.plan.featured .sena-row{border-color:var(--border-dark);color:var(--text-light-secondary);}
-.plan.featured .sena-row b{color:#fff;}
 
 .pay-terms{max-width:760px;margin:30px auto 0;text-align:center;}
 .pay-terms .big{font-size:1.05rem;font-weight:600;color:var(--navy);}
@@ -571,8 +569,59 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
 .trust-gallery img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;display:block;}
 .trust-gallery figcaption{padding:10px 14px;font-size:.85rem;color:var(--text-secondary);}
 .gallery-note{margin-top:14px;font-size:.88rem;color:var(--text-secondary);font-style:italic;}
+.gallery-more{margin-top:8px;}
+.gallery-more>summary{
+  list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+  font-size:.92rem;font-weight:600;color:var(--blue-dark);padding:4px 0;
+}
+.gallery-more>summary::-webkit-details-marker{display:none;}
+.gallery-more>summary::after{content:'Ver más fotos de alojamientos →';}
+.gallery-more[open]>summary::after{content:'Ocultar fotos ↑';}
+.gallery-more[open]>summary{margin-bottom:18px;}
 .custom-note{max-width:44em;margin-left:auto;margin-right:auto;padding:16px 20px;background:var(--background-blue);border-radius:var(--radius);}
 .custom-note p{margin:0;font-size:.92rem;color:var(--text-secondary);}
+
+/* BENEFICIOS RÁPIDOS */
+.benefit-card{text-align:center;padding:8px;}
+.benefit-icon{
+  width:52px;height:52px;border-radius:14px;background:var(--background-blue);color:var(--blue-dark);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 14px;
+}
+.benefit-icon svg{width:24px;height:24px;}
+.benefit-card h3{margin-bottom:4px;font-size:1.02rem;}
+.benefit-card p{font-size:.9rem;}
+
+/* COMPARACIÓN (teaser) */
+.mini-competitor{text-align:center;padding:20px 16px;}
+.mini-competitor .mc-market{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--blue-dark);}
+.mini-competitor h4{margin:6px 0 4px;font-size:1rem;color:var(--navy);}
+.mini-competitor .mc-price{margin:0;font-size:.86rem;color:var(--text-secondary);}
+
+/* HISTORIA (teaser corto + modal) */
+.historia-teaser{
+  max-width:760px;margin:0 auto;display:flex;align-items:center;gap:22px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:26px 30px;box-shadow:var(--shadow-sm);
+}
+.historia-photo{width:72px;height:72px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--background-blue);}
+.historia-teaser h2{font-size:1.3rem;margin-bottom:6px;}
+.historia-teaser p{margin-bottom:10px;}
+
+/* Modal genérico de información (historia, y reutilizable a futuro) */
+.info-modal-backdrop{
+  position:fixed;inset:0;background:rgba(11,27,46,.55);z-index:300;
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+.info-modal-backdrop.open{display:flex;}
+.info-modal{
+  background:var(--surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);
+  max-width:520px;width:100%;padding:32px;position:relative;max-height:85vh;overflow-y:auto;
+}
+.info-modal h3{margin-bottom:14px;}
+.info-modal-close{
+  position:absolute;top:16px;right:16px;background:none;border:0;font-size:1.3rem;
+  color:var(--text-secondary);cursor:pointer;line-height:1;padding:4px;
+}
 
 /* Alojamientos por ubicación (sección de experiencia) */
 .prop-location-group{margin-top:34px;}
@@ -606,6 +655,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
 }
 
 @media (max-width:760px){
+  .historia-teaser{flex-direction:column;text-align:center;padding:24px 20px;}
   .nav-toggle{display:flex;}
   .nav{
     position:fixed;top:var(--header-h);left:0;right:0;
@@ -617,8 +667,8 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   .nav.open{transform:translateY(0);}
   .nav a{padding:12px 4px;border-bottom:1px solid rgba(255,255,255,.07);}
   .nav .btn{margin-top:12px;width:100%;}
-  section{padding:56px 20px;}
-  section.compact{padding:40px 20px;}
+  section{padding:64px 20px;}
+  section.compact{padding:44px 20px;}
   .hero{padding:40px 20px 52px;}
   .ba-row{grid-template-columns:1fr;gap:10px;}
   .ba-mid{transform:rotate(90deg);padding:2px 0;}
@@ -644,6 +694,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   html{scroll-behavior:auto;}
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}
   .btn-primary:hover{transform:none;}
+  .reveal{opacity:1;transform:none;}
 }
 
 /* Impresión básica */
@@ -688,35 +739,36 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
     </button>
 
     <nav class="nav" id="site-nav" aria-label="Navegación principal">
-      <a href="#inicio">Inicio</a>
+      <a href="#areas">Funciones</a>
       <a href="#como-funciona">Cómo funciona</a>
       <a href="#planes">Planes</a>
+      <a href="#video">Demo</a>
       <a href="#preguntas">Preguntas</a>
-      <a href="software.html" data-track="ver-funciones">Ver todas las funciones</a>
-      <a class="btn btn-primary" href="#contacto">Solicitar demostración</a>
+      <a class="btn btn-secondary-light" href="app/panel.html">Ingresar</a>
+      <a class="btn btn-primary" href="software.html#comparacion">Configurar Bestoic</a>
     </nav>
   </div>
 </header>
 
 <main id="contenido">
 
-  <!-- ====================== 1. HERO (azul marino) ====================== -->
+  <!-- ====================== 1. HERO (claro) ====================== -->
   <section class="hero" id="inicio">
     <div class="hero-inner">
       <div class="hero-copy">
-        <h1>Reservas, cobros y alojamientos organizados <span class="hl">desde tu celular y computadora</span>.</h1>
-        <p class="hero-lead">Software personalizado para propietarios, administradores, hostales y hoteles. Partimos de una plataforma real ya desarrollada y la adaptamos a tu forma de trabajar.</p>
+        <h1>Todo tu alojamiento, <span class="hl">en un solo lugar.</span></h1>
+        <p class="hero-lead">Reservas, cobros, huéspedes, propiedades y equipo desde una sola plataforma.</p>
         <p class="hero-note">Lo que ves acá es una demostración real. Tu software puede ser más simple, más completo o funcionar de otra manera — se configura según tu operación.</p>
 
         <div class="actions">
-          <a class="btn btn-primary btn-lg" href="#video">Ver el software en 30 segundos</a>
-          <a class="btn btn-secondary-dark btn-lg" data-wa="demo" href="#">Hablar por WhatsApp</a>
+          <a class="btn btn-primary btn-lg" href="software.html#comparacion">Configurar mi Bestoic</a>
+          <a class="btn btn-secondary-light btn-lg" href="#video">▶ Ver cómo funciona</a>
         </div>
 
-        <ul class="hero-points">
-          <li><span class="tick" aria-hidden="true">✓</span> Pago único por la licencia</li>
-          <li><span class="tick" aria-hidden="true">✓</span> Configuración y capacitación incluidas</li>
-          <li><span class="tick" aria-hidden="true">✓</span> Acceso desde celular y computadora</li>
+        <ul class="hero-points hero-points-inline">
+          <li><span class="tick" aria-hidden="true">✓</span> Pago único</li>
+          <li><span class="tick" aria-hidden="true">✓</span> Celular y computadora</li>
+          <li><span class="tick" aria-hidden="true">✓</span> Adaptado a tu negocio</li>
         </ul>
       </div>
 
@@ -731,65 +783,11 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
     </div>
   </section>
 
-  <!-- ====================== 2. CONFIANZA (blanco) ====================== -->
-  <section class="section-light" id="experiencia">
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="eyebrow">Quiénes estamos detrás</p>
-        <h2>Creado desde la experiencia real de administrar alojamientos</h2>
-        <p>Bestoic nace de la experiencia de gestionar reservas, huéspedes, cobros y propiedades en Uruguay. Antes de ofrecerse a otros alojamientos, cada función se prueba primero en una operación real, todos los días.</p>
-      </div>
-
-      <div class="trust-grid">
-        <img class="trust-photo" src="assets/images/alojamientos/chuy-grande.jpg" alt="Uno de los alojamientos administrados con Bestoic" loading="lazy" width="132" height="132">
-        <div>
-          <h3 class="mt-0">Orieles Rodríguez — Fundador</h3>
-          <p class="muted">Administración de alquileres de temporada en Chuy y Punta del Diablo, Rocha. El sistema se usa todos los días en una operación real antes de ofrecerse a otros alojamientos.</p>
-
-          <div class="trust-stats">
-            <div class="trust-stat"><div class="ts-num">9</div><div class="ts-lab">Alojamientos gestionados</div></div>
-            <div class="trust-stat"><div class="ts-num">4+</div><div class="ts-lab">Años de experiencia</div></div>
-            <div class="trust-stat"><div class="ts-num">Uruguay</div><div class="ts-lab">Atención local y directa</div></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="prop-location-group">
-        <h3 class="prop-location-title">Chuy</h3>
-        <div class="grid grid-4 prop-photo-grid">
-          <figure class="prop-photo-card"><img src="assets/images/alojamientos/chuy-medio.jpg" alt="Apart Medio, Chuy" loading="lazy" width="400" height="300"><figcaption>Apart Medio</figcaption></figure>
-          <figure class="prop-photo-card"><img src="assets/images/alojamientos/chuy-dac.jpg" alt="Apart Dac, Chuy" loading="lazy" width="400" height="300"><figcaption>Apart Dac</figcaption></figure>
-          <figure class="prop-photo-card"><img src="assets/images/alojamientos/chuy-grande.jpg" alt="Apart Grande, Chuy" loading="lazy" width="400" height="300"><figcaption>Apart Grande</figcaption></figure>
-          <figure class="prop-photo-card"><img src="assets/images/alojamientos/chuy-zulmira.jpg" alt="Apart Zulmira, Chuy" loading="lazy" width="400" height="300"><figcaption>Apart Zulmira</figcaption></figure>
-          <figure class="prop-photo-card"><img src="assets/images/alojamientos/chuy-nueva.jpg" alt="Apart Nueva, Chuy" loading="lazy" width="400" height="300"><figcaption>Apart Nueva</figcaption></figure>
-          <figure class="prop-photo-card prop-photo-pending"><span aria-hidden="true">📷</span><figcaption>Emiliano<br><small>Foto próximamente</small></figcaption></figure>
-        </div>
-      </div>
-
-      <div class="prop-location-group">
-        <h3 class="prop-location-title">Punta del Diablo</h3>
-        <div class="grid grid-4 prop-photo-grid">
-          <figure class="prop-photo-card"><img src="assets/images/alojamientos/puntadeldiablo-gloria.jpg" alt="Casa Gloria, Punta del Diablo" loading="lazy" width="400" height="300"><figcaption>Casa Gloria</figcaption></figure>
-          <figure class="prop-photo-card"><img src="assets/images/alojamientos/puntadeldiablo-maciega.jpg" alt="Casa Maciega, Punta del Diablo" loading="lazy" width="400" height="300"><figcaption>Casa Maciega</figcaption></figure>
-          <figure class="prop-photo-card prop-photo-pending"><span aria-hidden="true">📷</span><figcaption>Casa Propia<br><small>Foto próximamente</small></figcaption></figure>
-        </div>
-      </div>
-
-      <div class="prop-location-group">
-        <h3 class="prop-location-title">También parte de la experiencia operativa</h3>
-        <div class="grid grid-4 prop-photo-grid prop-photo-grid-sm">
-          <figure class="prop-photo-card"><img src="assets/images/almacen-bestoic.jpg" alt="Almacén Bestoic" loading="lazy" width="400" height="300"><figcaption>Almacén Bestoic<br><small>No se cuenta como alojamiento</small></figcaption></figure>
-          <figure class="prop-photo-card"><img src="assets/images/almacen-bestoic-2.jpg" alt="Almacén Bestoic, estantería" loading="lazy" width="400" height="300"><figcaption>Almacén Bestoic</figcaption></figure>
-          <figure class="prop-photo-card"><img src="assets/images/almacen-bestoic-3.jpg" alt="Almacén Bestoic, productos" loading="lazy" width="400" height="300"><figcaption>Almacén Bestoic</figcaption></figure>
-          <figure class="prop-photo-card"><img src="assets/images/almacen-bestoic-4.jpg" alt="Almacén Bestoic, entrada" loading="lazy" width="400" height="300"><figcaption>Almacén Bestoic</figcaption></figure>
-        </div>
-      </div>
-
-      <p class="gallery-note">9 alojamientos administrados con Bestoic todos los días, en Chuy y Punta del Diablo.</p>
-    </div>
-  </section>
-
-  <!-- ====================== 3. VIDEO (celeste claro) ====================== -->
+  <!-- ====================== 4. VIDEO (celeste claro) ====================== -->
+  <!-- Nota (simplificación mobile, 2026-09-05): se quitó la sección "Beneficios rápidos"
+       de acá -- repetía palabra por palabra los 3 puntos de .hero-points-inline de
+       arriba (Pago único / Celular y computadora / Adaptado a tu negocio), sin agregar
+       nada nuevo. Contenido real: cero pérdida, era una duplicación exacta. -->
   <section class="section-blue" id="video">
     <div class="wrap">
       <div class="sec-head center">
@@ -815,35 +813,6 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
       <div class="actions center mt-24">
         <a class="btn btn-secondary-light" href="software.html" data-track="ver-funciones">Ver todas las funciones</a>
         <a class="btn btn-primary" data-wa="demo" href="#">Solicitar una demostración personalizada</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ====================== 4. PROBLEMAS Y RESULTADOS (blanco) ====================== -->
-  <section class="section-light" id="resultados">
-    <div class="wrap">
-      <div class="sec-head center">
-        <p class="eyebrow">El cambio</p>
-        <h2>De la información dispersa al control diario</h2>
-        <p>Tres situaciones habituales y cómo se resuelven con Bestoic.</p>
-      </div>
-
-      <div class="ba-row">
-        <div class="ba-before"><span class="ba-tag">Antes</span>Reservas repartidas entre mensajes y anotaciones.</div>
-        <div class="ba-mid" aria-hidden="true">→</div>
-        <div class="ba-after"><span class="ba-tag">Con Bestoic</span><strong>Calendario centralizado</strong> con disponibilidad, entradas y salidas.</div>
-      </div>
-
-      <div class="ba-row">
-        <div class="ba-before"><span class="ba-tag">Antes</span>Señas y saldos difíciles de controlar.</div>
-        <div class="ba-mid" aria-hidden="true">→</div>
-        <div class="ba-after"><span class="ba-tag">Con Bestoic</span>Cada <strong>cobro, seña y saldo</strong> registrado por huésped.</div>
-      </div>
-
-      <div class="ba-row">
-        <div class="ba-before"><span class="ba-tag">Antes</span>Ingresos y gastos separados.</div>
-        <div class="ba-mid" aria-hidden="true">→</div>
-        <div class="ba-after"><span class="ba-tag">Con Bestoic</span><strong>Resultado mensual</strong> y rendimiento por alojamiento.</div>
       </div>
     </div>
   </section>
@@ -948,158 +917,93 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
       <div class="sec-head center">
         <p class="eyebrow">Planes</p>
         <h2>Elegí el plan que se adapta a tu alojamiento</h2>
-        <p>Pago único por la licencia. Comenzás abonando el 50% y el resto al recibir el software funcionando.</p>
+        <p>Pago único por la licencia — elegís tu plan y armás tu configuración con los módulos que necesitás.</p>
       </div>
 
       <div class="plans">
 
-        <!-- Plan Inicial -->
+        <!-- Emprendedor -->
         <article class="plan">
-          <span class="badge badge-green plan-badge">Precio de lanzamiento</span>
-          <h3>Plan Inicial</h3>
+          <h3>Emprendedor</h3>
           <p class="plan-for">Para propietarios o alojamientos pequeños que quieren ordenar reservas y cobros.</p>
           <div class="price">
             <span class="usd" data-usd="150">USD 150</span>
             <span class="uyu" data-uyu="150"></span>
-            <span class="note">Equivalente en UYU según tipo de cambio de referencia (USD 1 = UYU <span data-rate>41</span>).</span>
-            <span class="note">Precio de lanzamiento para los primeros 3 clientes.</span>
-            <span class="later">Luego <span data-usd="175" data-prefix="no">175</span> USD.</span>
+            <span class="note">Pago único. Equivalente en UYU según tipo de cambio de referencia (USD 1 = UYU <span data-rate>41</span>).</span>
           </div>
 
-          <details class="sena">
-            <summary>Comenzá abonando el 50%</summary>
-            <div class="sena-body">
-              <div class="sena-row"><span>Total</span><b><span data-usd="150"></span> · <span data-uyu="150"></span></b></div>
-              <div class="sena-row"><span>Para comenzar (50%)</span><b><span data-usd="75"></span> · <span data-uyu="75"></span></b></div>
-              <div class="sena-row"><span>Al entregar (50%)</span><b><span data-usd="75"></span> · <span data-uyu="75"></span></b></div>
-            </div>
-          </details>
-
           <ul>
+            <li>Bestoic Core incluido</li>
             <li>Hasta 5 alojamientos</li>
-            <li>Un usuario</li>
-            <li>Calendario y reservas</li>
-            <li>Huéspedes</li>
-            <li>Señas y saldos</li>
-            <li>Ingresos y gastos</li>
-            <li>Configuración inicial</li>
-            <li>Capacitación</li>
-            <li>Garantía técnica de hasta 2 años</li>
-            <li class="li-extra">Página web y Perfil de Empresa en Google: disponibles como adicional</li>
+            <li>1 usuario</li>
+            <li>3 módulos del catálogo a elección</li>
           </ul>
 
-          <button class="btn btn-secondary-light btn-block" type="button" data-wa="inicial">Solicitar Plan Inicial</button>
+          <a class="btn btn-secondary-light btn-block" href="software.html?plan=emprendedor#comparacion">Configurar</a>
         </article>
 
-        <!-- Plan Profesional (destacado) -->
+        <!-- Profesional (destacado) -->
         <article class="plan featured">
           <span class="badge badge-orange plan-badge">Más elegido</span>
-          <h3>Plan Profesional</h3>
+          <h3>Profesional</h3>
           <p class="plan-for">Para administradores con varias propiedades que necesitan más control y equipo.</p>
           <div class="price">
             <span class="usd" data-usd="500">USD 500</span>
             <span class="uyu" data-uyu="500"></span>
-            <span class="note">Equivalente en UYU según tipo de cambio de referencia (USD 1 = UYU <span data-rate>41</span>).</span>
+            <span class="note">Pago único. Equivalente en UYU según tipo de cambio de referencia (USD 1 = UYU <span data-rate>41</span>).</span>
           </div>
 
-          <details class="sena">
-            <summary>Comenzá abonando el 50%</summary>
-            <div class="sena-body">
-              <div class="sena-row"><span>Total</span><b><span data-usd="500"></span> · <span data-uyu="500"></span></b></div>
-              <div class="sena-row"><span>Para comenzar (50%)</span><b><span data-usd="250"></span> · <span data-uyu="250"></span></b></div>
-              <div class="sena-row"><span>Al entregar (50%)</span><b><span data-usd="250"></span> · <span data-uyu="250"></span></b></div>
-            </div>
-          </details>
-
           <ul>
+            <li>Bestoic Core incluido</li>
             <li>Hasta 15 alojamientos</li>
-            <li>Varios usuarios</li>
-            <li>Roles y permisos</li>
-            <li>Gestión de propietarios</li>
-            <li>Comisiones y depósitos</li>
-            <li>Finanzas avanzadas</li>
-            <li>Reportes</li>
-            <li class="li-included">Página web profesional <b>incluida</b></li>
-            <li class="li-included">Perfil de Empresa en Google <b>incluido</b></li>
-            <li>Personalización básica</li>
-            <li>Configuración y capacitación</li>
-            <li>Garantía técnica de hasta 2 años</li>
+            <li>3 usuarios</li>
+            <li>6 módulos del catálogo a elección</li>
+            <li class="li-included">Marca propia <b>incluida</b></li>
           </ul>
 
-          <button class="btn btn-primary btn-block" type="button" data-wa="profesional">Solicitar Plan Profesional</button>
+          <a class="btn btn-primary btn-block" href="software.html?plan=profesional#comparacion">Configurar</a>
         </article>
 
-        <!-- Plan Hotel -->
+        <!-- Hotel -->
         <article class="plan">
-          <h3>Plan Hotel</h3>
+          <h3>Hotel</h3>
           <p class="plan-for">Para hoteles, hostales y complejos con una operación más amplia.</p>
           <div class="price">
             <span class="usd">Desde <span data-usd="750" data-prefix="no">750</span> USD</span>
             <span class="uyu">Desde <span data-uyu="750" data-prefix="no"></span> UYU</span>
-            <span class="note">Cotización según cantidad de habitaciones, usuarios, funciones e integraciones.</span>
-            <span class="note">Equivalente en UYU según tipo de cambio de referencia (USD 1 = UYU <span data-rate>41</span>).</span>
-          </div>
-
-          <details class="sena">
-            <summary>Comenzá abonando el 50%</summary>
-            <div class="sena-body">
-              <div class="sena-row"><span>Desde</span><b><span data-usd="750"></span> · <span data-uyu="750"></span></b></div>
-              <div class="sena-row"><span>Para comenzar (50%)</span><b><span data-usd="375"></span> · <span data-uyu="375"></span></b></div>
-              <div class="sena-row"><span>Al entregar (50%)</span><b><span data-usd="375"></span> · <span data-uyu="375"></span></b></div>
-            </div>
-          </details>
-
-          <ul>
-            <li class="li-included">Incluye <b>todo el Plan Profesional</b></li>
-            <li>Recepción (check-in / check-out)</li>
-            <li>Habitaciones y tipos de habitación</li>
-            <li>Limpieza / housekeeping</li>
-            <li>Mantenimiento</li>
-            <li>Caja y turnos, operadores con PIN</li>
-            <li>Reportes hoteleros</li>
-            <li>Auditoría</li>
-            <li class="li-included">Página web del hotel <b>incluida</b></li>
-            <li class="li-included">Perfil de Empresa en Google <b>incluido</b></li>
-            <li>Configuración personalizada</li>
-            <li>Capacitación</li>
-            <li>Garantía técnica de hasta 2 años</li>
-          </ul>
-
-          <button class="btn btn-secondary-light btn-block" type="button" data-wa="hotel">Solicitar cotización</button>
-        </article>
-
-        <!-- Desarrollo Personalizado -->
-        <article class="plan">
-          <h3>Desarrollo Personalizado</h3>
-          <p class="plan-for">Para proyectos que necesitan muchas funciones, automatizaciones, integraciones o flujos especiales fuera de lo que muestra la demostración.</p>
-          <div class="price">
-            <span class="usd">Desde <span data-usd="1000" data-prefix="no">1.000</span> USD</span>
-            <span class="uyu">Desde <span data-uyu="1000" data-prefix="no"></span> UYU</span>
-            <span class="note">El precio final se define después de analizar el alcance. No se cotiza solo por cantidad de funciones: una función simple y una integración compleja no representan el mismo trabajo.</span>
+            <span class="note">Pago único. Cotización según la configuración elegida.</span>
           </div>
 
           <ul>
-            <li>Análisis de tu operación completo</li>
-            <li>Módulos, campos y reportes a medida</li>
-            <li>Integraciones especiales</li>
-            <li>Automatizaciones propias</li>
-            <li>Todo lo del Plan Hotel como base</li>
-            <li>Garantía técnica de hasta 2 años</li>
+            <li>Bestoic Core incluido</li>
+            <li>Operación hotelera (recepción, habitaciones, caja)</li>
+            <li>Múltiples usuarios</li>
+            <li>Configuración según tu operación</li>
           </ul>
 
-          <button class="btn btn-secondary-light btn-block" type="button" data-wa="personalizado">Consultar desarrollo personalizado</button>
+          <a class="btn btn-secondary-light btn-block" href="software.html?plan=hotel#comparacion">Configurar</a>
         </article>
       </div>
 
       <div class="pay-terms">
-        <p class="big">50% para comenzar y 50% al entregar el software funcionando.</p>
-        <p class="small">La página web y el Perfil de Empresa en Google están <b>incluidos desde el Plan Profesional</b> (en el Plan Inicial se contratan como adicional). El dominio y el hosting son servicios externos con costo propio. La aprobación y verificación del perfil dependen de Google. El motor automático de reservas y la sincronización con Booking o Airbnb no están incluidos salvo que se contraten. La facturación electrónica DGI requiere un proveedor autorizado y se cotiza aparte. El soporte continuo, el mantenimiento y las nuevas funciones se cotizan por separado.</p>
-        <p class="mt-24"><a class="btn btn-secondary-light" href="software.html#comparacion" data-track="ver-funciones">Comparar todos los planes</a></p>
+        <p class="big">Pagás Bestoic una vez: 50% para comenzar y 50% al entregar el software funcionando.</p>
+        <p class="small">La marca propia está <b>incluida desde el Plan Profesional</b>. El dominio y el hosting son servicios externos con costo propio. El motor automático de reservas y la sincronización con Booking o Airbnb no están incluidos salvo que se contraten. La facturación electrónica DGI requiere un proveedor autorizado y se cotiza aparte. El soporte continuo, el mantenimiento y las nuevas funciones se cotizan por separado.</p>
+        <p class="mt-24">
+          <a class="btn btn-secondary-light" href="software.html#comparacion" data-track="ver-funciones">Ver el detalle completo de cada plan</a>
+          <a class="btn-link" href="software.html#soporte">Más sobre el pago único →</a>
+        </p>
       </div>
     </div>
   </section>
 
-  <!-- ====================== 8. CÓMO FUNCIONA (blanco) ====================== -->
+  <!-- Nota (simplificación mobile, 2026-09-05): se quitó la sección aparte "Pago único" --
+       repetía lo que ya dice este mismo bloque de pay-terms ("50% para comenzar...").
+       Su único contenido extra (el link a software.html#soporte) se sumó arriba. -->
+
+  <!-- ====================== 8. CÓMO FUNCIONA (blanco) -- reubicada acá, justo después de
+       Planes, en vez de después de la Comparación (simplificación mobile, 2026-09-05) --
+       tiene más sentido leer "elegí tu plan → elegí tus módulos → recibí tu Bestoic"
+       inmediatamente después de ver los planes. ====================== -->
   <section class="section-light" id="como-funciona">
     <div class="wrap">
       <div class="sec-head center">
@@ -1110,24 +1014,45 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
       <div class="steps">
         <article class="step">
           <div class="s-num">1</div>
-          <h3>Conocemos tu operación</h3>
-          <p>Revisamos cuántos alojamientos administrás, cómo recibís reservas y qué información necesitás controlar.</p>
+          <h3>Elegí tu plan</h3>
+          <p>Según el tamaño de tu operación: Emprendedor, Profesional u Hotel.</p>
         </article>
         <article class="step">
           <div class="s-num">2</div>
-          <h3>Configuramos Bestoic</h3>
-          <p>Adaptamos propiedades, usuarios, campos, permisos y funciones incluidas en tu plan.</p>
+          <h3>Elegí tus herramientas</h3>
+          <p>Agregá los módulos que realmente necesitás desde el configurador.</p>
         </article>
         <article class="step">
           <div class="s-num">3</div>
-          <h3>Te lo entregamos y capacitamos</h3>
-          <p>Probamos el sistema con vos, realizamos la capacitación y dejamos todo preparado para comenzar.</p>
+          <h3>Recibí tu Bestoic</h3>
+          <p>Lo configuramos para tu negocio, te capacitamos y te acompañamos en la implementación.</p>
         </article>
       </div>
 
       <p class="text-center mt-32">
-        <a class="btn btn-primary" data-wa="demo" href="#">Solicitar demostración</a>
+        <a class="btn btn-primary" href="software.html#comparacion">Configurar mi Bestoic</a>
       </p>
+    </div>
+  </section>
+
+  <!-- ====================== 7c. COMPARACIÓN (gris azulado, teaser) ====================== -->
+  <section class="section-soft" id="comparacion-teaser">
+    <div class="wrap">
+      <div class="sec-head center">
+        <p class="eyebrow">Comparación</p>
+        <h2>Uruguay | Internacional</h2>
+        <p>Bestoic es un pago único; estas son suscripciones mensuales — es una referencia de modelo de costos, no una afirmación de que los productos son idénticos.</p>
+      </div>
+
+      <div class="grid grid-4">
+        <article class="card-light mini-competitor"><div class="mc-market">Uruguay</div><h4>Predia</h4><p class="mc-price">USD 19/mes</p></article>
+        <article class="card-light mini-competitor"><div class="mc-market">Uruguay</div><h4>Pxsol</h4><p class="mc-price">USD 60/mes + IVA</p></article>
+        <article class="card-light mini-competitor"><div class="mc-market">Internacional</div><h4>Lodgify</h4><p class="mc-price">USD 42/mes</p></article>
+        <article class="card-light mini-competitor"><div class="mc-market">Internacional</div><h4>Guesty</h4><p class="mc-price">Desde EUR 9/mes por propiedad</p></article>
+      </div>
+
+      <p class="text-center mt-16" style="font-size:.82rem;color:var(--text-secondary)">Precios públicos consultados en septiembre de 2026. Las funcionalidades, impuestos, límites y características pueden variar entre proveedores.</p>
+      <p class="text-center mt-16"><a class="btn-link" href="software.html#comparacion-precios">Ver comparación completa y calculadora de costo →</a></p>
     </div>
   </section>
 
@@ -1185,6 +1110,85 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
     </div>
   </section>
 
+  <!-- ====================== 9b. CONFIANZA (blanco) ====================== -->
+  <section class="section-light" id="confianza">
+    <div class="wrap">
+      <div class="sec-head center">
+        <p class="eyebrow">Hecho para negocios reales</p>
+        <h2>Una operación real, todos los días</h2>
+        <p>Antes de ofrecerse a otros alojamientos, cada función se prueba primero en la operación propia del fundador.</p>
+      </div>
+
+      <div class="trust-grid">
+        <img class="trust-photo" src="assets/images/alojamientos/chuy-grande.jpg" alt="Uno de los alojamientos administrados con Bestoic" loading="lazy" width="132" height="132">
+        <div>
+          <h3 class="mt-0">Orieles Rodríguez — Fundador</h3>
+          <p class="muted">Administración de alquileres de temporada en Chuy y Punta del Diablo, Rocha. El sistema se usa todos los días en una operación real antes de ofrecerse a otros alojamientos.</p>
+
+          <div class="trust-stats">
+            <div class="trust-stat"><div class="ts-num">9</div><div class="ts-lab">Alojamientos gestionados</div></div>
+            <div class="trust-stat"><div class="ts-num">4+</div><div class="ts-lab">Años de experiencia</div></div>
+            <div class="trust-stat"><div class="ts-num">Uruguay</div><div class="ts-lab">Atención local y directa</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="prop-location-group">
+        <h3 class="prop-location-title">Chuy</h3>
+        <div class="grid grid-4 prop-photo-grid">
+          <figure class="prop-photo-card"><img src="assets/images/alojamientos/chuy-medio.jpg" alt="Apart Medio, Chuy" loading="lazy" width="400" height="300"><figcaption>Apart Medio</figcaption></figure>
+          <figure class="prop-photo-card"><img src="assets/images/alojamientos/chuy-dac.jpg" alt="Apart Dac, Chuy" loading="lazy" width="400" height="300"><figcaption>Apart Dac</figcaption></figure>
+          <figure class="prop-photo-card"><img src="assets/images/alojamientos/chuy-grande.jpg" alt="Apart Grande, Chuy" loading="lazy" width="400" height="300"><figcaption>Apart Grande</figcaption></figure>
+          <figure class="prop-photo-card"><img src="assets/images/alojamientos/chuy-zulmira.jpg" alt="Apart Zulmira, Chuy" loading="lazy" width="400" height="300"><figcaption>Apart Zulmira</figcaption></figure>
+          <figure class="prop-photo-card"><img src="assets/images/alojamientos/chuy-nueva.jpg" alt="Apart Nueva, Chuy" loading="lazy" width="400" height="300"><figcaption>Apart Nueva</figcaption></figure>
+          <figure class="prop-photo-card prop-photo-pending"><span aria-hidden="true">📷</span><figcaption>Emiliano<br><small>Foto próximamente</small></figcaption></figure>
+        </div>
+      </div>
+
+      <!-- Punta del Diablo + Almacén colapsados por defecto (simplificación mobile,
+           2026-09-05): nada se borra, las fotos siguen ahí -- solo dejan de forzar
+           scroll a quien no las pida. -->
+      <details class="gallery-more">
+        <summary></summary>
+
+        <div class="prop-location-group">
+          <h3 class="prop-location-title">Punta del Diablo</h3>
+          <div class="grid grid-4 prop-photo-grid">
+            <figure class="prop-photo-card"><img src="assets/images/alojamientos/puntadeldiablo-gloria.jpg" alt="Casa Gloria, Punta del Diablo" loading="lazy" width="400" height="300"><figcaption>Casa Gloria</figcaption></figure>
+            <figure class="prop-photo-card"><img src="assets/images/alojamientos/puntadeldiablo-maciega.jpg" alt="Casa Maciega, Punta del Diablo" loading="lazy" width="400" height="300"><figcaption>Casa Maciega</figcaption></figure>
+            <figure class="prop-photo-card prop-photo-pending"><span aria-hidden="true">📷</span><figcaption>Casa Propia<br><small>Foto próximamente</small></figcaption></figure>
+          </div>
+        </div>
+
+        <div class="prop-location-group">
+          <h3 class="prop-location-title">También parte de la experiencia operativa</h3>
+          <div class="grid grid-4 prop-photo-grid prop-photo-grid-sm">
+            <figure class="prop-photo-card"><img src="assets/images/almacen-bestoic.jpg" alt="Almacén Bestoic" loading="lazy" width="400" height="300"><figcaption>Almacén Bestoic<br><small>No se cuenta como alojamiento</small></figcaption></figure>
+            <figure class="prop-photo-card"><img src="assets/images/almacen-bestoic-2.jpg" alt="Almacén Bestoic, estantería" loading="lazy" width="400" height="300"><figcaption>Almacén Bestoic</figcaption></figure>
+            <figure class="prop-photo-card"><img src="assets/images/almacen-bestoic-3.jpg" alt="Almacén Bestoic, productos" loading="lazy" width="400" height="300"><figcaption>Almacén Bestoic</figcaption></figure>
+            <figure class="prop-photo-card"><img src="assets/images/almacen-bestoic-4.jpg" alt="Almacén Bestoic, entrada" loading="lazy" width="400" height="300"><figcaption>Almacén Bestoic</figcaption></figure>
+          </div>
+        </div>
+      </details>
+
+      <p class="gallery-note">9 alojamientos administrados con Bestoic todos los días, en Chuy y Punta del Diablo.</p>
+    </div>
+  </section>
+
+  <!-- ====================== 9c. HISTORIA (gris azulado, corta) ====================== -->
+  <section class="section-soft compact" id="historia">
+    <div class="wrap">
+      <div class="historia-teaser">
+        <img class="historia-photo" src="assets/images/alojamientos/chuy-grande.jpg" alt="Orieles Rodríguez, fundador de Bestoic" loading="lazy" width="72" height="72">
+        <div>
+          <h2>Bestoic nació de una necesidad real</h2>
+          <p class="muted">El sistema surgió de administrar alojamientos de verdad en Chuy y Punta del Diablo, y de necesitar una herramienta adaptada a esa operación — no una plantilla genérica.</p>
+          <button class="btn-link" type="button" id="historiaModalTrigger">Conocer nuestra historia →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ====================== 10. PREGUNTAS FRECUENTES (blanco) ====================== -->
   <section class="section-light" id="preguntas">
     <div class="wrap">
@@ -1220,6 +1224,11 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
         </div>
 
         <div class="accordion-item">
+          <button class="accordion-btn" type="button" aria-expanded="false">¿Incluye capacitación? <span class="acc-ico" aria-hidden="true">+</span></button>
+          <div class="accordion-panel"><p>Sí. La capacitación está incluida en el pago único, junto con la configuración inicial acordada — te acompañamos hasta que el equipo pueda usar el sistema sin ayuda.</p></div>
+        </div>
+
+        <div class="accordion-item">
           <button class="accordion-btn" type="button" aria-expanded="false">¿Cómo se realiza el pago? <span class="acc-ico" aria-hidden="true">+</span></button>
           <div class="accordion-panel"><p>Se abona el 50% para comenzar el trabajo y el 50% restante cuando el software está terminado y funcionando. Los medios de pago disponibles se coordinan directamente por WhatsApp antes de comenzar.</p></div>
         </div>
@@ -1234,11 +1243,11 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   <!-- ====================== 11. CTA FINAL (azul marino) ====================== -->
   <section class="section-dark cta-final compact" id="cta">
     <div class="wrap">
-      <h2>Organizá tu alojamiento antes de la próxima temporada</h2>
-      <p>Mirá cómo Bestoic puede adaptarse a tu forma de trabajar y recibí una demostración personalizada.</p>
+      <h2>¿Querés ver Bestoic en tu negocio?</h2>
+      <p>Configurá el sistema según tu operación o hablá con nosotros y te ayudamos a elegir.</p>
       <div class="actions center mt-24">
-        <a class="btn btn-primary btn-lg" data-wa="demo" href="#">Solicitar demostración por WhatsApp</a>
-        <a class="btn btn-secondary-dark btn-lg" href="software.html" data-track="ver-funciones">Ver todas las funciones</a>
+        <a class="btn btn-primary btn-lg" href="software.html#comparacion">Configurar Bestoic</a>
+        <a class="btn btn-secondary-dark btn-lg" data-wa="demo" href="#">Hablar por WhatsApp</a>
       </div>
     </div>
   </section>
@@ -1351,6 +1360,19 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16.03 3C9.4 3 4 8.36 4 14.96c0 2.36.66 4.56 1.8 6.45L4 29l7.8-1.75a12.9 12.9 0 0 0 4.23.71c6.63 0 12.03-5.36 12.03-11.96S22.66 3 16.03 3zm0 21.7c-1.34 0-2.66-.35-3.83-1l-.27-.16-4.63 1.04 1.02-4.52-.18-.28a9.6 9.6 0 0 1-1.5-5.12c0-5.36 4.4-9.72 9.83-9.72 5.44 0 9.83 4.36 9.83 9.72 0 5.36-4.4 9.72-9.83 9.72zm5.4-7.29c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.15-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.65-2.05-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.01-1.04 2.46s1.06 2.85 1.21 3.05c.15.2 2.09 3.2 5.07 4.49.71.31 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35z"/></svg>
 </a>
 
+<!-- Modal genérico de información -- hoy solo lo usa "Conocer nuestra
+     historia", pensado para poder reutilizarse si hace falta otro
+     modal de solo lectura más adelante. Mismo patrón visual que el
+     modal de pago de software.html, sin nada específico de pagos. -->
+<div class="info-modal-backdrop" id="historiaModalBackdrop">
+  <div class="info-modal" role="dialog" aria-modal="true" aria-labelledby="historiaModalTitle">
+    <button class="info-modal-close" type="button" id="historiaModalClose" aria-label="Cerrar">&times;</button>
+    <h3 id="historiaModalTitle">Nuestra historia</h3>
+    <p>Bestoic nace de la experiencia de gestionar reservas, huéspedes, cobros y propiedades en Uruguay, administrando alojamientos de forma real en Chuy y Punta del Diablo, Rocha. Antes de ofrecerse a otros alojamientos, cada función se prueba primero en esa operación, todos los días.</p>
+    <p>Con 9 alojamientos gestionados y más de 4 años de experiencia, el software no nació de una idea abstracta — nació de necesitar, en la práctica, una herramienta que se adaptara a cómo se trabaja de verdad, no al revés.</p>
+  </div>
+</div>
+
 <script>
 /* ==========================================================================
    Bestoic — JavaScript principal
@@ -1382,10 +1404,10 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   /* Mensajes precargados de WhatsApp */
   const WA_MESSAGES = {
     demo: 'Hola, estuve viendo Bestoic y me gustaría solicitar una demostración para mi alojamiento.',
-    inicial: 'Hola, me interesa el Plan Inicial de Bestoic por USD 175. Me gustaría solicitar una demostración.',
+    emprendedor: 'Hola, me interesa el Plan Emprendedor de Bestoic por USD 150. Me gustaría solicitar una demostración.',
     profesional: 'Hola, me interesa el Plan Profesional de Bestoic por USD 500. Me gustaría conocer cómo puede adaptarse a mi alojamiento.',
     hotel: 'Hola, quiero solicitar una cotización del Plan Hotel de Bestoic.',
-    personalizado: 'Hola, quiero consultar por un Desarrollo Personalizado de Bestoic para mi operación.'
+    a_medida: 'Hola, mi operación necesita algo que no veo en el catálogo de módulos de Bestoic. Quiero consultar mi caso.'
   };
 
   /* =======================================================================
@@ -1477,7 +1499,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
 
   /* =======================================================================
      4) WHATSAPP
-     Uso en el HTML: <a data-wa="demo"> o <button data-wa="inicial">
+     Uso en el HTML: <a data-wa="demo"> o <button data-wa="emprendedor">
      ======================================================================= */
   function waUrl(key) {
     const msg = WA_MESSAGES[key] || WA_MESSAGES.demo;
@@ -1766,6 +1788,49 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   /* =======================================================================
      ARRANQUE
      ======================================================================= */
+  /* Modal genérico de info (hoy solo "Conocer nuestra historia"). */
+  function initInfoModal() {
+    var trigger = document.getElementById('historiaModalTrigger');
+    var backdrop = document.getElementById('historiaModalBackdrop');
+    if (!trigger || !backdrop) return;
+    var closeBtn = document.getElementById('historiaModalClose');
+    function open() { backdrop.classList.add('open'); }
+    function close() { backdrop.classList.remove('open'); }
+    trigger.addEventListener('click', open);
+    closeBtn.addEventListener('click', close);
+    backdrop.addEventListener('click', function (e) { if (e.target === backdrop) close(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && backdrop.classList.contains('open')) close(); });
+  }
+
+  /* Microinteracción sutil: revela secciones/tarjetas al hacer scroll.
+     Mismo criterio que software.html -- solo contenido estático. */
+  function initScrollReveal() {
+    var selector = '.sec-head, .benefit-card, .feature-card, .who-card, ' +
+      '.plans > .plan, .step, .quote-card, .card-light, .prop-photo-card, ' +
+      '.historia-teaser';
+    var targets = document.querySelectorAll(selector);
+    if (!targets.length) return;
+
+    if (!('IntersectionObserver' in window)) {
+      targets.forEach(function (el) { el.classList.add('is-visible'); });
+      return;
+    }
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    targets.forEach(function (el) {
+      el.classList.add('reveal');
+      observer.observe(el);
+    });
+  }
+
   function init() {
     renderPrices();
     initWhatsApp();
@@ -1775,7 +1840,9 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
     initVideos();
     renderVideoLibrary();
     initForm();
+    initInfoModal();
     initMisc();
+    initScrollReveal();
   }
 
   if (document.readyState === 'loading') {

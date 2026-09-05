@@ -65,9 +65,9 @@
   /* Bordes y sombras */
   --border:#DCE4EE;
   --border-dark:rgba(255,255,255,.16);
-  --shadow-sm:0 1px 2px rgba(11,27,46,.06);
-  --shadow:0 10px 30px rgba(11,27,46,.06);
-  --shadow-lg:0 18px 44px rgba(11,27,46,.10);
+  --shadow-sm:0 1px 3px rgba(11,27,46,.04);
+  --shadow:0 14px 36px rgba(11,27,46,.05);
+  --shadow-lg:0 22px 52px rgba(11,27,46,.08);
 
   /* Medidas */
   --radius:14px;
@@ -113,8 +113,8 @@ strong,b{font-weight:600;}
 
 /* ---------- 3. LAYOUT Y SECCIONES ---------------------------------------- */
 .wrap{width:100%;max-width:var(--wrap);margin:0 auto;}
-section{padding:64px 20px;scroll-margin-top:90px;}
-section.compact{padding:48px 20px;}
+section{padding:96px 20px;scroll-margin-top:90px;}
+section.compact{padding:56px 20px;}
 
 /* Variantes de fondo reutilizables (alternancia de color) */
 .section-light{background:var(--surface);color:var(--text);}
@@ -135,8 +135,14 @@ section.compact{padding:48px 20px;}
 .sec-head p{color:var(--text-secondary);font-size:1.02rem;}
 .section-dark .sec-head p{color:var(--text-light-secondary);}
 
+/* Microinteracción sutil: revela secciones/tarjetas al hacer scroll
+   (initScrollReveal() en el script principal). Nunca aplicado a texto
+   suelto, solo a encabezados de sección y grids de tarjetas. */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease;}
+.reveal.is-visible{opacity:1;transform:none;}
+
 /* Rejillas genéricas */
-.grid{display:grid;gap:20px;}
+.grid{display:grid;gap:24px;}
 .grid-2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
 .grid-3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr));}
 .grid-4{grid-template-columns:repeat(auto-fit,minmax(230px,1fr));}
@@ -331,7 +337,7 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--danger
 /* ---------- 7. BLOQUES ESPECÍFICOS --------------------------------------- */
 /* HERO */
 .hero{
-  background:radial-gradient(circle at 80% 20%,rgba(90,143,203,.16),transparent 34%),var(--navy);
+  background:radial-gradient(circle at 85% 12%,rgba(245,166,35,.10),transparent 45%),var(--background-blue);
   padding:56px 20px 64px;
 }
 .hero-inner{
@@ -339,12 +345,13 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--danger
   gap:48px;align-items:center;
 }
 .hero-copy,.hero-visual{min-width:0;}
-.hero h1{color:#fff;margin-bottom:18px;}
-.hero h1 .hl{color:var(--orange);}
-.hero-lead{color:var(--text-light-secondary);font-size:1.05rem;max-width:34em;}
+.hero h1{margin-bottom:18px;}
+.hero h1 .hl{color:var(--orange-dark);}
+.hero-note{color:var(--orange-dark);}
+.hero-lead{color:var(--text-secondary);font-size:1.05rem;max-width:34em;}
 .hero .actions{margin:26px 0 22px;}
 .hero-points{display:flex;flex-direction:column;gap:10px;}
-.hero-points li{display:flex;align-items:flex-start;gap:10px;color:var(--text-light);font-size:.94rem;}
+.hero-points li{display:flex;align-items:flex-start;gap:10px;color:var(--text);font-size:.94rem;}
 .hero-points .tick{
   flex-shrink:0;width:20px;height:20px;border-radius:50%;background:rgba(70,179,107,.18);
   color:var(--success);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;margin-top:2px;
@@ -496,26 +503,148 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--danger
 .cta-final h2{color:#fff;}
 .cta-final p{max-width:600px;margin-left:auto;margin-right:auto;}
 
-/* Tabla comparativa (escritorio) */
-.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);}
-table.compare{width:100%;border-collapse:collapse;min-width:640px;}
-table.compare th,table.compare td{padding:13px 16px;text-align:left;font-size:.9rem;border-bottom:1px solid var(--border);}
-table.compare thead th{background:var(--navy);color:#fff;font-weight:600;position:sticky;top:0;}
-table.compare tbody th{font-weight:500;color:var(--text);}
-table.compare td{text-align:center;color:var(--text-secondary);}
-table.compare .yes{color:var(--success-dark);font-weight:700;}
-table.compare .no{color:#98A2B3;}
-table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border-bottom:0;}
-
-/* Selector de planes (móvil) */
-.plan-tabs{display:none;gap:8px;margin-bottom:18px;}
-.plan-tab{
-  flex:1;padding:11px 8px;border-radius:12px;border:1px solid var(--border);background:var(--surface);
-  font-family:inherit;font-size:.85rem;font-weight:600;color:var(--text-secondary);cursor:pointer;min-height:46px;
+/* ---------- CONFIGURADOR "ARMÁ TU BESTOIC" -------------------------------- */
+/* Selector de plan */
+.plan-select-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:28px;}
+.plan-select-card{
+  position:relative;text-align:left;background:var(--surface);border:2px solid var(--border);border-radius:var(--radius-lg);
+  padding:20px 22px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;gap:4px;
+  transition:border-color .2s ease,box-shadow .2s ease;
 }
-.plan-tab[aria-selected="true"]{background:var(--navy);border-color:var(--navy);color:#fff;}
-.plan-panel{display:none;}
-.plan-panel.active{display:block;}
+.plan-select-card:hover{border-color:var(--blue);}
+.plan-select-card[aria-selected="true"]{border-color:var(--orange);box-shadow:var(--shadow);}
+.plan-select-card .psc-name{font-weight:700;color:var(--navy);font-size:1.05rem;}
+.plan-select-card .psc-price{font-family:'Fraunces',serif;font-weight:700;color:var(--navy);font-size:1.5rem;}
+.plan-select-card .psc-detail{font-size:.82rem;color:var(--text-secondary);}
+.plan-select-card .plan-badge{position:absolute;top:-12px;left:18px;transform:none;}
+
+/* Core incluido siempre */
+.core-banner{background:var(--background-blue);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:20px;}
+.core-banner h3{margin:0 0 8px;font-size:.95rem;color:var(--blue-dark);}
+.core-list{display:flex;flex-wrap:wrap;gap:8px 16px;margin:0;padding:0;list-style:none;}
+.core-list li{font-size:.85rem;color:var(--text);padding-left:20px;position:relative;}
+.core-list li::before{content:"✓";position:absolute;left:0;color:var(--success-dark);font-weight:700;}
+
+/* Banner de configuración recomendada */
+.recommend-banner{background:var(--surface);border:1px dashed var(--blue);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;}
+.recommend-banner p{margin:0;font-size:.9rem;color:var(--text);flex:1;min-width:220px;}
+.recommend-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.recommend-actions .btn{min-height:40px;padding:10px 18px;font-size:.86rem;}
+
+/* Catálogo + resumen */
+.configurator-grid{display:grid;grid-template-columns:1fr 340px;gap:26px;align-items:start;}
+.configurator-catalog{min-width:0;}
+
+.module-filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.module-filter{
+  padding:8px 16px;border-radius:var(--radius-pill);border:1px solid var(--border);background:var(--surface);
+  font-family:inherit;font-size:.82rem;font-weight:600;color:var(--text-secondary);cursor:pointer;
+}
+.module-filter[aria-selected="true"]{background:var(--navy);border-color:var(--navy);color:#fff;}
+
+.module-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+.module-card{
+  position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:8px;cursor:pointer;
+  transition:border-color .15s ease,box-shadow .15s ease;
+}
+.module-card:hover{border-color:var(--blue);}
+.module-card:hover .mc-check{border-color:var(--blue);}
+.module-card.selected{border-color:var(--orange);box-shadow:0 0 0 2px rgba(245,166,35,.25);}
+.module-card.auto-included{cursor:default;background:var(--background);}
+.module-card .mc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.module-card h4{margin:0;font-size:.93rem;color:var(--navy);}
+.module-card p{margin:0;font-size:.8rem;color:var(--text-secondary);line-height:1.45;}
+.module-card .mc-check{
+  flex-shrink:0;width:22px;height:22px;border-radius:6px;border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:.75rem;color:transparent;background:var(--surface);
+}
+.module-card.selected .mc-check{background:var(--orange);border-color:var(--orange);color:#0A1826;}
+.module-card.auto-included .mc-check{background:var(--success);border-color:var(--success);color:#04250F;}
+.module-card .mc-badge{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--blue-dark);}
+.module-card .mc-video-btn{
+  align-self:flex-start;font-size:.78rem;font-weight:600;color:var(--blue-dark);background:none;border:0;
+  padding:0;cursor:pointer;
+}
+.module-card .mc-video-btn:hover{text-decoration:underline;}
+.module-card .mc-video-frame{width:100%;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:var(--navy);}
+.module-card .mc-video-frame iframe{width:100%;height:100%;border:0;}
+
+/* Resumen / carrito */
+.configurator-summary{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:22px;box-shadow:var(--shadow);position:sticky;top:calc(var(--header-h) + 24px);
+}
+.configurator-summary h3{margin:0 0 14px;font-size:1rem;}
+.summary-line{display:flex;justify-content:space-between;gap:10px;font-size:.86rem;padding:6px 0;border-bottom:1px solid var(--border);color:var(--text-secondary);}
+.summary-line:last-of-type{border-bottom:0;}
+.summary-line .sl-price{color:var(--text);font-weight:600;white-space:nowrap;}
+.summary-line.sl-included .sl-price{color:var(--success-dark);}
+.summary-quota{font-size:.8rem;color:var(--blue-dark);font-weight:600;margin:10px 0 6px;}
+.summary-total{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px;padding-top:14px;border-top:2px solid var(--navy);}
+.summary-total .st-label{font-size:.88rem;font-weight:600;color:var(--navy);}
+.summary-total .st-value{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:700;color:var(--navy);}
+.summary-note{font-size:.76rem;color:var(--text-secondary);margin-top:8px;line-height:1.4;}
+.configurator-summary .btn{margin-top:16px;}
+.summary-wa-btn[hidden],.summary-pay-btn[hidden]{display:none;}
+
+/* Alojamientos/usuarios extra */
+.extras-stepper{display:flex;flex-wrap:wrap;gap:20px;margin-top:20px;padding-top:20px;border-top:1px solid var(--border);}
+.stepper-row{display:flex;align-items:center;gap:10px;}
+.stepper-row label{font-size:.86rem;color:var(--text);font-weight:600;}
+.stepper-btn{
+  width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);
+  font-size:1rem;cursor:pointer;color:var(--navy);
+}
+.stepper-value{min-width:24px;text-align:center;font-weight:700;color:var(--navy);}
+
+/* Carrito móvil (bottom sheet, patrón portado de app/panel.html) */
+.cart-sheet-trigger{
+  display:none;position:fixed;left:16px;right:16px;bottom:16px;z-index:150;
+  background:var(--navy);color:#fff;border:0;border-radius:var(--radius-pill);
+  padding:14px 20px;font-family:inherit;font-weight:700;font-size:.92rem;
+  box-shadow:0 10px 30px rgba(11,27,46,.35);cursor:pointer;
+  align-items:center;justify-content:space-between;gap:10px;
+}
+.cart-sheet-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:298;}
+.cart-sheet-backdrop.open{display:block;}
+.cart-sheet{
+  display:none;position:fixed;z-index:299;left:0;right:0;bottom:0;
+  background:var(--surface);border-radius:18px 18px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.25);
+  padding:8px 20px calc(20px + env(safe-area-inset-bottom));
+  max-height:82vh;overflow-y:auto;transform:translateY(100%);transition:transform .25s ease;
+}
+.cart-sheet.open{transform:translateY(0);display:block;}
+.cart-sheet-handle{width:40px;height:4px;border-radius:2px;background:var(--border);margin:10px auto 14px;}
+.cart-sheet-close{
+  position:absolute;top:10px;right:14px;width:40px;height:40px;border-radius:50%;background:var(--background);
+  border:0;font-size:1.2rem;color:var(--text-secondary);cursor:pointer;
+}
+/* La hoja móvil usa .cart-sheet-summary (no .configurator-summary) a
+   propósito, para que la regla ".configurator-summary{display:none}"
+   del breakpoint móvil (que oculta la versión de escritorio) nunca
+   pueda taparla por cascada -- las clases internas (.summary-line,
+   .summary-total, etc.) son independientes del contenedor, así que se
+   ven igual en las dos copias sin duplicar CSS. */
+
+/* Comparación de competencia */
+.competitor-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:24px 0;}
+.competitor-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+.competitor-card h4{margin:0 0 4px;font-size:.95rem;color:var(--navy);}
+.competitor-card .cc-market{font-size:.72rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;}
+.competitor-card .cc-price{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:var(--navy);margin:8px 0 2px;}
+.competitor-card .cc-plan{font-size:.8rem;color:var(--text-secondary);}
+.competitor-disclaimer{
+  background:rgba(245,166,35,.09);border:1px dashed var(--orange);border-radius:var(--radius);
+  padding:14px 16px;font-size:.84rem;color:var(--text-secondary);margin-top:8px;line-height:1.5;
+}
+
+/* Calculadora 1/2/3 años */
+.calc-table{width:100%;border-collapse:collapse;margin-top:16px;}
+.calc-table th,.calc-table td{padding:10px 14px;text-align:left;font-size:.86rem;border-bottom:1px solid var(--border);}
+.calc-table thead th{background:var(--navy);color:#fff;font-weight:600;}
+.calc-table tbody tr.calc-bestoic{background:rgba(245,166,35,.08);}
+.calc-table tbody tr.calc-bestoic td{font-weight:700;color:var(--navy);}
 
 /* Galería de capturas */
 .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;}
@@ -542,6 +671,16 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
 .flow-item p{font-size:.9rem;color:var(--text-secondary);}
 
 /* Listas de funciones por categoría */
+.func-more{margin-top:24px;}
+.func-more>summary{
+  list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:.95rem;font-weight:700;color:var(--blue-dark);padding:12px 0;
+  border:1px dashed var(--border);border-radius:var(--radius-pill);
+}
+.func-more>summary::-webkit-details-marker{display:none;}
+.func-more>summary::after{content:'Ver el resto de las funciones (7 más) ↓';}
+.func-more[open]>summary::after{content:'Mostrar menos ↑';}
+.func-more[open]>summary{margin-bottom:20px;}
 .func-cat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-sm);}
 .func-cat h3{display:flex;align-items:center;gap:10px;font-size:1.05rem;margin-bottom:12px;}
 .func-cat h3 svg{width:20px;height:20px;color:var(--blue-dark);flex-shrink:0;}
@@ -637,14 +776,15 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   .nav.open{transform:translateY(0);}
   .nav a{padding:12px 4px;border-bottom:1px solid rgba(255,255,255,.07);}
   .nav .btn{margin-top:12px;width:100%;}
-  section{padding:56px 20px;}
-  section.compact{padding:40px 20px;}
+  section{padding:64px 20px;}
+  section.compact{padding:44px 20px;}
   .hero{padding:40px 20px 52px;}
   .ba-row{grid-template-columns:1fr;gap:10px;}
   .ba-mid{transform:rotate(90deg);padding:2px 0;}
   .actions .btn{width:100%;}
-  .plan-tabs{display:flex;}
-  .table-wrap.desktop-only{display:none;}
+  .configurator-grid{grid-template-columns:1fr;}
+  .configurator-summary{display:none;}
+  .cart-sheet-trigger{display:flex;}
   .price .usd{font-size:2.25rem;}
   .wa-float{width:50px;height:50px;right:14px;bottom:14px;}
   .wa-float svg{width:26px;height:26px;}
@@ -664,6 +804,8 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   html{scroll-behavior:auto;}
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}
   .btn-primary:hover{transform:none;}
+  /* El contenido aparece de entrada, sin esperar a que un observer lo revele. */
+  .reveal{opacity:1;transform:none;}
 }
 
 /* Impresión básica */
@@ -750,7 +892,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
       <p class="hero-lead">Conocé cada módulo, mirá el recorrido completo de una reserva y compará qué plan se adapta mejor a tu operación.</p>
       <div class="actions mt-24">
         <a class="btn btn-primary btn-lg" href="#video-completo">Ver demostración completa</a>
-        <a class="btn btn-secondary-dark btn-lg" data-wa="demo" href="#">Consultar por WhatsApp</a>
+        <a class="btn btn-secondary-light btn-lg" data-wa="demo" href="#">Consultar por WhatsApp</a>
       </div>
       <p class="mt-24"><a class="btn-link" href="index.html">← Volver al inicio</a></p>
     </div>
@@ -969,6 +1111,15 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
           </ul>
         </article>
 
+      </div>
+
+      <!-- Simplificación (2026-09-05): las primeras 6 categorías (las de mayor interés
+           general) quedan siempre visibles; el resto se colapsa detrás de "Ver más" --
+           nada se borra, solo deja de forzar scroll a quien no lo pide. -->
+      <details class="func-more">
+        <summary></summary>
+        <div class="grid grid-3">
+
         <article class="func-cat">
           <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 11h5"/></svg>Equipo</h3>
           <ul>
@@ -1041,192 +1192,114 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
           </ul>
         </article>
 
-      </div>
+        </div>
+      </details>
     </div>
   </section>
 
-  <!-- ====================== 6. PERSONALIZACIÓN (azul marino) ====================== -->
-  <section class="section-dark" id="personalizacion">
+  <!-- ====================== 6. PERSONALIZACIÓN (claro) ====================== -->
+  <section class="section-soft" id="personalizacion">
     <div class="wrap">
       <div class="sec-head">
         <p class="eyebrow">Personalización</p>
         <h2>Tu operación, tu software</h2>
-        <p style="color:var(--text-light-secondary)">No tenés que adaptar tu negocio al software. Adaptamos el software a tu negocio. Partimos de la plataforma que ves en esta demostración — real, ya desarrollada y probada — y la configuramos según cómo trabajás vos, no al revés.</p>
+        <p>No tenés que adaptar tu negocio al software. Adaptamos el software a tu negocio. Partimos de la plataforma que ves en esta demostración — real, ya desarrollada y probada — y la configuramos según cómo trabajás vos, no al revés.</p>
       </div>
 
       <div class="grid grid-3">
-        <div class="card-dark">
+        <div class="card-light">
           <h3>¿Te sobra algo?</h3>
-          <p style="color:var(--text-light-secondary);font-size:.92rem">Si no necesitás Propietarios, por ejemplo, ese módulo se puede sacar. No pagás ni ves lo que no usás.</p>
+          <p style="font-size:.92rem">Si no necesitás Propietarios, por ejemplo, ese módulo se puede sacar. No pagás ni ves lo que no usás.</p>
         </div>
-        <div class="card-dark">
+        <div class="card-light">
           <h3>¿Te falta algo?</h3>
-          <p style="color:var(--text-light-secondary);font-size:.92rem">Si necesitás información especial, se agregan campos propios. Si tenés distintos tipos de usuario, se crean permisos a medida.</p>
+          <p style="font-size:.92rem">Si necesitás información especial, se agregan campos propios. Si tenés distintos tipos de usuario, se crean permisos a medida.</p>
         </div>
-        <div class="card-dark">
+        <div class="card-light">
           <h3>¿Tenés un caso particular?</h3>
-          <p style="color:var(--text-light-secondary);font-size:.92rem">Por ejemplo: un alojamiento con restaurante puede cotizar una función que conecte el consumo del restaurante con la cuenta del huésped. Si tu caso no está en la demostración, se analiza y se presupuesta — no se inventa que ya existe.</p>
+          <p style="font-size:.92rem">Por ejemplo: un alojamiento con restaurante puede cotizar una función que conecte el consumo del restaurante con la cuenta del huésped. Si tu caso no está en la demostración, se analiza y se presupuesta — no se inventa que ya existe.</p>
         </div>
       </div>
 
-      <p class="mt-32" style="color:var(--text-light-secondary)">
+      <p class="mt-32">
         Bestoic parte de una plataforma ya desarrollada, no de un desarrollo desde cero. Las funciones especiales, nuevas integraciones o
-        desarrollos fuera del alcance del plan se analizan y se cotizan por separado — ver <a href="#comparacion" style="color:var(--orange)">Desarrollo Personalizado</a>.
+        desarrollos que no estén en el catálogo se analizan y se cotizan por separado — armá tu plan en <a href="#comparacion" style="color:var(--orange-dark)">Armá tu Bestoic</a>.
       </p>
     </div>
   </section>
 
-  <!-- ====================== 7. COMPARACIÓN DE PLANES (claro) ====================== -->
+  <!-- ====================== 7. ARMÁ TU BESTOIC (claro) ====================== -->
   <section class="section-light" id="comparacion">
     <div class="wrap">
       <div class="sec-head center">
         <p class="eyebrow">Planes</p>
-        <h2>Comparación completa</h2>
-        <p>Pago único por la licencia: 50% para comenzar y 50% al entregar el software funcionando.</p>
+        <h2>Armá tu Bestoic</h2>
+        <p>Elegí un plan y armá tu configuración con los módulos que tu operación necesita. Pago único por la licencia: 50% para comenzar y 50% al entregar el software funcionando.</p>
       </div>
 
-      <!-- Selector para celular -->
-      <div class="plan-tabs" role="tablist" aria-label="Comparar planes">
-        <button class="plan-tab" type="button" role="tab" aria-selected="true" data-plan="inicial">Inicial</button>
-        <button class="plan-tab" type="button" role="tab" aria-selected="false" data-plan="profesional">Profesional</button>
-        <button class="plan-tab" type="button" role="tab" aria-selected="false" data-plan="hotel">Hotel</button>
-        <button class="plan-tab" type="button" role="tab" aria-selected="false" data-plan="personalizado">A medida</button>
-      </div>
-
-      <!-- Paneles (se muestran en celular) -->
-      <div class="plan-panel active" data-plan="inicial">
-        <div class="plan">
-          <h3>Plan Inicial</h3>
-          <div class="price">
-            <span class="usd" data-usd="150"></span>
-            <span class="uyu" data-uyu="150"></span>
-            <span class="note">Precio de lanzamiento para los primeros 3 clientes. Luego <span data-usd="175" data-prefix="no">175</span> USD.</span>
-          </div>
-          <ul>
-            <li>Hasta 5 alojamientos</li><li>Un usuario</li><li>Calendario y reservas</li><li>Huéspedes</li>
-            <li>Señas y saldos</li><li>Ingresos y gastos</li><li>Configuración inicial</li><li>Capacitación</li>
-            <li>Garantía técnica de hasta 2 años</li>
-            <li class="li-extra">Página web y Perfil de Empresa en Google: disponibles como adicional</li>
-          </ul>
-          <button class="btn btn-secondary-light btn-block" type="button" data-wa="inicial">Consultar Plan Inicial</button>
-          <button class="btn btn-primary btn-block" type="button" data-mp-plan="inicial" style="margin-top:10px">Pagar seña y empezar (USD 75)</button>
-        </div>
-      </div>
-
-      <div class="plan-panel" data-plan="profesional">
-        <div class="plan featured">
+      <!-- Selector de plan -->
+      <div class="plan-select-tabs" role="tablist" aria-label="Elegir plan" id="planSelectTabs">
+        <button class="plan-select-card" type="button" role="tab" aria-selected="true" data-plan="emprendedor">
+          <span class="psc-name">Emprendedor</span>
+          <span class="psc-price"><span data-usd="150"></span></span>
+          <span class="psc-detail">Hasta 5 alojamientos · 1 usuario · 3 módulos a elección</span>
+        </button>
+        <button class="plan-select-card" type="button" role="tab" aria-selected="false" data-plan="profesional">
           <span class="badge badge-orange plan-badge">Más elegido</span>
-          <h3>Plan Profesional</h3>
-          <div class="price">
-            <span class="usd" data-usd="500"></span>
-            <span class="uyu" data-uyu="500"></span>
-          </div>
-          <ul>
-            <li>Hasta 15 alojamientos</li><li>Varios usuarios</li><li>Roles y permisos</li><li>Gestión de propietarios</li>
-            <li>Comisiones y depósitos</li><li>Finanzas avanzadas</li><li>Reportes</li>
-            <li class="li-included">Página web profesional <b>incluida</b></li><li class="li-included">Perfil de Empresa en Google <b>incluido</b></li>
-            <li>Personalización básica</li>
-            <li>Configuración y capacitación</li><li>Garantía técnica de hasta 2 años</li>
-          </ul>
-          <button class="btn btn-primary btn-block" type="button" data-wa="profesional">Consultar Plan Profesional</button>
-          <button class="btn btn-secondary-light btn-block" type="button" data-mp-plan="profesional" style="margin-top:10px">Pagar seña y empezar (USD 250)</button>
+          <span class="psc-name">Profesional</span>
+          <span class="psc-price"><span data-usd="500"></span></span>
+          <span class="psc-detail">Hasta 15 alojamientos · 3 usuarios · 6 módulos a elección</span>
+        </button>
+        <button class="plan-select-card" type="button" role="tab" aria-selected="false" data-plan="hotel">
+          <span class="psc-name">Hotel</span>
+          <span class="psc-price">Desde <span data-usd="750" data-prefix="no">750</span> USD</span>
+          <span class="psc-detail">Según la operación · cotización</span>
+        </button>
+      </div>
+
+      <!-- Bestoic Core: incluido siempre, no consume cupo -->
+      <div class="core-banner">
+        <h3>Bestoic Core — incluido en los 3 planes, siempre</h3>
+        <ul class="core-list" id="coreList"></ul>
+      </div>
+
+      <!-- Configuración recomendada (fija por plan, nunca obligatoria) -->
+      <div class="recommend-banner" id="recommendBanner">
+        <p id="recommendText"></p>
+        <div class="recommend-actions">
+          <button class="btn btn-primary" type="button" id="useRecommendedBtn">Usar configuración recomendada</button>
+          <button class="btn btn-secondary-light" type="button" id="chooseOwnBtn">Elegir mis módulos</button>
         </div>
       </div>
 
-      <div class="plan-panel" data-plan="hotel">
-        <div class="plan">
-          <h3>Plan Hotel</h3>
-          <div class="price">
-            <span class="usd">Desde <span data-usd="750" data-prefix="no">750</span> USD</span>
-            <span class="uyu">Desde <span data-uyu="750" data-prefix="no"></span> UYU</span>
-            <span class="note">Cotización según cantidad de habitaciones, usuarios, funciones e integraciones.</span>
-          </div>
-          <ul>
-            <li class="li-included">Incluye <b>todo el Plan Profesional</b></li>
-            <li>Recepción (check-in / check-out)</li><li>Habitaciones y tipos de habitación</li><li>Limpieza / housekeeping</li><li>Mantenimiento</li>
-            <li>Caja y turnos, operadores con PIN</li><li>Reportes hoteleros</li><li>Auditoría</li>
-            <li class="li-included">Página web del hotel <b>incluida</b></li><li class="li-included">Perfil de Empresa en Google <b>incluido</b></li>
-            <li>Configuración personalizada</li>
-            <li>Capacitación</li><li>Garantía técnica de hasta 2 años</li>
-          </ul>
-          <button class="btn btn-secondary-light btn-block" type="button" data-wa="hotel">Solicitar cotización Hotel</button>
+      <div class="configurator-grid">
+        <div class="configurator-catalog">
+          <div class="module-filters" role="tablist" aria-label="Filtrar módulos por categoría" id="moduleFilters"></div>
+          <div class="module-grid" id="moduleGrid"></div>
         </div>
+
+        <aside class="configurator-summary" id="configuratorSummary" aria-label="Resumen de tu configuración"></aside>
       </div>
 
-      <div class="plan-panel" data-plan="personalizado">
-        <div class="plan">
-          <h3>Desarrollo Personalizado</h3>
-          <p class="plan-for">Para proyectos que necesitan muchas funciones, automatizaciones, integraciones o flujos especiales fuera de lo que muestra la demostración.</p>
-          <div class="price">
-            <span class="usd">Desde <span data-usd="1000" data-prefix="no">1.000</span> USD</span>
-            <span class="uyu">Desde <span data-uyu="1000" data-prefix="no"></span> UYU</span>
-            <span class="note">El precio final se define después de analizar el alcance. No se cotiza solo por cantidad de funciones.</span>
-          </div>
-          <ul>
-            <li>Análisis de tu operación completo</li>
-            <li>Módulos, campos y reportes a medida</li>
-            <li>Integraciones especiales</li>
-            <li>Automatizaciones propias</li>
-            <li>Todo lo del Plan Hotel como base</li>
-            <li>Garantía técnica de hasta 2 años</li>
-          </ul>
-          <button class="btn btn-secondary-light btn-block" type="button" data-wa="personalizado">Consultar desarrollo personalizado</button>
-        </div>
-      </div>
+      <!-- Alojamientos/usuarios extra (Emprendedor/Profesional únicamente) -->
+      <div class="extras-stepper" id="extrasStepper"></div>
 
-      <!-- Tabla para escritorio -->
-      <div class="table-wrap desktop-only">
-        <table class="compare">
-          <caption class="visually-hidden">Comparación de funciones entre los planes Inicial, Profesional y Hotel</caption>
-          <thead>
-            <tr><th scope="col">Incluye</th><th scope="col">Inicial</th><th scope="col">Profesional</th><th scope="col">Hotel</th></tr>
-          </thead>
-          <tbody>
-            <tr><th scope="row">Precio (pago único)</th><td><span data-usd="150"></span></td><td><span data-usd="500"></span></td><td>Desde <span data-usd="750" data-prefix="no">750</span> USD</td></tr>
-            <tr><th scope="row">Alojamientos o habitaciones</th><td>Hasta 5</td><td>Hasta 15</td><td>Según cotización</td></tr>
-            <tr><th scope="row">Usuarios</th><td>1</td><td>Varios</td><td>Múltiples</td></tr>
-            <tr><th scope="row">Calendario y disponibilidad</th><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Reservas y huéspedes</th><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Señas y saldos</th><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Ingresos y gastos</th><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Mensajes para WhatsApp</th><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Roles y permisos</th><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Propietarios y comisiones</th><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Finanzas avanzadas</th><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Reportes</th><td>Básicos</td><td>Completos</td><td>Completos</td></tr>
-            <tr><th scope="row">Temporadas y precios</th><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Limpieza y tareas</th><td class="no">—</td><td>Básico</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Página web</th><td>Adicional</td><td class="yes">Incluida</td><td class="yes">Incluida</td></tr>
-            <tr><th scope="row">Perfil de Empresa en Google</th><td>Adicional</td><td class="yes">Incluido</td><td class="yes">Incluido</td></tr>
-            <tr><th scope="row">Operación de recepción</th><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Habitaciones individuales</th><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Cuenta del huésped</th><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Housekeeping completo</th><td class="no">—</td><td>Básico</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Caja y turnos</th><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Mantenimiento</th><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Reportes hoteleros (ADR, RevPAR)</th><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Pre-facturación (comprobante interno)</th><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Operadores con PIN</th><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Auditoría (historial de cambios)</th><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Copias de seguridad (completas y por módulo)</th><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Mercado Bestoic (comparación de precios)</th><td class="no">—</td><td class="no">—</td><td>Según cotización</td></tr>
-            <tr><th scope="row">Apariencia y marca propia</th><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td></tr>
-            <tr><th scope="row">Personalización</th><td>Configuración inicial</td><td>Básica</td><td>Personalizada</td></tr>
-            <tr><th scope="row">Garantía técnica</th><td>Hasta 2 años</td><td>Hasta 2 años</td><td>Hasta 2 años</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="card-light custom-dev-callout">
-        <h3>¿Necesitás algo que no está en esta tabla?</h3>
-        <p class="muted">El precio no depende solo de cuántas funciones tenga tu plan — una función simple y una integración compleja no representan el mismo trabajo. Si tu operación necesita muchos módulos, automatizaciones o integraciones especiales, existe el <b>Desarrollo Personalizado</b>, desde <span data-usd="1000" data-prefix="no">1.000</span> USD, con el alcance definido después de analizar tu caso.</p>
-        <button class="btn btn-secondary-light" type="button" data-wa="personalizado">Consultar desarrollo personalizado</button>
+      <!-- Carrito móvil -->
+      <button class="cart-sheet-trigger" type="button" id="cartSheetTrigger">
+        <span id="cartSheetTriggerLabel">Ver mi configuración</span>
+        <span id="cartSheetTriggerTotal"></span>
+      </button>
+      <div class="cart-sheet-backdrop" id="cartSheetBackdrop"></div>
+      <div class="cart-sheet" id="cartSheet" role="dialog" aria-modal="true" aria-label="Resumen de tu configuración">
+        <div class="cart-sheet-handle"></div>
+        <button class="cart-sheet-close" type="button" id="cartSheetClose" aria-label="Cerrar">&times;</button>
+        <div class="cart-sheet-summary" id="cartSheetSummary"></div>
       </div>
 
       <div class="clarifications">
         <h3>Aclaraciones importantes</h3>
         <ul>
-          <li>La página web está <b>incluida desde el Plan Profesional</b>; en el Plan Inicial se contrata como adicional.</li>
+          <li>La página web está <b>incluida desde el Plan Profesional</b>; en el Plan Emprendedor se contrata como adicional.</li>
           <li>El dominio y el hosting son servicios externos y pueden tener un costo anual o mensual.</li>
           <li>La optimización del Perfil de Empresa en Google está incluida desde el Plan Profesional. La aprobación y verificación dependen de Google y no se garantiza una posición determinada.</li>
           <li>El motor automático de reservas no está incluido salvo que se indique expresamente.</li>
@@ -1235,6 +1308,39 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
           <li>Las pasarelas de pago pueden cobrar comisiones. La fotografía profesional presencial no está incluida.</li>
           <li>El mantenimiento y las nuevas funciones posteriores se cotizan aparte.</li>
         </ul>
+      </div>
+
+      <div class="card-light custom-dev-callout">
+        <h3>¿Necesitás algo que no está en el catálogo?</h3>
+        <p class="muted">Si tu operación necesita una función especial, una integración o un desarrollo fuera de lo que ves en esta página, se analiza y se cotiza por separado — no se inventa que ya existe.</p>
+        <button class="btn btn-secondary-light" type="button" data-wa="a_medida">Consultar un caso especial</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== 7b. COMPARACIÓN DE PRECIOS (gris azulado) ====================== -->
+  <section class="section-soft" id="comparacion-precios">
+    <div class="wrap">
+      <div class="sec-head center">
+        <p class="eyebrow">Comparación</p>
+        <h2>Cómo se compara Bestoic con otras plataformas</h2>
+        <p>Bestoic es un pago único por la licencia; las alternativas de abajo son suscripciones mensuales — es una comparación de modelo de costos, no una afirmación de que los productos son equivalentes.</p>
+      </div>
+
+      <div class="competitor-grid" id="competitorGrid"></div>
+
+      <div class="competitor-disclaimer" id="competitorDisclaimer"></div>
+
+      <div class="accordion" style="margin-top:20px;max-width:760px;margin-left:auto;margin-right:auto;">
+        <div class="accordion-item">
+          <button class="accordion-btn" type="button" aria-expanded="false">Ver fuentes y condiciones <span class="acc-ico" aria-hidden="true">+</span></button>
+          <div class="accordion-panel" id="competitorSourcesPanel"></div>
+        </div>
+      </div>
+
+      <h3 class="mt-32" style="text-align:center">Costo acumulado a 1, 2 y 3 años</h3>
+      <div class="table-wrap" style="max-width:760px;margin:16px auto 0">
+        <table class="calc-table" id="calcTable"></table>
       </div>
     </div>
   </section>
@@ -1339,7 +1445,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
       <div class="grid grid-3">
         <div class="card-light"><h3>Página web</h3><p class="muted"><b>Incluida desde el Plan Profesional.</b> En el Plan Inicial se contrata como adicional: una web para tu alojamiento con tus fotos, tu información y botón de WhatsApp. Como servicio independiente, una web completa y personalizada se cotiza aproximadamente desde <span data-usd="400" data-prefix="no">400</span> USD según el alcance. El dominio y el hosting son servicios externos con costo propio, sin garantía de gratuidad permanente.</p></div>
         <div class="card-light"><h3>Mejora y optimización digital de fotografías</h3><p class="muted">Trabajamos el encuadre, la luz, el color y la nitidez de las fotos de tu alojamiento. No incluye una sesión con fotógrafo profesional. <a class="btn-link" href="#fotos-ejemplo">Ver un ejemplo →</a></p></div>
-        <div class="card-light"><h3>Perfil de Empresa en Google</h3><p class="muted"><b>Incluido desde el Plan Profesional.</b> En el Plan Inicial se contrata como adicional. Creación u optimización del perfil, sujeto al proceso de verificación de Google: no se garantiza una posición determinada en los resultados.</p></div>
+        <div class="card-light"><h3>Perfil de Empresa en Google</h3><p class="muted"><b>Incluido desde el Plan Profesional.</b> En el Plan Emprendedor se contrata como adicional. Creación u optimización del perfil, sujeto al proceso de verificación de Google: no se garantiza una posición determinada en los resultados.</p></div>
         <div class="card-light"><h3>Presencia digital</h3><p class="muted">Orden y coherencia entre tu web, tus fotos y tus datos de contacto.</p></div>
         <div class="card-light"><h3>Material para redes</h3><p class="muted">Piezas simples para publicar tu disponibilidad y tus alojamientos.</p></div>
         <div class="card-light"><h3>Integraciones y funciones especiales</h3><p class="muted">Desarrollos fuera del alcance del plan, analizados y presupuestados caso por caso.</p></div>
@@ -1381,8 +1487,8 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
           <div class="accordion-panel"><p>50% para comenzar y 50% cuando el software está terminado y funcionando. Los medios de pago se coordinan por WhatsApp antes de comenzar.</p></div>
         </div>
         <div class="accordion-item">
-          <button class="accordion-btn" type="button" aria-expanded="false">¿El precio de lanzamiento es permanente? <span class="acc-ico" aria-hidden="true">+</span></button>
-          <div class="accordion-panel"><p>No. El Plan Inicial a <span data-usd="150"></span> es un precio de lanzamiento para los primeros 3 clientes. Después queda en <span data-usd="175"></span>.</p></div>
+          <button class="accordion-btn" type="button" aria-expanded="false">¿El precio del Plan Emprendedor puede subir? <span class="acc-ico" aria-hidden="true">+</span></button>
+          <div class="accordion-panel"><p>Hoy el Plan Emprendedor cuesta <span data-usd="150"></span>, sin condición ni fecha de vencimiento. No hay ninguna suba definida todavía — si en algún momento se ajustara el precio, sería una decisión aparte, tomada con datos reales de ventas, nunca algo ya decidido de antemano.</p></div>
         </div>
         <div class="accordion-item">
           <button class="accordion-btn" type="button" aria-expanded="false">¿Cómo se calculan los valores en UYU? <span class="acc-ico" aria-hidden="true">+</span></button>
@@ -1429,8 +1535,8 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
           <div class="accordion-panel"><p>No. Lo que ves en esta página es la demostración de la plataforma base. Cada cliente puede tener menos funciones (si algo no le sirve, se saca), más funciones, o módulos y campos distintos según su operación real. La demo muestra lo que la plataforma es capaz de hacer hoy, no un paquete cerrado igual para todos.</p></div>
         </div>
         <div class="accordion-item">
-          <button class="accordion-btn" type="button" aria-expanded="false">¿Puedo pedir una función que no está en esta demo? <span class="acc-ico" aria-hidden="true">+</span></button>
-          <div class="accordion-panel"><p>Sí. Cualquier función que no exista todavía en la plataforma se analiza y se cotiza como Desarrollo Personalizado — se evalúa si es viable, qué implica construirla y con qué plazo y costo, antes de confirmar nada.</p></div>
+          <button class="accordion-btn" type="button" aria-expanded="false">¿Puedo pedir una función que no está en el catálogo? <span class="acc-ico" aria-hidden="true">+</span></button>
+          <div class="accordion-panel"><p>Sí. Cualquier función que no exista todavía en la plataforma ni en el catálogo de módulos se analiza y se cotiza aparte — se evalúa si es viable, qué implica construirla y con qué plazo y costo, antes de confirmar nada.</p></div>
         </div>
       </div>
 
@@ -1458,7 +1564,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
       <div class="accordion">
         <div class="accordion-item">
           <button class="accordion-btn" type="button" aria-expanded="false">¿La página web y el dominio están incluidos? <span class="acc-ico" aria-hidden="true">+</span></button>
-          <div class="accordion-panel"><p>La página web propia está incluida desde el Plan Profesional; en el Plan Inicial se contrata como adicional (desde <span data-usd="400"></span>). El dominio es siempre un servicio externo, a nombre del cliente, con su propio costo si corresponde.</p></div>
+          <div class="accordion-panel"><p>La página web propia está incluida desde el Plan Profesional; en el Plan Emprendedor se contrata como adicional (desde <span data-usd="400"></span>). El dominio es siempre un servicio externo, a nombre del cliente, con su propio costo si corresponde.</p></div>
         </div>
         <div class="accordion-item">
           <button class="accordion-btn" type="button" aria-expanded="false">¿Hacen la página web del alojamiento? <span class="acc-ico" aria-hidden="true">+</span></button>
@@ -1596,10 +1702,10 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   /* Mensajes precargados de WhatsApp */
   const WA_MESSAGES = {
     demo: 'Hola, estuve viendo Bestoic y me gustaría solicitar una demostración para mi alojamiento.',
-    inicial: 'Hola, me interesa el Plan Inicial de Bestoic por USD 175. Me gustaría solicitar una demostración.',
+    emprendedor: 'Hola, me interesa el Plan Emprendedor de Bestoic por USD 150. Me gustaría solicitar una demostración.',
     profesional: 'Hola, me interesa el Plan Profesional de Bestoic por USD 500. Me gustaría conocer cómo puede adaptarse a mi alojamiento.',
     hotel: 'Hola, quiero solicitar una cotización del Plan Hotel de Bestoic.',
-    personalizado: 'Hola, quiero consultar por un Desarrollo Personalizado de Bestoic para mi operación.'
+    a_medida: 'Hola, mi operación necesita algo que no veo en el catálogo de módulos de Bestoic. Quiero consultar mi caso.'
   };
 
   /* =======================================================================
@@ -1628,6 +1734,112 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
     { title: 'Mercado Bestoic', desc: 'Comparación de precios frente al mercado.', yt: '' },
     { title: 'Pre-facturación', desc: 'Comprobante interno antes del check-out.', yt: '' }
   ];
+
+  /* =======================================================================
+     DATOS DEL CONFIGURADOR "ARMÁ TU BESTOIC"
+     Ver plan en splendid-weaving-origami.md, sección "BESTOIC —
+     Configurador de planes 'Arma tu Bestoic'". Todo el texto de módulos
+     está sacado literal de #funciones -- nunca redactado desde cero.
+     ======================================================================= */
+
+  /* Escapa texto libre antes de insertarlo por innerHTML (mismo criterio
+     de seguridad ya documentado en CLAUDE.md para app/panel.html --
+     software.html no tenía contenido dinámico hasta este configurador). */
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  const BESTOIC_CORE_FEATURES = [
+    'Calendario y disponibilidad', 'Reservas y huéspedes', 'Señas y saldos',
+    'Ingresos y gastos', 'Panel / resumen general', 'Copias de seguridad'
+  ];
+
+  const MODULE_CATEGORIES = [
+    { key: 'propietarios', name: 'Propietarios' },
+    { key: 'finanzas', name: 'Finanzas y reportes' },
+    { key: 'equipo', name: 'Equipo' },
+    { key: 'operacion', name: 'Operación' },
+    { key: 'hoteleria', name: 'Hotelería' },
+    { key: 'seguridad', name: 'Seguridad y datos' },
+    { key: 'facturacion', name: 'Facturación y precios' },
+    { key: 'personalizacion', name: 'Personalización' }
+  ];
+
+  /* 17 módulos reales -- cualquier conteo mostrado en la UI se calcula
+     siempre como MODULES.length, nunca un número escrito a mano. */
+  const MODULES = [
+    { key: 'propietarios', category: 'propietarios', name: 'Propietarios', desc: 'Datos del propietario, propiedades asociadas y liquidaciones.', videoUrl: null },
+    { key: 'comisiones', category: 'propietarios', name: 'Comisiones y depósitos', desc: 'Se calculan solas según el porcentaje acordado; registrás lo ya entregado.', videoUrl: null },
+    { key: 'reportes_avanzados', category: 'finanzas', name: 'Reportes avanzados', desc: 'Reportes financieros completos, listos para descargar.', videoUrl: null },
+    { key: 'temporadas_precios', category: 'finanzas', name: 'Temporadas y precios', desc: 'Precios variables por temporada.', videoUrl: null },
+    { key: 'roles_permisos', category: 'equipo', name: 'Roles y permisos', desc: 'Varios usuarios, cada rol ve solo lo que le corresponde.', videoUrl: null },
+    { key: 'operadores_pin', category: 'equipo', name: 'Operadores con PIN', desc: 'Acceso rápido para el equipo, sin login completo.', videoUrl: null },
+    { key: 'housekeeping', category: 'operacion', name: 'Housekeeping / Limpieza', desc: 'Tareas de limpieza asignadas por habitación o alojamiento.', videoUrl: null },
+    { key: 'mantenimiento', category: 'operacion', name: 'Mantenimiento', desc: 'Tickets de arreglos con seguimiento.', videoUrl: null },
+    { key: 'recepcion', category: 'hoteleria', name: 'Recepción', desc: 'Check-in y check-out del día en un vistazo.', videoUrl: null },
+    { key: 'habitaciones_individuales', category: 'hoteleria', name: 'Habitaciones individuales', desc: 'Estado de cada habitación: libre, ocupada, en limpieza.', videoUrl: null },
+    { key: 'cuenta_huesped', category: 'hoteleria', name: 'Cuenta del huésped', desc: 'Consumo y cuenta abierta del huésped durante la estadía.', videoUrl: null },
+    { key: 'caja_turnos', category: 'hoteleria', name: 'Caja y turnos', desc: 'Apertura, cierre y arqueo, con operadores identificados por PIN.', videoUrl: null },
+    { key: 'reportes_hoteleros', category: 'hoteleria', name: 'Reportes hoteleros (ADR, RevPAR)', desc: 'Indicadores propios de la operación hotelera.', videoUrl: null },
+    { key: 'auditoria', category: 'seguridad', name: 'Auditoría (historial de cambios)', desc: 'Quién creó, editó o borró cada registro, y cuándo.', videoUrl: null },
+    { key: 'prefacturacion', category: 'facturacion', name: 'Pre-facturación', desc: 'Comprobante interno antes de la salida del huésped (no reemplaza la facturación electrónica DGI).', videoUrl: null },
+    { key: 'mercado_bestoic', category: 'facturacion', name: 'Mercado Bestoic', desc: 'Compara tus precios contra el mercado de tu zona (función beta).', videoUrl: null },
+    { key: 'personalizacion', category: 'personalizacion', name: 'Apariencia y marca propia', desc: 'El panel se ve con tu identidad: colores y marca propios.', videoUrl: null }
+  ];
+
+  /* USD 150 en Emprendedor, punto -- sin ninguna lógica de "precio
+     regular"/suba futura (2026-09-04: si algún día se sube, es una
+     decisión aparte tomada con datos de ventas, nunca algo que el código
+     ya lleve implícito). */
+  const PLANS = {
+    emprendedor: {
+      name: 'Emprendedor', propertyLimit: 5, userLimit: 1, includedModules: 3, priceUsd: 150,
+      autoIncluded: [], // 'personalizacion' NO está acá -- en Emprendedor es un módulo más, consume cupo si se elige
+      recommended: ['housekeeping', 'mantenimiento', 'reportes_avanzados'],
+      mpEnabled: true, hasModuleQuota: true
+    },
+    profesional: {
+      name: 'Profesional', propertyLimit: 15, userLimit: 3, includedModules: 6, priceUsd: 500,
+      autoIncluded: ['personalizacion'],
+      recommended: ['propietarios', 'comisiones', 'housekeeping', 'caja_turnos', 'operadores_pin', 'reportes_avanzados'],
+      mpEnabled: true, hasModuleQuota: true
+    },
+    // Sin cupo fijo de módulos (hasModuleQuota:false) -- la UI nunca
+    // muestra un contador "X/Y incluidos" para este plan, solo la lista
+    // recomendada bajo "Configuración hotelera recomendada". Sin botón de
+    // Mercado Pago (mpEnabled:false) -- siempre va por WhatsApp/cotización.
+    hotel: {
+      name: 'Hotel', propertyLimit: null, userLimit: null, includedModules: null, priceUsd: null, priceFromUsd: 750,
+      autoIncluded: ['personalizacion'],
+      recommended: ['recepcion', 'habitaciones_individuales', 'cuenta_huesped', 'housekeeping', 'caja_turnos', 'operadores_pin', 'auditoria', 'prefacturacion', 'reportes_hoteleros', 'mantenimiento'],
+      mpEnabled: false, hasModuleQuota: false
+    }
+  };
+
+  /* Decisión comercial todavía pendiente del usuario -- mientras sigan en
+     null, el configurador nunca cobra un precio inventado: una config con
+     excedente muestra "Precio a confirmar" y va por WhatsApp, nunca por
+     Mercado Pago. El backend (netlify/functions/mp-plan-order.js) tiene su
+     propio espejo de estas 3 constantes -- sincronizar a mano si cambian. */
+  const EXTRA_MODULE_PRICE_USD = null;   // TODO: definir precio por módulo excedente
+  const EXTRA_PROPERTY_PRICE_USD = null; // TODO: definir precio por alojamiento extra
+  const EXTRA_USER_PRICE_USD = null;     // TODO: definir precio por usuario extra
+
+  /* Precios reales de la competencia -- verificados por el usuario contra
+     las páginas oficiales el 2026-09-04 (ver "source" de cada uno). Nunca
+     convertir EUR<->USD con un tipo de cambio inventado -- se muestran en
+     su moneda real. */
+  const COMPETITORS = [
+    { name: 'Predia', market: 'Uruguay', plan: 'Propietario', currency: 'USD', monthlyPrice: 19, billing: 'monthly', propertyLimit: 5, taxNote: null, checkedAt: '2026-09-04', source: 'https://www.getpredia.com/pricing' },
+    { name: 'Pxsol', market: 'Hotel/PMS', plan: 'PMS Professional', currency: 'USD', monthlyPrice: 60, billing: 'monthly', taxNote: '+ IVA', checkedAt: '2026-09-04', source: 'https://www.pxsol.com/es/precios' },
+    { name: 'Lodgify', market: 'Internacional', plan: 'Professional', currency: 'USD', monthlyPrice: 42, billing: 'annual', billingNote: 'Equivalente mensual con facturación anual (20% de ahorro respecto al mes a mes).', checkedAt: '2026-09-04', source: 'https://www.lodgify.com/es/tarifas/' },
+    { name: 'Smoobu', market: 'Internacional', plan: 'Professional Pre-Paid', currency: 'EUR', monthlyPrice: 35, billing: 'monthly', propertyLimit: 1, checkedAt: '2026-09-04', source: 'https://www.smoobu.com/es/precios/' },
+    { name: 'Guesty', market: 'Internacional', plan: 'Precio inicial público', currency: 'EUR', monthlyPrice: 9, pricePrefix: 'Desde', billing: 'monthly', billingUnit: 'por propiedad', checkedAt: '2026-09-04', source: 'https://www.guesty.com/es/precios/' }
+  ];
+
+  const COMPETITOR_DISCLAIMER = 'Precios públicos consultados el 4 de septiembre de 2026. Las funcionalidades, impuestos, límites, condiciones y características pueden variar entre proveedores. La comparación se presenta como referencia del modelo de costos y no implica que los productos sean equivalentes.';
 
   /* =======================================================================
      2) ANALÍTICA (opcional)
@@ -1684,7 +1896,7 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
 
   /* =======================================================================
      4) WHATSAPP
-     Uso en el HTML: <a data-wa="demo"> o <button data-wa="inicial">
+     Uso en el HTML: <a data-wa="demo"> o <button data-wa="emprendedor">
      ======================================================================= */
   function waUrl(key) {
     const msg = WA_MESSAGES[key] || WA_MESSAGES.demo;
@@ -1766,23 +1978,468 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   }
 
   /* =======================================================================
-     7) SELECTOR DE PLANES (comparación en celular)
+     7) CONFIGURADOR "ARMÁ TU BESTOIC"
      ======================================================================= */
-  function initPlanTabs() {
-    const tabs = document.querySelectorAll('.plan-tab');
-    if (!tabs.length) return;
-    tabs.forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        const target = tab.getAttribute('data-plan');
-        tabs.forEach(function (t) {
-          t.setAttribute('aria-selected', t === tab ? 'true' : 'false');
+  var configState = {
+    plan: 'emprendedor',
+    selectedModules: [],
+    extraProperties: 0,
+    extraUsers: 0
+  };
+  var activeCategoryFilter = 'todas';
+  var CONFIG_STORAGE_KEY = 'bestoic_configurator_v1';
+
+  function saveConfigState() {
+    try {
+      window.localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(configState));
+    } catch (e) { /* localStorage puede fallar (privado/bloqueado) -- nunca debe romper la página */ }
+  }
+
+  function loadConfigState() {
+    try {
+      var raw = window.localStorage.getItem(CONFIG_STORAGE_KEY);
+      if (!raw) return;
+      var saved = JSON.parse(raw);
+      if (saved && PLANS[saved.plan]) {
+        configState.plan = saved.plan;
+        configState.selectedModules = Array.isArray(saved.selectedModules)
+          ? saved.selectedModules.filter(function (k) { return MODULES.some(function (m) { return m.key === k; }); })
+          : [];
+        configState.extraProperties = Number.isInteger(saved.extraProperties) ? saved.extraProperties : 0;
+        configState.extraUsers = Number.isInteger(saved.extraUsers) ? saved.extraUsers : 0;
+      }
+    } catch (e) { /* dato corrupto o localStorage inaccesible -- arranca de cero */ }
+  }
+
+  function getModule(key) { return MODULES.filter(function (m) { return m.key === key; })[0]; }
+  function currentPlanConfig() { return PLANS[configState.plan]; }
+  function isAutoIncluded(key) { return currentPlanConfig().autoIncluded.indexOf(key) !== -1; }
+  function isSelected(key) { return configState.selectedModules.indexOf(key) !== -1 || isAutoIncluded(key); }
+
+  function toggleModule(key) {
+    if (isAutoIncluded(key)) return; // un módulo auto-incluido no se puede deseleccionar
+    var idx = configState.selectedModules.indexOf(key);
+    if (idx === -1) configState.selectedModules.push(key);
+    else configState.selectedModules.splice(idx, 1);
+    saveConfigState();
+    renderConfigurator();
+  }
+
+  function selectPlan(planKey) {
+    if (!PLANS[planKey]) return;
+    configState.plan = planKey;
+    // El catálogo es el mismo para los 3 planes -- ningún módulo elegido
+    // se pierde al cambiar de plan, salvo que pase a ser auto-incluido.
+    var plan = PLANS[planKey];
+    configState.selectedModules = configState.selectedModules.filter(function (k) {
+      return plan.autoIncluded.indexOf(k) === -1;
+    });
+    if (!plan.hasModuleQuota) { configState.extraProperties = 0; configState.extraUsers = 0; }
+    saveConfigState();
+    renderConfigurator();
+  }
+
+  function setCategoryFilter(catKey) { activeCategoryFilter = catKey; renderModuleGrid(); }
+
+  function excessModulesCount() {
+    var plan = currentPlanConfig();
+    if (!plan.hasModuleQuota) return 0;
+    return Math.max(0, configState.selectedModules.length - plan.includedModules);
+  }
+
+  function needsExtraPricing() {
+    return excessModulesCount() > 0 || configState.extraProperties > 0 || configState.extraUsers > 0;
+  }
+
+  function extrasArePriced() {
+    return EXTRA_MODULE_PRICE_USD != null && EXTRA_PROPERTY_PRICE_USD != null && EXTRA_USER_PRICE_USD != null;
+  }
+
+  function calcTotalUsd() {
+    var plan = currentPlanConfig();
+    if (plan.priceUsd == null) return null; // Hotel: sin total, va por cotización
+    var total = plan.priceUsd;
+    if (extrasArePriced()) {
+      total += excessModulesCount() * EXTRA_MODULE_PRICE_USD;
+      total += configState.extraProperties * EXTRA_PROPERTY_PRICE_USD;
+      total += configState.extraUsers * EXTRA_USER_PRICE_USD;
+    }
+    return total;
+  }
+
+  function renderPlanSelector() {
+    document.querySelectorAll('.plan-select-card').forEach(function (card) {
+      card.setAttribute('aria-selected', card.getAttribute('data-plan') === configState.plan ? 'true' : 'false');
+    });
+  }
+
+  function renderCoreList() {
+    var list = document.getElementById('coreList');
+    if (!list) return;
+    list.innerHTML = BESTOIC_CORE_FEATURES.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('');
+  }
+
+  function renderRecommendBanner() {
+    var plan = currentPlanConfig();
+    var textEl = document.getElementById('recommendText');
+    if (!textEl) return;
+    var names = plan.recommended.map(function (k) { var m = getModule(k); return m ? m.name : k; });
+    var label = plan.hasModuleQuota ? ('Configuración recomendada para ' + plan.name + ':') : 'Configuración hotelera recomendada:';
+    textEl.textContent = label + ' ' + names.join(', ') + '.';
+  }
+
+  function useRecommended() {
+    var plan = currentPlanConfig();
+    configState.selectedModules = plan.recommended.filter(function (k) { return plan.autoIncluded.indexOf(k) === -1; });
+    saveConfigState();
+    renderConfigurator();
+  }
+
+  function chooseOwn() {
+    configState.selectedModules = [];
+    saveConfigState();
+    renderConfigurator();
+  }
+
+  function renderModuleFilters() {
+    var wrap = document.getElementById('moduleFilters');
+    if (!wrap) return;
+    var chips = [{ key: 'todas', name: 'Todas (' + MODULES.length + ')' }].concat(
+      MODULE_CATEGORIES.map(function (c) {
+        var count = MODULES.filter(function (m) { return m.category === c.key; }).length;
+        return { key: c.key, name: c.name + ' (' + count + ')' };
+      })
+    );
+    wrap.innerHTML = chips.map(function (c) {
+      return '<button class="module-filter" type="button" role="tab" aria-selected="' + (c.key === activeCategoryFilter ? 'true' : 'false') + '" data-cat="' + esc(c.key) + '">' + esc(c.name) + '</button>';
+    }).join('');
+    wrap.querySelectorAll('.module-filter').forEach(function (btn) {
+      btn.addEventListener('click', function () { setCategoryFilter(btn.getAttribute('data-cat')); });
+    });
+  }
+
+  function renderModuleGrid() {
+    var grid = document.getElementById('moduleGrid');
+    if (!grid) return;
+    var list = activeCategoryFilter === 'todas' ? MODULES : MODULES.filter(function (m) { return m.category === activeCategoryFilter; });
+
+    grid.innerHTML = '';
+    list.forEach(function (m) {
+      var autoIncluded = isAutoIncluded(m.key);
+      var selected = isSelected(m.key);
+      var card = document.createElement('div');
+      card.className = 'module-card' + (selected ? ' selected' : '') + (autoIncluded ? ' auto-included' : '');
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-pressed', selected ? 'true' : 'false');
+
+      var badge = autoIncluded ? '<span class="mc-badge">Incluido en tu plan</span>' : '';
+      // "Ver cómo funciona" SOLO si hay un video real -- nunca un
+      // placeholder "Próximamente" por módulo (eso ya existe aparte, en
+      // la Biblioteca general de videos).
+      var videoBtn = m.videoUrl ? '<button class="mc-video-btn" type="button">Ver cómo funciona</button>' : '';
+
+      card.innerHTML =
+        '<div class="mc-top"><h4>' + esc(m.name) + '</h4><span class="mc-check" aria-hidden="true">✓</span></div>' +
+        badge + '<p>' + esc(m.desc) + '</p>' + videoBtn;
+
+      if (!autoIncluded) {
+        card.addEventListener('click', function (ev) {
+          if (ev.target.closest('.mc-video-btn')) return;
+          toggleModule(m.key);
         });
-        document.querySelectorAll('.plan-panel').forEach(function (p) {
-          p.classList.toggle('active', p.getAttribute('data-plan') === target);
+        card.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggleModule(m.key); }
         });
-        track('plan_click', { plan: target, origen: 'comparador' });
+      }
+
+      if (m.videoUrl) {
+        var videoBtnEl = card.querySelector('.mc-video-btn');
+        videoBtnEl.addEventListener('click', function (ev) {
+          ev.stopPropagation();
+          track('video_play', { video: m.name, origen: 'configurador' });
+          var frame = document.createElement('div');
+          frame.className = 'mc-video-frame';
+          var iframe = document.createElement('iframe');
+          iframe.src = 'https://www.youtube-nocookie.com/embed/' + m.videoUrl + '?autoplay=1&rel=0';
+          iframe.title = m.name;
+          iframe.allow = 'accelerometer; autoplay; encrypted-media; picture-in-picture';
+          iframe.allowFullscreen = true;
+          frame.appendChild(iframe);
+          videoBtnEl.replaceWith(frame);
+        });
+      }
+
+      grid.appendChild(card);
+    });
+  }
+
+  function renderExtrasStepper() {
+    var wrap = document.getElementById('extrasStepper');
+    if (!wrap) return;
+    var plan = currentPlanConfig();
+    if (!plan.hasModuleQuota) { wrap.innerHTML = ''; return; }
+
+    wrap.innerHTML =
+      '<div class="stepper-row"><label>Alojamientos extra (además de los ' + plan.propertyLimit + ' incluidos)</label>' +
+        '<button class="stepper-btn" type="button" data-step="properties" data-dir="-1" aria-label="Restar alojamiento extra">−</button>' +
+        '<span class="stepper-value">' + configState.extraProperties + '</span>' +
+        '<button class="stepper-btn" type="button" data-step="properties" data-dir="1" aria-label="Sumar alojamiento extra">+</button>' +
+      '</div>' +
+      '<div class="stepper-row"><label>Usuarios extra (además de los ' + plan.userLimit + ' incluidos)</label>' +
+        '<button class="stepper-btn" type="button" data-step="users" data-dir="-1" aria-label="Restar usuario extra">−</button>' +
+        '<span class="stepper-value">' + configState.extraUsers + '</span>' +
+        '<button class="stepper-btn" type="button" data-step="users" data-dir="1" aria-label="Sumar usuario extra">+</button>' +
+      '</div>';
+
+    wrap.querySelectorAll('.stepper-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var field = btn.getAttribute('data-step') === 'properties' ? 'extraProperties' : 'extraUsers';
+        var dir = parseInt(btn.getAttribute('data-dir'), 10);
+        configState[field] = Math.max(0, configState[field] + dir);
+        saveConfigState();
+        renderConfigurator();
       });
     });
+  }
+
+  function buildSummaryHtml() {
+    var plan = currentPlanConfig();
+    var excess = excessModulesCount();
+    var priced = extrasArePriced();
+    var html = '';
+
+    html += '<h3>Tu configuración — ' + esc(plan.name) + '</h3>';
+    html += '<div class="summary-line sl-included"><span>Bestoic Core</span><span class="sl-price">Incluido</span></div>';
+
+    if (plan.hasModuleQuota) {
+      html += '<div class="summary-quota">' + Math.min(configState.selectedModules.length, plan.includedModules) + ' de ' + plan.includedModules + ' módulos incluidos' +
+        (excess > 0 ? (' + ' + excess + ' adicional' + (excess > 1 ? 'es' : '')) : '') + '</div>';
+    } else {
+      html += '<div class="summary-quota">Configuración hotelera (sin cupo — va por cotización)</div>';
+    }
+
+    plan.autoIncluded.forEach(function (k) {
+      var m = getModule(k);
+      if (m) html += '<div class="summary-line sl-included"><span>' + esc(m.name) + '</span><span class="sl-price">Incluido en tu plan</span></div>';
+    });
+
+    configState.selectedModules.forEach(function (k, i) {
+      var m = getModule(k);
+      if (!m) return;
+      var isExcess = plan.hasModuleQuota && (i >= plan.includedModules);
+      var priceLabel = isExcess ? (priced ? ('+USD ' + fmtNumber(EXTRA_MODULE_PRICE_USD)) : 'Precio a confirmar') : 'Incluido en tu plan';
+      html += '<div class="summary-line' + (isExcess ? '' : ' sl-included') + '"><span>' + esc(m.name) + '</span><span class="sl-price">' + priceLabel + '</span></div>';
+    });
+
+    if (plan.hasModuleQuota && (configState.extraProperties > 0 || configState.extraUsers > 0)) {
+      if (configState.extraProperties > 0) {
+        html += '<div class="summary-line"><span>' + configState.extraProperties + ' alojamiento(s) extra</span><span class="sl-price">' +
+          (priced ? ('+USD ' + fmtNumber(configState.extraProperties * EXTRA_PROPERTY_PRICE_USD)) : 'Precio a confirmar') + '</span></div>';
+      }
+      if (configState.extraUsers > 0) {
+        html += '<div class="summary-line"><span>' + configState.extraUsers + ' usuario(s) extra</span><span class="sl-price">' +
+          (priced ? ('+USD ' + fmtNumber(configState.extraUsers * EXTRA_USER_PRICE_USD)) : 'Precio a confirmar') + '</span></div>';
+      }
+    }
+
+    var total = calcTotalUsd();
+    if (total != null) {
+      html += '<div class="summary-total"><span class="st-label">Total (licencia)</span><span class="st-value">USD ' + fmtNumber(total) + '</span></div>';
+      html += '<div class="summary-note">Seña del 50% para empezar: USD ' + fmtNumber(total / 2) + '. El resto se acuerda al entregar el software funcionando.</div>';
+    } else {
+      html += '<div class="summary-total"><span class="st-label">Total</span><span class="st-value">Desde USD ' + fmtNumber(plan.priceFromUsd) + '</span></div>';
+      html += '<div class="summary-note">Cotización final según esta configuración — coordinamos por WhatsApp.</div>';
+    }
+
+    var showPay = plan.mpEnabled && !needsExtraPricing();
+    html += '<button class="btn btn-primary btn-block summary-pay-btn" type="button"' + (showPay ? '' : ' hidden') + '>Pagar seña y empezar' + (total != null ? (' (USD ' + fmtNumber(total / 2) + ')') : '') + '</button>';
+    html += '<button class="btn btn-secondary-light btn-block summary-wa-btn" type="button"' + (showPay ? ' hidden' : '') + '>Consultar por WhatsApp</button>';
+
+    return html;
+  }
+
+  function renderSummary() {
+    var html = buildSummaryHtml();
+    var desktop = document.getElementById('configuratorSummary');
+    var mobile = document.getElementById('cartSheetSummary');
+    if (desktop) desktop.innerHTML = html;
+    if (mobile) mobile.innerHTML = html;
+
+    var total = calcTotalUsd();
+    var triggerTotal = document.getElementById('cartSheetTriggerTotal');
+    if (triggerTotal) {
+      triggerTotal.textContent = total != null ? ('USD ' + fmtNumber(total)) : ('Desde USD ' + fmtNumber(currentPlanConfig().priceFromUsd));
+    }
+  }
+
+  // Delegado en document a propósito: el resumen existe en 2 copias
+  // (escritorio + hoja móvil), delegar cubre las dos sin duplicar listeners.
+  document.addEventListener('click', function (ev) {
+    if (ev.target.closest('.summary-pay-btn')) {
+      if (window.BestoicPayment && window.BestoicPayment.openModal) window.BestoicPayment.openModal();
+    } else if (ev.target.closest('.summary-wa-btn')) {
+      openWhatsAppFromConfigurator();
+    }
+  });
+
+  function openWhatsAppFromConfigurator() {
+    var plan = currentPlanConfig();
+    var moduleNames = configState.selectedModules.map(function (k) { var m = getModule(k); return m ? m.name : k; });
+    var lines = ['Hola, quiero armar mi Bestoic con esta configuración:', '', 'Plan: ' + plan.name];
+    if (moduleNames.length) lines.push('Módulos: ' + moduleNames.join(', '));
+    if (plan.hasModuleQuota && configState.extraProperties > 0) lines.push('Alojamientos extra: ' + configState.extraProperties);
+    if (plan.hasModuleQuota && configState.extraUsers > 0) lines.push('Usuarios extra: ' + configState.extraUsers);
+    var msg = lines.join('\n');
+    track('whatsapp_click', { origen: 'configurador' });
+    track('plan_click', { plan: plan.name, origen: 'configurador' });
+    window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+  }
+
+  // Puente hacia el script de pago (bloque separado más abajo): expone el
+  // estado actual sin acoplar los dos scripts entre sí.
+  window.BestoicConfigurator = {
+    getState: function () {
+      return {
+        plan: configState.plan,
+        selectedModules: configState.selectedModules.slice(),
+        extraProperties: configState.extraProperties,
+        extraUsers: configState.extraUsers
+      };
+    }
+  };
+
+  function fmtCompetitorPrice(c) {
+    var prefix = c.pricePrefix ? c.pricePrefix + ' ' : '';
+    var suffix = c.billingUnit ? (' ' + c.billingUnit) : '';
+    var taxNote = c.taxNote ? (' ' + c.taxNote) : '';
+    return prefix + c.currency + ' ' + fmtNumber(c.monthlyPrice) + '/mes' + suffix + taxNote;
+  }
+
+  function renderCompetitors() {
+    var grid = document.getElementById('competitorGrid');
+    var disclaimerEl = document.getElementById('competitorDisclaimer');
+    var sourcesEl = document.getElementById('competitorSourcesPanel');
+    if (!grid) return;
+
+    grid.innerHTML = COMPETITORS.map(function (c) {
+      var billingNote = c.billingNote ? ('<div class="cc-plan">' + esc(c.billingNote) + '</div>') : '';
+      return '<div class="competitor-card"><div class="cc-market">' + esc(c.market) + '</div>' +
+        '<h4>' + esc(c.name) + '</h4><div class="cc-price">' + esc(fmtCompetitorPrice(c)) + '</div>' +
+        '<div class="cc-plan">' + esc(c.plan) + '</div>' + billingNote + '</div>';
+    }).join('');
+
+    if (disclaimerEl) disclaimerEl.textContent = COMPETITOR_DISCLAIMER;
+
+    if (sourcesEl) {
+      sourcesEl.innerHTML = '<ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px">' +
+        COMPETITORS.map(function (c) {
+          return '<li style="font-size:.85rem;color:var(--text-secondary)"><b>' + esc(c.name) + '</b> — verificado ' + esc(c.checkedAt) + ' — <a href="' + esc(c.source) + '" target="_blank" rel="noopener">' + esc(c.source) + '</a></li>';
+        }).join('') + '</ul>';
+    }
+  }
+
+  function renderCalcTable() {
+    var table = document.getElementById('calcTable');
+    if (!table) return;
+    var bestoicTotal = calcTotalUsd();
+    var bestoicLabel = bestoicTotal != null ? ('USD ' + fmtNumber(bestoicTotal) + ' (pago único)') : ('Desde USD ' + fmtNumber(currentPlanConfig().priceFromUsd) + ' (pago único, cotización)');
+
+    var head = '<thead><tr><th>Producto</th><th>1 año</th><th>2 años</th><th>3 años</th></tr></thead>';
+    var bestoicRow = '<tr class="calc-bestoic"><td>Bestoic (' + esc(currentPlanConfig().name) + ')</td>' +
+      '<td>' + esc(bestoicLabel) + '</td><td>' + esc(bestoicLabel) + '</td><td>' + esc(bestoicLabel) + '</td></tr>';
+
+    var compRows = COMPETITORS.map(function (c) {
+      var prefix = c.pricePrefix ? c.pricePrefix + ' ' : '';
+      return '<tr><td>' + esc(c.name) + ' (' + esc(c.plan) + ')</td>' +
+        '<td>' + prefix + c.currency + ' ' + fmtNumber(c.monthlyPrice * 12) + '</td>' +
+        '<td>' + prefix + c.currency + ' ' + fmtNumber(c.monthlyPrice * 24) + '</td>' +
+        '<td>' + prefix + c.currency + ' ' + fmtNumber(c.monthlyPrice * 36) + '</td></tr>';
+    }).join('');
+
+    table.innerHTML = head + '<tbody>' + bestoicRow + compRows + '</tbody>';
+  }
+
+  function renderConfigurator() {
+    renderPlanSelector();
+    renderCoreList();
+    renderRecommendBanner();
+    renderModuleFilters();
+    renderModuleGrid();
+    renderExtrasStepper();
+    renderSummary();
+    renderCalcTable();
+  }
+
+  function initConfigurator() {
+    var grid = document.getElementById('moduleGrid');
+    if (!grid) return; // esta página no tiene el configurador
+
+    loadConfigState();
+
+    // ?plan=emprendedor|profesional|hotel en la URL (query, ANTES del
+    // "#") tiene prioridad sobre lo guardado en localStorage -- el
+    // usuario vino de un botón "Configurar X" con intención explícita.
+    // location.search nunca incluye lo que va después del "#" (eso es
+    // location.hash) -- los links tienen que construirse como
+    // "software.html?plan=X#comparacion", nunca al revés.
+    var urlPlan = new URLSearchParams(window.location.search).get('plan');
+    if (urlPlan && PLANS[urlPlan]) {
+      configState.plan = urlPlan;
+      configState.selectedModules = configState.selectedModules.filter(function (k) {
+        return PLANS[urlPlan].autoIncluded.indexOf(k) === -1;
+      });
+      if (!PLANS[urlPlan].hasModuleQuota) { configState.extraProperties = 0; configState.extraUsers = 0; }
+      saveConfigState();
+    }
+
+    document.querySelectorAll('.plan-select-card').forEach(function (card) {
+      card.addEventListener('click', function () { selectPlan(card.getAttribute('data-plan')); });
+    });
+
+    var useBtn = document.getElementById('useRecommendedBtn');
+    var chooseBtn = document.getElementById('chooseOwnBtn');
+    if (useBtn) useBtn.addEventListener('click', useRecommended);
+    if (chooseBtn) chooseBtn.addEventListener('click', chooseOwn);
+
+    var sheetTrigger = document.getElementById('cartSheetTrigger');
+    var sheetBackdrop = document.getElementById('cartSheetBackdrop');
+    var sheet = document.getElementById('cartSheet');
+    var sheetClose = document.getElementById('cartSheetClose');
+    function openSheet() { sheet.classList.add('open'); sheetBackdrop.classList.add('open'); document.body.style.overflow = 'hidden'; }
+    function closeSheet() { sheet.classList.remove('open'); sheetBackdrop.classList.remove('open'); document.body.style.overflow = ''; sheet.style.transform = ''; }
+    if (sheetTrigger) sheetTrigger.addEventListener('click', openSheet);
+    if (sheetClose) sheetClose.addEventListener('click', closeSheet);
+    if (sheetBackdrop) sheetBackdrop.addEventListener('click', closeSheet);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && sheet && sheet.classList.contains('open')) closeSheet(); });
+
+    // Deslizar hacia abajo para cerrar -- mismo mecanismo portado de
+    // app/panel.html (.account-menu), solo con efecto bajo 760px (el
+    // breakpoint propio de software.html, no el 768px de panel.html).
+    (function initSheetSwipe() {
+      if (!sheet) return;
+      var startY = null;
+      sheet.addEventListener('touchstart', function (e) { startY = e.touches[0].clientY; }, { passive: true });
+      sheet.addEventListener('touchmove', function (e) {
+        if (startY === null || window.innerWidth > 760) return;
+        var dy = e.touches[0].clientY - startY;
+        if (dy > 0) sheet.style.transform = 'translateY(' + dy + 'px)';
+      }, { passive: true });
+      sheet.addEventListener('touchend', function (e) {
+        if (startY === null || window.innerWidth > 760) { startY = null; return; }
+        var dy = e.changedTouches[0].clientY - startY;
+        sheet.style.transform = '';
+        if (dy > 80) closeSheet();
+        startY = null;
+      });
+    })();
+
+    renderConfigurator();
+  }
+
+  function initCompetitorComparison() {
+    if (!document.getElementById('competitorGrid')) return;
+    renderCompetitors();
   }
 
   /* =======================================================================
@@ -1988,16 +2645,55 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
     document.addEventListener('keydown', function(e){ if(e.key==='Escape' && !lb.hidden) close(); });
   })();
 
+  /* =======================================================================
+     MICROINTERACCIÓN: revela secciones/tarjetas al hacer scroll.
+     Se llama al final de init(), después de que todo el contenido
+     estático (y el dinámico que solo se arma una vez, como la
+     biblioteca de videos o las tarjetas de competencia) ya está en el
+     DOM. A propósito NO incluye nada del configurador que se
+     re-renderiza en cada interacción (.module-card, .configurator-
+     summary, .cart-sheet-summary) -- ahí causaría un parpadeo cada vez
+     que el usuario toca un módulo, nada "sutil".
+     ======================================================================= */
+  function initScrollReveal() {
+    var selector = '.sec-head, .feature-card, .who-card, .plans > .plan, ' +
+      '.step, .flow-item, .quote-card, .card-light, .card-dark, .shot, ' +
+      '.video-lib-card, .func-cat, .plan-select-card, .competitor-card';
+    var targets = document.querySelectorAll(selector);
+    if (!targets.length) return;
+
+    if (!('IntersectionObserver' in window)) {
+      targets.forEach(function (el) { el.classList.add('is-visible'); });
+      return;
+    }
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    targets.forEach(function (el) {
+      el.classList.add('reveal');
+      observer.observe(el);
+    });
+  }
+
   function init() {
     renderPrices();
     initWhatsApp();
     initNav();
     initAccordions();
-    initPlanTabs();
+    initConfigurator();
+    initCompetitorComparison();
     initVideos();
     renderVideoLibrary();
     initForm();
     initMisc();
+    initScrollReveal();
   }
 
   if (document.readyState === 'loading') {
@@ -2020,8 +2716,8 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
 (function () {
   'use strict';
 
-  var PLAN_LABELS = { inicial: 'Plan Inicial', profesional: 'Plan Profesional' };
-  var PLAN_DEPOSIT_USD = { inicial: 75, profesional: 250 }; // solo texto informativo -- el backend recalcula siempre
+  var PLAN_LABELS = { emprendedor: 'Plan Emprendedor', profesional: 'Plan Profesional' };
+  var PLAN_DEPOSIT_USD = { emprendedor: 75, profesional: 250 }; // solo texto informativo -- el backend recalcula siempre
 
   var backdrop = document.getElementById('mpModalBackdrop');
   var closeBtn = document.getElementById('mpModalClose');
@@ -2032,6 +2728,9 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
   var subEl = document.getElementById('mpModalSub');
 
   var currentPlan = null;
+  var currentSelectedModules = [];
+  var currentExtraProperties = 0;
+  var currentExtraUsers = 0;
   var idempotencyKey = null;
   var pollTimer = null;
 
@@ -2057,11 +2756,22 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
     return '';
   }
 
-  function openModal(plan) {
-    currentPlan = plan;
+  function openModal() {
+    // El plan/módulos/extras vienen SIEMPRE del configurador en vivo (nunca
+    // de un atributo estático) -- ver window.BestoicConfigurator más arriba
+    // en el script principal. Si por algún motivo no hay estado disponible
+    // (página sin configurador), no se abre nada.
+    var state = (window.BestoicConfigurator && window.BestoicConfigurator.getState) ? window.BestoicConfigurator.getState() : null;
+    if (!state || !PLAN_LABELS[state.plan]) return;
+
+    currentPlan = state.plan;
+    currentSelectedModules = state.selectedModules || [];
+    currentExtraProperties = state.extraProperties || 0;
+    currentExtraUsers = state.extraUsers || 0;
+
     idempotencyKey = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : (Date.now() + '-' + Math.random());
-    planNameEl.textContent = PLAN_LABELS[plan] || plan;
-    subEl.textContent = 'Pagás USD ' + PLAN_DEPOSIT_USD[plan] + ' (seña del 50%) para empezar; el resto se acuerda al entregar el software funcionando.';
+    planNameEl.textContent = PLAN_LABELS[currentPlan];
+    subEl.textContent = 'Pagás USD ' + PLAN_DEPOSIT_USD[currentPlan] + ' (seña del 50%) para empezar; el resto se acuerda al entregar el software funcionando.';
     hideError();
     form.reset();
     resetTurnstile();
@@ -2073,11 +2783,10 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
     if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
   }
 
-  document.querySelectorAll('[data-mp-plan]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      openModal(btn.getAttribute('data-mp-plan'));
-    });
-  });
+  // Expuesto para que el configurador (script principal, bloque separado)
+  // pueda abrir este modal sin que los dos scripts se acoplen entre sí.
+  window.BestoicPayment = { openModal: openModal };
+
   closeBtn.addEventListener('click', closeModal);
   backdrop.addEventListener('click', function (e) { if (e.target === backdrop) closeModal(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && backdrop.classList.contains('open')) closeModal(); });
@@ -2126,7 +2835,10 @@ table.compare tbody tr:last-child td,table.compare tbody tr:last-child th{border
       email: document.getElementById('mpEmail').value.trim(),
       telefono: document.getElementById('mpTelefono').value.trim(),
       idempotency_key: idempotencyKey,
-      turnstile_token: turnstileToken
+      turnstile_token: turnstileToken,
+      selected_modules: currentSelectedModules,
+      extra_properties: currentExtraProperties,
+      extra_users: currentExtraUsers
     };
 
     fetch('/.netlify/functions/mp-plan-order', {
